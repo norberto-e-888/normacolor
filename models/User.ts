@@ -47,5 +47,9 @@ const userSchema = new mongoose.Schema<User>(
   }
 );
 
+userSchema.index({
+  role: 1,
+});
+
 export const User: Model<User> =
   mongoose.models.User || mongoose.model(USER_MODEL_NAME, userSchema);
