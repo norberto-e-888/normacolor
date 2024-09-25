@@ -42,6 +42,12 @@ if (process.env.NODE_ENV === "development") {
 export { mongoClient, mongoConnect };
 
 export const connectMongoose = async () => {
-  if (mongoose.connection.readyState >= 1) return;
-  return mongoose.connect(process.env.MONGODB_URI as string);
+  if (
+    mongoose.connection.readyState === 1 ||
+    mongoose.connection.readyState === 2
+  ) {
+    return;
+  }
+
+  await mongoose.connect(process.env.MONGODB_URI as string);
 };
