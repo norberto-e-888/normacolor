@@ -38,7 +38,7 @@ const runNgrokCommand = (command) => {
       }, {});
 
       if (url) {
-        resolve(url.slice(0, -1)); // remove trailing newline char
+        resolve(url.trim()); // remove trailing newline char
       }
     });
 
