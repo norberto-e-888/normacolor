@@ -24,7 +24,7 @@ export default async function SignIn() {
             await signOut();
           }}
         >
-          <button type="submit">
+          <button type="submit" className="border border-indigo-600">
             Sign Out ({session.user.email}, {session.user.role})
           </button>
         </form>
