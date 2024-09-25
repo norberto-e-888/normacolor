@@ -1,7 +1,7 @@
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import NextAuth, { Session } from "next-auth";
 import Resend from "next-auth/providers/resend";
-import { mongoClient, connectMongoose } from "./lib";
+import { mongoClient, connectToMongo } from "./lib";
 import { User, UserRole } from "./models";
 
 const { handlers, signIn, signOut, ...rest } = NextAuth({
@@ -16,7 +16,8 @@ const { handlers, signIn, signOut, ...rest } = NextAuth({
   },
   callbacks: {
     async signIn({ user }) {
-      await connectMongoose();
+      await connectToMongo();
+
       const userDocument = await User.findOne({
         email: user.email,
       });

@@ -16,7 +16,6 @@ const options = {
 };
 
 let mongoClient: MongoClient;
-let mongoConnect: Promise<MongoClient>;
 
 if (process.env.NODE_ENV === "development") {
   // In development mode, use a global variable so that the value
@@ -30,24 +29,22 @@ if (process.env.NODE_ENV === "development") {
   }
 
   mongoClient = globalWithMongo._mongoClient;
-  mongoConnect = mongoClient.connect();
 } else {
   // In production mode, it's best to not use a global variable.
   mongoClient = new MongoClient(uri, options);
-  mongoConnect = mongoClient.connect();
 }
 
 // Export a module-scoped MongoClient. By doing this in a
 // separate module, the client can be shared across functions.
-export { mongoClient, mongoConnect };
+export { mongoClient };
 
-export const connectMongoose = async () => {
+export const connectToMongo = async () => {
   if (
     mongoose.connection.readyState === 1 ||
     mongoose.connection.readyState === 2
   ) {
-    return;
+    return mongoose.connection;
   }
 
-  await mongoose.connect(process.env.MONGODB_URI as string);
+  return (await mongoose.connect(process.env.MONGODB_URI as string)).connection;
 };
