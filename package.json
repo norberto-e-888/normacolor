@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "up": "docker compose -f ./docker-compose.yaml up -d",
-    "down": "docker compose -f ./docker-compose.yaml down"
+    "down": "docker compose -f ./docker-compose.yaml down",
+    "init": "node scripts/init.js"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.5.0",
@@ -23,6 +24,7 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "dotenv": "^16.4.5",
     "eslint": "^8",
     "eslint-config-next": "14.2.13",
     "postcss": "^8",
