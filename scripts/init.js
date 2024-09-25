@@ -10,7 +10,6 @@ require("dotenv").config({
   path: envFilePath,
 });
 
-// Function to run shell commands
 const runCommand = (command) => {
   return new Promise((resolve, reject) => {
     exec(command, (error, stdout, stderr) => {
@@ -38,7 +37,7 @@ const runNgrokCommand = (command) => {
       }, {});
 
       if (url) {
-        resolve(url.trim()); // remove trailing newline char
+        resolve(url.trim());
       }
     });
 
@@ -54,19 +53,17 @@ const runNgrokCommand = (command) => {
   });
 };
 
-// Function to update the .env file
 const updateEnvFile = (tunnelUrl) => {
-  // Read the current .env file
   const envContent = fs.readFileSync(envFilePath, "utf-8");
   const lines = envContent.split("\n");
   const updatedLines = lines.map((line) => {
-    // Update the NGROK_TUNNEL variable
     if (line.startsWith("NGROK_TUNNEL=")) {
       return `NGROK_TUNNEL="${tunnelUrl}"`;
     }
-    return line; // return unchanged line
+
+    return line;
   });
-  // Write back to the .env file
+
   fs.writeFileSync(envFilePath, updatedLines.join("\n"));
 };
 
@@ -77,15 +74,12 @@ const updateEnvFile = (tunnelUrl) => {
       exit(1);
     }
 
-    // Run docker compose up
     await runCommand("docker compose up -d");
     console.log("Docker containers are up.");
 
-    // Authenticate with ngrok (you may need to replace YOUR_AUTH_TOKEN with your actual auth token)
     await runCommand(`ngrok config add-authtoken ${process.env.NGROK_TOKEN}`);
     console.log("Authenticated with ngrok.");
 
-    // Create a new ngrok tunnel
     const ngrokUrl = await runNgrokCommand("ngrok http 3000 --log=stdout");
 
     console.log(`Ngrok tunnel created: ${ngrokUrl}`);
