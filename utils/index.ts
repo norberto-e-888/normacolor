@@ -1,1 +1,1 @@
-export * from "./user-role-to-route-map";
+export * from "./user-role-to-root-map";

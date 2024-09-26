@@ -15,8 +15,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Normacolor",
-  description: "Tu imprenta de confianza",
+  title: "Normacolor Panama",
 };
 
 export default function RootLayout({

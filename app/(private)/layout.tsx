@@ -9,7 +9,7 @@ export default async function AppLayout({
   const session = await auth();
 
   if (!session) {
-    redirect("/ingreso");
+    redirect("/nosotros");
   }
 
   return (

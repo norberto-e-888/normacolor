@@ -10,16 +10,16 @@ export default function WebLayout({
       <nav>
         <ul>
           <li>
-            <Link href="/web/nosotros">Nosotros</Link>
+            <Link href="/ingreso">App</Link>
           </li>
           <li>
-            <Link href="/web/productos">Productos</Link>
+            <Link href="/nosotros">Nosotros</Link>
           </li>
           <li>
-            <Link href="/web/promociones">Promociones</Link>
+            <Link href="/productos">Productos</Link>
           </li>
           <li>
-            <Link href="/app">App</Link>
+            <Link href="/promociones">Promociones</Link>
           </li>
         </ul>
       </nav>
