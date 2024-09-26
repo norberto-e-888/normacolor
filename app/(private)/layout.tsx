@@ -1,4 +1,5 @@
-import { auth, signOut } from "@/auth";
+import { signOut } from "@/actions";
+import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
 export default async function AppLayout({
@@ -17,14 +18,7 @@ export default async function AppLayout({
       <nav>
         <ul>
           <li>
-            <form
-              action={async () => {
-                "use server";
-                await signOut({
-                  redirectTo: "/ingreso",
-                });
-              }}
-            >
+            <form action={signOut}>
               <button type="submit" className="border border-indigo-600 p-2">
                 Salir
               </button>
