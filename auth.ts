@@ -2,7 +2,7 @@ import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import NextAuth, { Session } from "next-auth";
 import Resend from "next-auth/providers/resend";
 import { mongoClient, connectToMongo } from "./lib";
-import { User, UserRole } from "./models";
+import { User, UserProvider, UserRole } from "./models";
 
 const { handlers, signIn, signOut, ...rest } = NextAuth({
   providers: [
@@ -16,6 +16,8 @@ const { handlers, signIn, signOut, ...rest } = NextAuth({
   },
   callbacks: {
     async signIn({ user, account }) {
+      console.log({ user, account });
+
       if (!account) {
         return false;
       }
@@ -26,15 +28,23 @@ const { handlers, signIn, signOut, ...rest } = NextAuth({
         email: user.email,
       });
 
-      if (userDocument && userDocument.provider === account.provider) {
+      if (userDocument) {
+        await User.findByIdAndUpdate(
+          userDocument._id,
+          {
+            $addToSet: {
+              providers: account.provider,
+            },
+          },
+          { runValidators: true }
+        );
+
         return true;
-      } else if (userDocument) {
-        return false;
       }
 
       await User.create({
         email: user.email,
-        provider: account.provider,
+        providers: [account.provider],
       });
 
       return true;

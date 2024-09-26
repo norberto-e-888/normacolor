@@ -1,5 +1,5 @@
 import mongoose, { Model } from "mongoose";
-import { BaseModel, getSchema } from "./utils";
+import { BaseModel, setUniqueMembers, getSchema, isEnumArray } from "./utils";
 
 export enum UserRole {
   Client = "client",
@@ -16,7 +16,7 @@ export enum UserProvider {
 export interface User extends BaseModel {
   email: string;
   role: UserRole;
-  provider: UserProvider;
+  providers: UserProvider[];
   name?: string;
   image?: string;
 }
@@ -37,10 +37,11 @@ const userSchema = getSchema<User>({
     enum: Object.values(UserRole),
     default: UserRole.Client,
   },
-  provider: {
-    type: String,
+  providers: {
+    type: [String],
     required: true,
-    enum: Object.values(UserProvider),
+    validate: [isEnumArray(UserProvider)],
+    set: setUniqueMembers,
   },
   name: {
     type: String,
