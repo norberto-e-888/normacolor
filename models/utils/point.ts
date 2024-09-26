@@ -1,16 +1,18 @@
 import mongoose from "mongoose";
 
-interface Point {
-  type: "Point";
+const POINT = "POINT";
+
+export interface Point {
+  type: typeof POINT;
   coordinates: [number, number];
 }
 
-const Point = new mongoose.Schema<Point>(
+export const Point = new mongoose.Schema<Point>(
   {
     type: {
       type: String,
-      set: () => "Point",
-      default: "Point",
+      set: () => POINT,
+      default: POINT,
       required: true,
     },
     coordinates: {
@@ -24,3 +26,14 @@ const Point = new mongoose.Schema<Point>(
     _id: false,
   }
 );
+
+export const coordinatesToPoint = ({
+  longitude,
+  latitude,
+}: {
+  longitude: number;
+  latitude: number;
+}): Point => ({
+  type: POINT,
+  coordinates: [longitude, latitude],
+});

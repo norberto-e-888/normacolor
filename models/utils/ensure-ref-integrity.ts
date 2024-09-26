@@ -5,22 +5,11 @@ import {
   Types,
 } from "mongoose";
 
-const SKIP_FROM_REF_INTEGRITY_CHECK = new Set([
-  "_id",
-  "__v",
-  "createdAt",
-  "updatedAt",
-]);
-
 export async function ensureRefIntegrity(
   this: Document,
   next: CallbackWithoutResultAndOptionalError
 ) {
   for (const path of Object.keys(this.schema.paths)) {
-    if (SKIP_FROM_REF_INTEGRITY_CHECK.has(path)) {
-      continue;
-    }
-
     const ref = this.schema.path(path);
 
     if (!ref.options["ref"]) {
@@ -70,7 +59,7 @@ async function checkDocExists(
 
   if (!referencedDoc) {
     throw new Error(
-      `Document can't be created because document referred to  with Id "${id}" does not exist for model "${model.name}".`
+      `Document can't be created because document referred to with Id "${id}" does not exist for model "${model.name}".`
     );
   }
 }
