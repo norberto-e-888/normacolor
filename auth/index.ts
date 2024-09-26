@@ -1,8 +1,8 @@
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import NextAuth, { Session } from "next-auth";
 import Resend from "next-auth/providers/resend";
-import { mongoClient, connectToMongo } from "./lib";
-import { User, UserProvider, UserRole } from "./models";
+import { mongoClient, connectToMongo } from "@/lib";
+import { User, UserRole } from "@/models";
 
 const { handlers, signIn, signOut, ...rest } = NextAuth({
   providers: [
