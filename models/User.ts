@@ -2,7 +2,7 @@ import mongoose, { Model } from "mongoose";
 import { BaseModel } from "./utils";
 
 export enum UserRole {
-  Client = "client",
+  Client = "cliente",
   Admin = "admin",
 }
 
