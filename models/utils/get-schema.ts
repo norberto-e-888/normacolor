@@ -1,6 +1,5 @@
 import mongoose, { SchemaDefinition, SchemaOptions } from "mongoose";
 import { BaseModel } from "./base-model";
-import { getToObject } from "./get-schema-options";
 
 export const getSchema = <M extends BaseModel>(
   definition: SchemaDefinition<M>,
@@ -11,9 +10,24 @@ export const getSchema = <M extends BaseModel>(
   const { omitFromTransform, ...optionsRest } = options;
 
   return new mongoose.Schema(definition, {
-    ...(optionsRest as SchemaOptions<M>),
+    ...optionsRest,
     id: true,
     timestamps: true,
-    toObject: getToObject(omitFromTransform),
+    toObject: {
+      virtuals: true,
+      getters: true,
+      transform: (_: unknown, ret: Record<string, unknown>) => ({
+        ...ret,
+        _id: undefined,
+        __v: undefined,
+        ...(omitFromTransform || []).reduce(
+          (toOmit, keyToOmit) => ({
+            ...toOmit,
+            [keyToOmit]: undefined,
+          }),
+          {}
+        ),
+      }),
+    },
   });
 };
