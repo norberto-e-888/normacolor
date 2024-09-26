@@ -16,8 +16,6 @@ const { handlers, signIn, signOut, ...rest } = NextAuth({
   },
   callbacks: {
     async signIn({ user, account }) {
-      console.log({ user, account });
-
       if (!account) {
         return false;
       }
