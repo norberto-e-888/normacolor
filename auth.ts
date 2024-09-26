@@ -50,8 +50,9 @@ const { handlers, signIn, signOut, ...rest } = NextAuth({
 const auth = async () =>
   rest.auth() as unknown as
     | (Session & {
-        user: Pick<User, "id" | "email" | "role">;
+        user: SessionUser;
       })
     | null;
 
 export { handlers, signIn, signOut, auth };
+export type SessionUser = Pick<User, "id" | "email" | "role">;

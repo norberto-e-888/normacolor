@@ -1,7 +1,6 @@
 import { auth } from "@/auth";
 import { UserRole } from "@/models";
-import { config } from "@/config";
-import { redirect } from "next/navigation";
+import { redirectUserToRoot } from "@/utils";
 
 export default async function AdminLayout({
   children,
@@ -11,7 +10,7 @@ export default async function AdminLayout({
   const session = await auth();
 
   if (session && session.user.role !== UserRole.Admin) {
-    redirect(config.USER_ROLE_TO_ROOT_MAP[session.user.role]);
+    redirectUserToRoot(session.user);
   }
 
   return children;

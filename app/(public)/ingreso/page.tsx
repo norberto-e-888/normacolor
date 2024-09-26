@@ -1,12 +1,11 @@
 import { auth, signIn } from "@/auth";
-import { config } from "@/config";
-import { redirect } from "next/navigation";
+import { redirectUserToRoot } from "@/utils";
 
 export default async function SignInPage() {
   const session = await auth();
 
   if (session) {
-    redirect(config.USER_ROLE_TO_ROOT_MAP[session.user.role]);
+    redirectUserToRoot(session.user);
   }
 
   return (

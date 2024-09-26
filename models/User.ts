@@ -11,7 +11,6 @@ export interface User extends BaseModel {
   role: UserRole;
   name?: string;
   image?: string;
-  test: String;
 }
 
 export const USER_MODEL_NAME = "User";
