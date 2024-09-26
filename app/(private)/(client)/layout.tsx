@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { UserRole } from "@/models";
-import { USER_ROLE_TO_ROOT_MAP } from "@/utils";
+import { config } from "@/config";
 import { redirect } from "next/navigation";
 
 export default async function ClientLayout({
@@ -11,7 +11,7 @@ export default async function ClientLayout({
   const session = await auth();
 
   if (session && session.user.role !== UserRole.Client) {
-    redirect(USER_ROLE_TO_ROOT_MAP[session.user.role]);
+    redirect(config.USER_ROLE_TO_ROOT_MAP[session.user.role]);
   }
 
   return children;
