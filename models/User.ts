@@ -11,6 +11,7 @@ export interface User extends BaseModel {
   role: UserRole;
   name?: string;
   image?: string;
+  test: String;
 }
 
 export const USER_MODEL_NAME = "User";
@@ -41,10 +42,6 @@ const userSchema = getSchema<User>({
 userSchema.index({
   role: 1,
 });
-
-if (process.env.NODE_ENV === "development" && mongoose.models.User) {
-  delete mongoose.models.User;
-}
 
 export const User: Model<User> =
   mongoose.models.User || mongoose.model<User>(USER_MODEL_NAME, userSchema);
