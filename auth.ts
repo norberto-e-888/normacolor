@@ -15,18 +15,27 @@ const { handlers, signIn, signOut, ...rest } = NextAuth({
     strategy: "jwt",
   },
   callbacks: {
-    async signIn({ user }) {
+    async signIn({ user, account }) {
+      if (!account) {
+        return false;
+      }
+
       await connectToMongo();
 
       const userDocument = await User.findOne({
         email: user.email,
       });
 
-      if (!userDocument) {
-        await User.create({
-          email: user.email,
-        });
+      if (userDocument && userDocument.provider === account.provider) {
+        return true;
+      } else if (userDocument) {
+        return false;
       }
+
+      await User.create({
+        email: user.email,
+        provider: account.provider,
+      });
 
       return true;
     },

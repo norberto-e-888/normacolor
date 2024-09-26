@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export default function WebLayout({
+export default function PublicLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -10,7 +10,7 @@ export default function WebLayout({
       <nav>
         <ul>
           <li>
-            <Link href="/ingreso">App</Link>
+            <Link href="/">Ingreso</Link>
           </li>
           <li>
             <Link href="/nosotros">Nosotros</Link>

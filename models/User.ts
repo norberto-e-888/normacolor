@@ -6,9 +6,17 @@ export enum UserRole {
   Admin = "admin",
 }
 
+export enum UserProvider {
+  Email = "resend",
+  Google = "google",
+  Twitter = "twitter",
+  Instagram = "instagram",
+}
+
 export interface User extends BaseModel {
   email: string;
   role: UserRole;
+  provider: UserProvider;
   name?: string;
   image?: string;
 }
@@ -18,15 +26,21 @@ export const USER_MODEL_NAME = "User";
 const userSchema = getSchema<User>({
   email: {
     type: String,
-    unique: true,
     required: true,
+    unique: true,
     lowercase: true,
     trim: true,
   },
   role: {
     type: String,
+    required: true,
     enum: Object.values(UserRole),
     default: UserRole.Client,
+  },
+  provider: {
+    type: String,
+    required: true,
+    enum: Object.values(UserProvider),
   },
   name: {
     type: String,

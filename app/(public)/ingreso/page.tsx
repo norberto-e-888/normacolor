@@ -10,11 +10,11 @@ export default async function SignInPage() {
   }
 
   return (
-    <>
-      <form action={signIn}>
-        <input type="text" name="email" placeholder="Email" />
-        <button type="submit">Sign In with Magic Link</button>
-      </form>
-    </>
+    <form action={signIn}>
+      <input type="text" name="email" placeholder="Email" className="mx-2" />
+      <button type="submit" className="border-2 border-cyan-600">
+        Ingresa
+      </button>
+    </form>
   );
 }
