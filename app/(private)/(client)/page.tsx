@@ -1,15 +1,27 @@
-/* import { neshCache } from "@neshca/cache-handler/functions";
+/* import { createClient } from "redis";
+import { neshCache } from "@neshca/cache-handler/functions";
 
 type Query = Record<string, unknown>;
 
-const getData = neshCache(
+const redis = createClient();
+const createPSK = (resource: string, query: Query) =>
+  `${resource}:${JSON.stringify(query)}`;
+
+const cachedGetData = neshCache(
   async (query: Query) => {
     console.log(
       { query },
       "In the real implementation we would use the query object in out db querying logic"
     );
 
-    return ["test data"];
+    const documents = await (async () => [{ id: 1 }, { id: 2 }])();
+    await Promise.all(
+      documents.map(({ id }) =>
+        redis.sAdd(`IQI:posts:${id}`, createPSK("posts", query))
+      )
+    );
+
+    return documents;
   },
   {
     argumentsSerializer: ([query]) => `posts:${JSON.stringify(query)}`,
@@ -17,9 +29,9 @@ const getData = neshCache(
   }
 );
 
-const fetch = async (query: Query) => {
+const handleFetchDocument = async (query: Query) => {
   const psk = `posts:${JSON.stringify(query)}`;
-  const data = await getData(
+  const data = await cachedGetData(
     {
       tags: ["posts", psk],
     },
@@ -30,7 +42,7 @@ const fetch = async (query: Query) => {
 };
  */
 export default async function ClientHomePage() {
-  /*   const data = await fetch({
+  /*   const data = await handleFetchDocument({
     filters: {
       category: "someCategory",
     },
