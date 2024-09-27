@@ -9,5 +9,5 @@ export default async function CatchAllPage() {
     redirectUserToRoot(session.user);
   }
 
-  redirect("/nosotros");
+  redirect("/ingreso");
 }

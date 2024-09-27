@@ -3,10 +3,12 @@ import { SessionUser } from "@/auth";
 import { UserRole } from "@/models";
 import { redirect } from "next/navigation";
 
+export const USER_ROLE_TO_ROOT_MAP: {
+  [key in UserRole]: string;
+} = {
+  [UserRole.Admin]: config.USER_ADMIN_ROOT,
+  [UserRole.Client]: config.USER_CLIENT_ROOT,
+};
+
 export const redirectUserToRoot = (user: SessionUser) =>
-  redirect(
-    {
-      [UserRole.Admin]: config.USER_ADMIN_ROOT,
-      [UserRole.Client]: config.USER_CLIENT_ROOT,
-    }[user.role]
-  );
+  redirect(USER_ROLE_TO_ROOT_MAP[user.role]);

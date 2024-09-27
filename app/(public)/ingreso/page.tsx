@@ -1,27 +1,25 @@
-import { auth, signIn } from "@/auth";
-import { redirectUserToRoot } from "@/utils";
+"use client";
 
-export default async function SignInPage() {
-  const session = await auth();
+import { SignInButton } from "./SignInButton";
+import { useSession } from "next-auth/react";
+import { signInWithMagicLink } from "@/functions/auth";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
-  if (session) {
-    redirectUserToRoot(session.user);
-  }
+export default function SignInPage() {
+  const { status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.replace("/");
+    }
+  }, [status, router]);
 
   return (
-    <form
-      action={async (formData) => {
-        "use server";
-        await signIn("resend", {
-          email: formData.get("email"),
-          redirectTo: "/",
-        });
-      }}
-    >
+    <form action={signInWithMagicLink}>
       <input type="text" name="email" placeholder="Email" className="mx-2" />
-      <button type="submit" className="border-2 border-cyan-600">
-        Ingresa
-      </button>
+      <SignInButton isLoadingSession={status === "loading"} />
     </form>
   );
 }
