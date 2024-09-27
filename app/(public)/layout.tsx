@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { getServerSession } from "@/functions/auth";
 import { USER_ROLE_TO_ROOT_MAP } from "@/utils";
 import Link from "next/link";
 
@@ -7,7 +7,7 @@ export default async function PublicLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth();
+  const session = await getServerSession();
 
   return (
     <div>

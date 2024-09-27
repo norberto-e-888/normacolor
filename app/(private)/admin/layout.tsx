@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { getServerSession } from "@/functions/auth";
 import { UserRole } from "@/models";
 import { redirectUserToRoot } from "@/utils";
 
@@ -7,7 +7,7 @@ export default async function AdminLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (session && session.user.role !== UserRole.Admin) {
     redirectUserToRoot(session.user);
