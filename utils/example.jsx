@@ -7,7 +7,7 @@ function Button() {
 
   return (
     <button type="submit" disabled={pending}>
-      Send {pending && "l"}
+      Send
     </button>
   );
 }
