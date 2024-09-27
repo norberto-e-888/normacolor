@@ -1,5 +1,11 @@
 import mongoose, { Model } from "mongoose";
-import { BaseModel, setUniqueMembers, getSchema, isEnumArray } from "./utils";
+import {
+  BaseModel,
+  setUniqueMembers,
+  getSchema,
+  isEnumArray,
+  ModelName,
+} from "./utils";
 
 export enum UserRole {
   Client = "client",
@@ -20,8 +26,6 @@ export interface User extends BaseModel {
   name?: string;
   image?: string;
 }
-
-export const USER_MODEL_NAME = "User";
 
 const userSchema = getSchema<User>({
   email: {
@@ -58,4 +62,4 @@ userSchema.index({
 });
 
 export const User: Model<User> =
-  mongoose.models.User || mongoose.model<User>(USER_MODEL_NAME, userSchema);
+  mongoose.models.User || mongoose.model<User>(ModelName.User, userSchema);

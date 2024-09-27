@@ -3,9 +3,15 @@ import mongoose, {
   HydratedDocument,
   Model,
 } from "mongoose";
-import { Product, PRODUCT_MODEL_NAME } from "./product";
-import { BaseModel, ensureRefIntegrity, getSchema } from "./utils";
-import { USER_MODEL_NAME } from "./user";
+import { Product } from "./product";
+import {
+  BaseModel,
+  ensureRefIntegrity,
+  getSchema,
+  isArrayMinLength,
+  ModelName,
+  round,
+} from "./utils";
 
 export interface OrderProduct<FE = false> {
   productId: FE extends true ? string : mongoose.Types.ObjectId;
@@ -17,8 +23,7 @@ const orderProductSchema = new mongoose.Schema<OrderProduct>(
     productId: {
       type: mongoose.Schema.ObjectId,
       required: true,
-      ref: PRODUCT_MODEL_NAME,
-      transform: (val: mongoose.Types.ObjectId) => val.toString(),
+      ref: ModelName.Product,
     },
     quantity: {
       type: Number,
@@ -50,33 +55,28 @@ export interface Order<FE = false> extends BaseModel {
   status: OrderStatus;
 }
 
-export const ORDER_MODEL_NAME = "Order";
-
 const orderSchema = getSchema<Order>({
   products: {
     type: [orderProductSchema],
     required: true,
     validate: [
-      {
-        validator: (value: OrderProduct[]) => value.length >= 1,
-        message: "Products must contain at least one product",
-      },
+      isArrayMinLength(1, "Products must contain at least one product"),
     ],
   },
   customerId: {
     type: mongoose.Schema.ObjectId,
     required: true,
-    ref: USER_MODEL_NAME,
-    transform: (val: mongoose.Types.ObjectId) => val.toString(),
+    ref: ModelName.User,
   },
   total: {
     type: Number,
     required: true,
     isInteger: true,
     min: 1,
-    set: (value: number) => Math.round(value),
+    set: round,
   },
   status: {
+    type: String,
     required: true,
     default: OrderStatus.Draft,
     enum: Object.values(OrderStatus),
@@ -91,7 +91,7 @@ orderSchema.pre(
     next: CallbackWithoutResultAndOptionalError
   ) {
     if (this.status === OrderStatus.Draft) {
-      const productModel = this.db.model<Product>(PRODUCT_MODEL_NAME);
+      const productModel = this.db.model<Product>(ModelName.Product);
       const products = await productModel.find({
         _id: {
           $in: this.products.map(({ productId }) => productId),
@@ -126,4 +126,4 @@ orderSchema.index({
 });
 
 export const Order: Model<Order> =
-  mongoose.models.User || mongoose.model<Order>(ORDER_MODEL_NAME, orderSchema);
+  mongoose.models.Order || mongoose.model<Order>(ModelName.Order, orderSchema);

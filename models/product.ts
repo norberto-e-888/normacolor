@@ -2,7 +2,7 @@ import mongoose, {
   CallbackWithoutResultAndOptionalError,
   Model,
 } from "mongoose";
-import { BaseModel, getSchema } from "./utils";
+import { BaseModel, getSchema, ModelName, normalize, round } from "./utils";
 
 export interface Product extends BaseModel {
   name: string;
@@ -11,22 +11,20 @@ export interface Product extends BaseModel {
   isPublic: boolean;
 }
 
-export const PRODUCT_MODEL_NAME = "Product";
-
 const productSchema = getSchema<Product>({
   name: {
     type: String,
     required: true,
     unique: true,
-    set: (value: string) =>
-      value.trim().toLowerCase().split(" ").filter(Boolean).join(" "),
+    set: normalize,
     minlength: 3,
   },
   price: {
     type: Number,
+    required: true,
     isInteger: true,
     min: 1,
-    set: (value: number) => Math.round(value),
+    set: round,
   },
   images: {
     type: [String],
@@ -34,6 +32,7 @@ const productSchema = getSchema<Product>({
     default: [],
   },
   isPublic: {
+    type: Boolean,
     required: true,
     default: false,
   },
@@ -56,4 +55,4 @@ productSchema.index({
 
 export const Product: Model<Product> =
   mongoose.models.Product ||
-  mongoose.model<Product>(PRODUCT_MODEL_NAME, productSchema);
+  mongoose.model<Product>(ModelName.Product, productSchema);
