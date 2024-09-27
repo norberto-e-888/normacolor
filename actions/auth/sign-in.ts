@@ -1,9 +1,9 @@
 "use server";
 
-import { signIn as _signIn } from "@/auth";
+import { signIn } from "@/auth";
 
-export const signIn = async (formData: FormData) => {
-  await _signIn("resend", {
+export const signInWithMagicLink = async (formData: FormData) => {
+  await signIn("resend", {
     email: formData.get("email"),
     redirectTo: "/",
   });

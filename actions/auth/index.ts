@@ -1,2 +1,2 @@
-export { signIn } from "./sign-in";
+export { signInWithMagicLink } from "./sign-in";
 export { signOut } from "./sign-out";
