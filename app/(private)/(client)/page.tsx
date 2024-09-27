@@ -31,14 +31,12 @@ const cachedGetData = neshCache(
 
 const handleFetchDocument = async (query: Query) => {
   const psk = `posts:${JSON.stringify(query)}`;
-  const data = await cachedGetData(
+  return cachedGetData(
     {
       tags: ["posts", psk],
     },
     query
   );
-
-  return data;
 };
  */
 export default async function ClientHomePage() {
@@ -54,7 +52,7 @@ export default async function ClientHomePage() {
       by: "createdAt",
       order: "desc",
     },
-  }); */
-
-  return <main>Client home page{/*  {JSON.stringify(data)} */}</main>;
+  });
+ */
+  return <main>Client home page{/* {JSON.stringify(data)} */}</main>;
 }
