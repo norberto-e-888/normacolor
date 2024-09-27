@@ -1,5 +1,5 @@
-import { signInWithMagicLink } from "@/actions";
 import { auth } from "@/auth";
+import { signInWithMagicLink } from "@/actions";
 import { redirectUserToRoot } from "@/utils";
 
 export default async function SignInPage() {
