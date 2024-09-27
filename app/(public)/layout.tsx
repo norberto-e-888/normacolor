@@ -1,6 +1,7 @@
+import Link from "next/link";
+
 import { getServerSession } from "@/functions/auth";
 import { USER_ROLE_TO_ROOT_MAP } from "@/utils";
-import Link from "next/link";
 
 export default async function PublicLayout({
   children,

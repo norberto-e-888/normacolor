@@ -2,6 +2,7 @@ import mongoose, {
   CallbackWithoutResultAndOptionalError,
   Model,
 } from "mongoose";
+
 import { BaseModel, getSchema, ModelName, normalize, round } from "./utils";
 
 export interface Product extends BaseModel {

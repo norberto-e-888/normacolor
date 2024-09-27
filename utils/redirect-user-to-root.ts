@@ -1,7 +1,8 @@
-import { config } from "@/config";
-import { SessionUser } from "@/auth";
-import { UserRole } from "@/models";
 import { redirect } from "next/navigation";
+
+import { SessionUser } from "@/auth";
+import { config } from "@/config";
+import { UserRole } from "@/models";
 
 export const USER_ROLE_TO_ROOT_MAP: {
   [key in UserRole]: string;

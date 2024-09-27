@@ -1,10 +1,12 @@
 "use client";
 
-import { SignInButton } from "./SignInButton";
-import { useSession } from "next-auth/react";
-import { signInWithMagicLink } from "@/functions/auth";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useEffect } from "react";
+
+import { signInWithMagicLink } from "@/functions/auth";
+
+import { SignInButton } from "./SignInButton";
 
 export default function SignInPage() {
   const { status } = useSession();

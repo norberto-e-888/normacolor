@@ -3,6 +3,7 @@ import mongoose, {
   HydratedDocument,
   Model,
 } from "mongoose";
+
 import { Product } from "./product";
 import {
   BaseModel,

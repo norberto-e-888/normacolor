@@ -1,5 +1,6 @@
-import { getServerSession, signOut } from "@/functions/auth";
 import { redirect } from "next/navigation";
+
+import { getServerSession, signOut } from "@/functions/auth";
 
 export default async function AppLayout({
   children,

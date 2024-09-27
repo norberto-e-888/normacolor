@@ -1,10 +1,11 @@
 import mongoose, { Model } from "mongoose";
+
 import {
   BaseModel,
-  setUniqueMembers,
   getSchema,
   isEnumArray,
   ModelName,
+  setUniqueMembers,
 } from "./utils";
 
 export enum UserRole {

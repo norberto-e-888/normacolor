@@ -1,4 +1,5 @@
 import mongoose, { SchemaDefinition, SchemaOptions } from "mongoose";
+
 import { BaseModel } from "./base-model";
 
 export const getSchema = <M extends BaseModel>(
