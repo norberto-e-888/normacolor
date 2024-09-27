@@ -1,5 +1,4 @@
-import { auth } from "@/auth";
-import { signInWithMagicLink } from "@/actions";
+import { auth, signIn } from "@/auth";
 import { redirectUserToRoot } from "@/utils";
 
 export default async function SignInPage() {
@@ -10,7 +9,15 @@ export default async function SignInPage() {
   }
 
   return (
-    <form action={signInWithMagicLink}>
+    <form
+      action={async (formData) => {
+        "use server";
+        await signIn("resend", {
+          email: formData.get("email"),
+          redirectTo: "/",
+        });
+      }}
+    >
       <input type="text" name="email" placeholder="Email" className="mx-2" />
       <button type="submit" className="border-2 border-cyan-600">
         Ingresa
