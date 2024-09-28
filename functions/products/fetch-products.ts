@@ -3,7 +3,7 @@
 import z from "zod";
 
 import { Product, UserRole } from "@/database";
-import { connectToMongo } from "@/lib";
+import { connectToMongo } from "@/lib/server";
 
 import { getServerSession } from "../auth";
 

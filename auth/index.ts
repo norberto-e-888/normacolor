@@ -3,7 +3,7 @@ import NextAuth from "next-auth";
 import Resend from "next-auth/providers/resend";
 
 import { User, UserRole } from "@/database";
-import { connectToMongo, mongoClient } from "@/lib";
+import { connectToMongo, getMongoClient } from "@/lib/server";
 
 const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -11,7 +11,7 @@ const { handlers, signIn, signOut, auth } = NextAuth({
       from: "onboarding@resend.dev",
     }),
   ],
-  adapter: MongoDBAdapter(mongoClient),
+  adapter: MongoDBAdapter(getMongoClient),
   session: {
     strategy: "jwt",
   },
@@ -26,6 +26,8 @@ const { handlers, signIn, signOut, auth } = NextAuth({
       const userDocument = await User.findOne({
         email: user.email,
       });
+
+      console.log({ userDocument });
 
       if (userDocument) {
         await User.findByIdAndUpdate(

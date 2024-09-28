@@ -1,3 +1,5 @@
+"use server";
+
 // This approach is taken from https://github.com/vercel/next.js/tree/canary/examples/with-mongodb
 import { MongoClient, ServerApiVersion } from "mongodb";
 import mongoose from "mongoose";
@@ -34,10 +36,6 @@ if (process.env.NODE_ENV === "development") {
   mongoClient = new MongoClient(uri, options);
 }
 
-// Export a module-scoped MongoClient. By doing this in a
-// separate module, the client can be shared across functions.
-export { mongoClient };
-
 export const connectToMongo = async () => {
   if (
     mongoose.connection.readyState === 1 ||
@@ -48,3 +46,5 @@ export const connectToMongo = async () => {
 
   return (await mongoose.connect(process.env.MONGODB_URI as string)).connection;
 };
+
+export const getMongoClient = async () => mongoClient;

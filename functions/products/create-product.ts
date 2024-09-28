@@ -4,7 +4,7 @@ import z from "zod";
 
 import { Product } from "@/database";
 import { isAdmin } from "@/guards";
-import { connectToMongo } from "@/lib";
+import { connectToMongo } from "@/lib/server";
 import { normalize } from "@/utils";
 
 const dataSchema = z.object({
