@@ -15,9 +15,17 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout>;
+
     if (status === "authenticated") {
-      router.replace("/");
+      timeout = setTimeout(() => {
+        router.replace("/");
+      }, 800);
     }
+
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [status, router]);
 
   return (
@@ -55,9 +63,11 @@ export default function LoginPage() {
               </div>
 
               <SubmitButton
-                disabled={status === "loading"}
-                settledText="Enviar Link"
+                disabled={status === "loading" || status === "authenticated"}
                 pendingText="Enviando..."
+                settledText={
+                  status === "authenticated" ? "Ingresando..." : "Enviar Link"
+                }
               />
             </form>
 
