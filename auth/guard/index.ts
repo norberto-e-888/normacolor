@@ -1,6 +1,6 @@
 import { getServerSession } from "@/functions/auth";
 
-type ServerAction<T extends (...args: any[]) => any> = (
+type ServerAction<T extends (...args: Parameters<T>) => unknown> = (
   ...args: Parameters<T>
 ) => ReturnType<T>;
 
