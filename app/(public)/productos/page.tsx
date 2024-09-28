@@ -1,7 +1,9 @@
-export default function AboutPage() {
+export default function ProductsPage() {
   return (
-    <main>
-      <p>Hello from products page</p>
-    </main>
+    <div>
+      <main className="p-8">
+        <p>PRODUCTS</p>
+      </main>
+    </div>
   );
 }

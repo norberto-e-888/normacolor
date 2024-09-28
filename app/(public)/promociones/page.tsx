@@ -1,7 +1,9 @@
-export default function AboutPage() {
+export default function PromotionsPage() {
   return (
-    <main>
-      <p>Hello from promotions page</p>
-    </main>
+    <div>
+      <main className="p-8">
+        <p>PROMOTIONS</p>
+      </main>
+    </div>
   );
 }

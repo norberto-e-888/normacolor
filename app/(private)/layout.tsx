@@ -10,13 +10,13 @@ export default async function AppLayout({
   const session = await getServerSession();
 
   if (!session) {
-    redirect("/ingreso");
+    redirect("/login");
   }
 
   return (
     <div>
       <nav>
-        <ul>
+        <ul className="flex flex-row">
           <li>
             <form action={signOut}>
               <button type="submit" className="border-2 p-2">

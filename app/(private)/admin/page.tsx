@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { FormButton } from "@/components";
 import { Product } from "@/database";
 import {
   createProduct,
@@ -10,6 +9,7 @@ import {
   fetchProducts,
 } from "@/functions/products";
 import { formatCents } from "@/utils";
+import { SubmitButton } from "@/components/smart";
 
 type ValidationErrors<T> = Partial<{
   [key in keyof T]: string[] | undefined;
@@ -78,7 +78,7 @@ export default function AdminHomePage() {
           <input className="border-2" type="number" name="price" id="price" />
           {errors?.price && <p className="text-red-600 ml-1">{errors.price}</p>}
         </div>
-        <FormButton settledText="Crear" pendingText="Creando..." />
+        <SubmitButton settledText="Crear" pendingText="Creando..." />
       </form>
 
       {products.map(({ id, name, price }) => (

@@ -1,6 +1,6 @@
 import { SessionProvider } from "next-auth/react";
 
-export default function SignInLayout({
+export default function LoginLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

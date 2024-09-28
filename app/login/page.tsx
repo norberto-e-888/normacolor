@@ -1,36 +1,26 @@
-import { Mail, Sparkles } from "lucide-react";
-import Link from "next/link";
+"use client";
+
 import Image from "next/image";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
+import { Button, Input, Separator } from "@/components/ui";
+import { SubmitButton } from "@/components/smart";
+
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function LoginPage() {
+  const { status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.replace("/");
+    }
+  }, [status, router]);
+
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="flex items-center p-4 bg-primary text-primary-foreground">
-        <nav>
-          <ul className="flex space-x-4">
-            <li>
-              <Link href="/" className="flex items-center space-x-4">
-                <Sparkles className="h-6 w-6" />
-              </Link>
-            </li>
-            <li>
-              <Link href="/promociones" className="hover:underline">
-                Promociones
-              </Link>
-            </li>
-            <li>
-              <Link href="/productos" className="hover:underline">
-                Productos
-              </Link>
-            </li>
-          </ul>
-        </nav>
-      </header>
-
       <main className="flex-grow flex">
         <div className="hidden md:block md:w-1/2 relative">
           <Image
@@ -51,23 +41,21 @@ export default function LoginPage() {
 
             <form className="space-y-4">
               <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium mb-1"
-                >
+                <label htmlFor="email" className="block text-sm font-bold mb-1">
                   Correo
                 </label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="tu@ejemplo.com"
+                  placeholder="yo@ejemplo.com"
                   required
                 />
               </div>
-              <Button type="submit" className="w-full">
-                <Mail className="mr-2 h-4 w-4" />
-                Enviar Link
-              </Button>
+
+              <SubmitButton
+                settledText="Enviar Link"
+                pendingText="Enviando..."
+              />
             </form>
 
             <div className="relative">
