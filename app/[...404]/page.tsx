@@ -10,5 +10,5 @@ export default async function NotFoundPage() {
     redirect(session.user.role === UserRole.Admin ? "/admin" : "/");
   }
 
-  redirect("/ingreso");
+  redirect("/login");
 }
