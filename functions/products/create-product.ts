@@ -52,7 +52,7 @@ export const createProduct = async (data: CreateProductData) => {
   await connectToMongo();
 
   const existingByName = await Product.findOne({
-    name: normalize(data.name),
+    name: data.name,
   });
 
   if (existingByName) {
