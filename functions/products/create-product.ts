@@ -2,7 +2,7 @@
 
 import z from "zod";
 
-import { adminGuard } from "@/auth/guard";
+import { adminGuard } from "@/guard";
 import { connectToMongo } from "@/lib";
 import { Product } from "@/models";
 import { normalize } from "@/models/utils";
