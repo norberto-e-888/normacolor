@@ -2,16 +2,19 @@
 
 import z from "zod";
 
+import { connectToMongo } from "@/lib";
 import { Product, UserRole } from "@/models";
 import { normalize } from "@/models/utils";
 
 import { getServerSession } from "../auth";
 
 const dataSchema = z.object({
-  name: z.string({
-    message: "'nombre' debe ser una cadena.",
-    required_error: '"nombre" es requerido.',
-  }),
+  name: z
+    .string({
+      message: "'nombre' debe ser una cadena.",
+      required_error: '"nombre" es requerido.',
+    })
+    .max(64, "'nombre' no puede tener mas de 64 caracteres"),
   price: z
     .number({
       message: "'precio' debe ser un numero.",
@@ -23,9 +26,9 @@ const dataSchema = z.object({
     .min(1, "'precio' debe ser mayor a cero."),
 }) satisfies z.ZodType<Pick<Product, "name" | "price">>;
 
-type Data = z.infer<typeof dataSchema>;
+export type CreateProductData = z.infer<typeof dataSchema>;
 
-export const createProduct = async (data: Data) => {
+export const createProduct = async (data: CreateProductData) => {
   const session = await getServerSession();
 
   if (!session || session.user.role !== UserRole.Admin) {
@@ -35,14 +38,18 @@ export const createProduct = async (data: Data) => {
     };
   }
 
+  data.name = normalize(data.name);
+
   const validation = await dataSchema.safeParseAsync(data);
 
   if (!validation.success) {
     return {
       ok: false,
-      message: validation.error.flatten(),
+      errors: validation.error.flatten().fieldErrors,
     };
   }
+
+  await connectToMongo();
 
   const existingByName = await Product.findOne({
     name: normalize(data.name),
@@ -63,7 +70,7 @@ export const createProduct = async (data: Data) => {
   return {
     ok: true,
     data: {
-      product,
+      product: product.toObject(),
     },
   };
 };

@@ -19,9 +19,9 @@ const dataSchema = z.object({
   isPublic: z.boolean().optional(),
 });
 
-type Data = z.infer<typeof dataSchema>;
+export type FetchProductData = z.infer<typeof dataSchema>;
 
-export const fetchProducts = async (data: Data) => {
+export const fetchProducts = async (data: FetchProductData) => {
   const session = await getServerSession();
   const validation = await dataSchema.safeParseAsync(data);
 

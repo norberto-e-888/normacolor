@@ -19,7 +19,7 @@ export default async function AppLayout({
         <ul>
           <li>
             <form action={signOut}>
-              <button type="submit" className="border border-indigo-600 p-2">
+              <button type="submit" className="border-2 p-2">
                 Salir
               </button>
             </form>

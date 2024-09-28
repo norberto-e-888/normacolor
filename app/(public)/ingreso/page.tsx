@@ -5,8 +5,7 @@ import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 
 import { signInWithMagicLink } from "@/functions/auth";
-
-import { SignInButton } from "./SignInButton";
+import { FormButton } from "@/ui";
 
 export default function SignInPage() {
   const { status } = useSession();
@@ -21,7 +20,11 @@ export default function SignInPage() {
   return (
     <form action={signInWithMagicLink}>
       <input type="text" name="email" placeholder="Email" className="mx-2" />
-      <SignInButton isLoadingSession={status === "loading"} />
+      <FormButton
+        disabled={status === "loading"}
+        settledText="Ingresa"
+        pendingText="Ingresando..."
+      />
     </form>
   );
 }
