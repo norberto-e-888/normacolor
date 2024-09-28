@@ -29,8 +29,9 @@ export default function AdminHomePage() {
       price: Number(price),
     });
 
-    if (response.ok) {
+    if (response.ok && response.data) {
       setErrors(null);
+      setProducts((current) => [response.data?.product, ...current]);
 
       if (formRef.current) {
         formRef.current.reset();
