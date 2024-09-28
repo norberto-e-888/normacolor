@@ -8,6 +8,7 @@ import { SubmitButton } from "@/components/smart";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { signInWithMagicLink } from "@/functions/auth";
 
 export default function LoginPage() {
   const { status } = useSession();
@@ -39,13 +40,14 @@ export default function LoginPage() {
               Bienvenido a Normacolor
             </h2>
 
-            <form className="space-y-4">
+            <form className="space-y-4" action={signInWithMagicLink}>
               <div>
                 <label htmlFor="email" className="block text-sm font-bold mb-1">
                   Correo
                 </label>
                 <Input
                   id="email"
+                  name="email"
                   type="email"
                   placeholder="yo@ejemplo.com"
                   required
