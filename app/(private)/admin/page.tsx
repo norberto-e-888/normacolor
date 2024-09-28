@@ -44,9 +44,7 @@ export default function AdminHomePage() {
 
   useEffect(() => {
     const fetch = async () => {
-      const response = await fetchProducts({
-        isPublic: false,
-      });
+      const response = await fetchProducts();
 
       if (response.data) {
         setProducts(response.data.products);

@@ -9,11 +9,11 @@ import { getServerSession } from "../auth";
 const querySchema = z.object({
   priceRange: z
     .object({
-      from: z.number().optional().default(1),
-      to: z.number().optional().default(Infinity),
+      from: z.number().optional(),
+      to: z.number().optional(),
     })
     .refine(
-      ({ from, to }) => from < to,
+      ({ from = 1, to = Infinity }) => from < to,
       "Limite inferior debe ser menor a limite mayor."
     )
     .optional(),
@@ -27,7 +27,7 @@ export const fetchProducts = async ({
     from: 1,
     to: Infinity,
   },
-  isPublic = true,
+  isPublic,
 }: FetchProductQuery = {}) => {
   const session = await getServerSession();
   const validation = await querySchema.safeParseAsync({
@@ -45,8 +45,28 @@ export const fetchProducts = async ({
     };
   }
 
+  const isPublicFilter: {
+    isPublic?: boolean;
+  } = {
+    isPublic: session?.user.role === UserRole.Client ? true : isPublic,
+  };
+
+  /* we have to do this because the presence of the "isPublic" key even when 
+     the value is undefined, will result in mongo returning only those that have
+     an explicit key set to undefined instead of ignoring the filter as the client
+     expects
+  */
+
+  if (
+    session &&
+    session.user.role === UserRole.Admin &&
+    isPublic === undefined
+  ) {
+    delete isPublicFilter.isPublic;
+  }
+
   const products = await Product.find({
-    isPublic: session && session.user.role === UserRole.Admin ? isPublic : true,
+    ...isPublicFilter,
     price: {
       $gte: fromPrice,
       $lte: toPrice,
