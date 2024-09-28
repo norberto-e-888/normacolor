@@ -6,7 +6,7 @@ import {
   isEnumArray,
   ModelName,
   setUniqueMembers,
-} from "./utils";
+} from "@/utils";
 
 export enum UserRole {
   Client = "client",

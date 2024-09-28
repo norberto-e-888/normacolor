@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 
 import { signInWithMagicLink } from "@/functions/auth";
-import { FormButton } from "@/ui";
+import { FormButton } from "@/components";
 
 export default function SignInPage() {
   const { status } = useSession();

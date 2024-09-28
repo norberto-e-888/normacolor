@@ -1,6 +1,7 @@
+import { redirect } from "next/navigation";
+
 import { getServerSession } from "@/functions/auth";
-import { UserRole } from "@/models";
-import { redirectUserToRoot } from "@/utils";
+import { UserRole } from "@/database";
 
 export default async function ClientLayout({
   children,
@@ -10,7 +11,7 @@ export default async function ClientLayout({
   const session = await getServerSession();
 
   if (session && session.user.role !== UserRole.Client) {
-    redirectUserToRoot(session.user);
+    redirect("/admin");
   }
 
   return children;

@@ -3,7 +3,7 @@ import NextAuth, { Session } from "next-auth";
 import Resend from "next-auth/providers/resend";
 
 import { connectToMongo, mongoClient } from "@/lib";
-import { User, UserRole } from "@/models";
+import { User, UserRole } from "@/database";
 
 const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [

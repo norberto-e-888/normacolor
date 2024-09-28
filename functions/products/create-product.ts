@@ -2,10 +2,10 @@
 
 import z from "zod";
 
-import { adminGuard } from "@/guard";
+import { Product } from "@/database";
+import { adminGuard } from "@/guards";
 import { connectToMongo } from "@/lib";
-import { Product } from "@/models";
-import { normalize } from "@/models/utils";
+import { normalize } from "@/utils";
 
 const dataSchema = z.object({
   name: z

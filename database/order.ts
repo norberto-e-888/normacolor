@@ -4,7 +4,6 @@ import mongoose, {
   Model,
 } from "mongoose";
 
-import { Product } from "./product";
 import {
   BaseModel,
   ensureRefIntegrity,
@@ -12,7 +11,9 @@ import {
   isArrayMinLength,
   ModelName,
   round,
-} from "./utils";
+} from "@/utils";
+
+import { Product } from "./product";
 
 export interface OrderProduct<FE = false> {
   productId: FE extends true ? string : mongoose.Types.ObjectId;

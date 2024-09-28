@@ -2,7 +2,7 @@
 
 import z from "zod";
 
-import { Product } from "@/models";
+import { Product } from "@/database";
 
 import { getServerSession } from "../auth";
 

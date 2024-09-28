@@ -3,7 +3,7 @@ import mongoose, {
   Model,
 } from "mongoose";
 
-import { BaseModel, getSchema, ModelName, normalize, round } from "./utils";
+import { BaseModel, getSchema, ModelName, normalize, round } from "@/utils";
 
 export interface Product extends BaseModel {
   name: string;

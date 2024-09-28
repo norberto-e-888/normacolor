@@ -2,9 +2,9 @@
 
 import { useRef, useState } from "react";
 
+import { FormButton } from "@/components";
 import { createProduct } from "@/functions/products";
 import { CreateProductData } from "@/functions/products/create-product";
-import { FormButton } from "@/ui";
 
 type ValidationErrors<T> = Partial<{
   [key in keyof T]: string[] | undefined;

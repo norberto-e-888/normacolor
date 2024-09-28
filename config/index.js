@@ -8,8 +8,6 @@ const Config = z.object({
   MONGODB_URI: z.string(),
   NGROK_TOKEN: z.string(),
   NGROK_TUNNEL: z.string(),
-  USER_ADMIN_ROOT: z.string().optional().default("/admin"),
-  USER_CLIENT_ROOT: z.string().optional().default("/"),
 });
 
 const config = Config.parse(process.env);
