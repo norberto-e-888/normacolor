@@ -19,23 +19,21 @@ export default function AdminHomePage() {
     const name = formData.get("name") as string;
     const price = formData.get("price") as string;
 
-    if (Number.isInteger(Number(price)) && Number(price) > 0) {
-      const response = await createProduct({
-        name,
-        price: Number(price),
-      });
+    const response = await createProduct({
+      name,
+      price: Number(price),
+    });
 
-      if (response.ok) {
-        setErrors(null);
+    if (response.ok) {
+      setErrors(null);
 
-        if (formRef.current) {
-          formRef.current.reset();
-        }
-      } else if (response.message) {
-        alert(response.message);
-      } else if (response.errors) {
-        setErrors(response.errors);
+      if (formRef.current) {
+        formRef.current.reset();
       }
+    } else if (response.message) {
+      alert(response.message);
+    } else if (response.errors) {
+      setErrors(response.errors);
     }
   };
 
