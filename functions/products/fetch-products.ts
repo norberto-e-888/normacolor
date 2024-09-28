@@ -4,6 +4,8 @@ import z from "zod";
 
 import { Product } from "@/models";
 
+import { getServerSession } from "../auth";
+
 const dataSchema = z.object({
   priceRange: z
     .object({
@@ -14,11 +16,13 @@ const dataSchema = z.object({
       from: 0,
       to: Infinity,
     }),
+  isPublic: z.boolean().optional(),
 });
 
 type Data = z.infer<typeof dataSchema>;
 
 export const fetchProducts = async (data: Data) => {
+  const session = await getServerSession();
   const validation = await dataSchema.safeParseAsync(data);
 
   if (!validation.success) {
@@ -29,7 +33,7 @@ export const fetchProducts = async (data: Data) => {
   }
 
   const products = await Product.find({
-    isPublic: true,
+    isPublic: session ? data.isPublic : true,
     price: {
       $gte: data.priceRange.from,
       $lte: data.priceRange.to,

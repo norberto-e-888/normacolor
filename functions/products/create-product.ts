@@ -2,9 +2,10 @@
 
 import z from "zod";
 
-import { auth } from "@/auth";
 import { Product, UserRole } from "@/models";
 import { normalize } from "@/models/utils";
+
+import { getServerSession } from "../auth";
 
 const dataSchema = z.object({
   name: z.string({
@@ -25,7 +26,7 @@ const dataSchema = z.object({
 type Data = z.infer<typeof dataSchema>;
 
 export const createProduct = async (data: Data) => {
-  const session = await auth();
+  const session = await getServerSession();
 
   if (!session || session.user.role !== UserRole.Admin) {
     return {
