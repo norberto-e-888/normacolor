@@ -1,9 +1,9 @@
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
-import NextAuth, { Session } from "next-auth";
+import NextAuth from "next-auth";
 import Resend from "next-auth/providers/resend";
 
-import { connectToMongo, mongoClient } from "@/lib";
 import { User, UserRole } from "@/database";
+import { connectToMongo, mongoClient } from "@/lib";
 
 const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -65,5 +65,5 @@ const { handlers, signIn, signOut, auth } = NextAuth({
   },
 });
 
-export { handlers, signIn, signOut, auth };
+export { auth, handlers, signIn, signOut };
 export type SessionUser = Pick<User, "id" | "email" | "role">;

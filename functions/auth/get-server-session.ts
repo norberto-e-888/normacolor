@@ -1,7 +1,8 @@
 "use server";
 
-import { auth, SessionUser } from "@/auth";
 import { Session } from "next-auth";
+
+import { auth, SessionUser } from "@/auth";
 
 export const getServerSession = async () => {
   const session = await auth();
