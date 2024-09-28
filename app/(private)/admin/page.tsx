@@ -1,16 +1,22 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { FormButton } from "@/components";
-import { createProduct } from "@/functions/products";
-import { CreateProductData } from "@/functions/products/create-product";
+import { Product } from "@/database";
+import {
+  createProduct,
+  CreateProductData,
+  fetchProducts,
+} from "@/functions/products";
+import { formatCents } from "@/utils";
 
 type ValidationErrors<T> = Partial<{
   [key in keyof T]: string[] | undefined;
 }>;
 
 export default function AdminHomePage() {
+  const [products, setProducts] = useState<Product[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
   const [errors, setErrors] =
     useState<ValidationErrors<CreateProductData> | null>();
@@ -35,6 +41,20 @@ export default function AdminHomePage() {
       setErrors(response.errors);
     }
   };
+
+  useEffect(() => {
+    const fetch = async () => {
+      const response = await fetchProducts({
+        isPublic: false,
+      });
+
+      if (response.data) {
+        setProducts(response.data.products);
+      }
+    };
+
+    fetch();
+  }, []);
 
   return (
     <main className="m-8">
@@ -61,6 +81,13 @@ export default function AdminHomePage() {
         </div>
         <FormButton settledText="Crear" pendingText="Creando..." />
       </form>
+
+      {products.map(({ id, name, price }) => (
+        <div key={id}>
+          <p>Nombre: {name}</p>
+          <p>Precio: {formatCents(price)}</p>
+        </div>
+      ))}
     </main>
   );
 }

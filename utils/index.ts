@@ -1,5 +1,6 @@
 export * from "./base-model";
 export * from "./ensure-ref-integrity";
+export * from "./format-cents";
 export * from "./get-schema";
 export * from "./model-name";
 export * from "./point";

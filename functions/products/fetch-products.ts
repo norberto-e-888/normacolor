@@ -2,48 +2,63 @@
 
 import z from "zod";
 
-import { Product } from "@/database";
+import { Product, UserRole } from "@/database";
 
 import { getServerSession } from "../auth";
 
-const dataSchema = z.object({
+const querySchema = z.object({
   priceRange: z
     .object({
-      from: z.number().int().default(0),
-      to: z.number().int().default(Infinity),
+      from: z.number().optional().default(1),
+      to: z.number().optional().default(Infinity),
     })
-    .default({
-      from: 0,
-      to: Infinity,
-    }),
-  isPublic: z.boolean().optional().default(false),
+    .refine(
+      ({ from, to }) => from < to,
+      "Limite inferior debe ser menor a limite mayor."
+    )
+    .optional(),
+  isPublic: z.boolean().optional(),
 });
 
-export type FetchProductData = z.infer<typeof dataSchema>;
+export type FetchProductQuery = z.infer<typeof querySchema>;
 
-export const fetchProducts = async (data: FetchProductData) => {
+export const fetchProducts = async ({
+  priceRange: { from: fromPrice = 1, to: toPrice = Infinity } = {
+    from: 1,
+    to: Infinity,
+  },
+  isPublic = true,
+}: FetchProductQuery = {}) => {
   const session = await getServerSession();
-  const validation = await dataSchema.safeParseAsync(data);
+  const validation = await querySchema.safeParseAsync({
+    priceRange: {
+      from: fromPrice,
+      to: toPrice,
+    },
+    isPublic,
+  });
 
   if (!validation.success) {
     return {
       ok: false,
-      message: validation.error.flatten(),
+      errors: validation.error.flatten().fieldErrors,
     };
   }
 
   const products = await Product.find({
-    isPublic: session ? data.isPublic : true,
+    isPublic: session && session.user.role === UserRole.Admin ? isPublic : true,
     price: {
-      $gte: data.priceRange.from,
-      $lte: data.priceRange.to,
+      $gte: fromPrice,
+      $lte: toPrice,
     },
+  }).sort({
+    createdAt: "desc",
   });
 
   return {
     ok: true,
     data: {
-      products,
+      products: products.map((product) => product.toObject()),
     },
   };
 };
