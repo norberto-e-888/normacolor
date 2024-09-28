@@ -5,7 +5,7 @@ import Resend from "next-auth/providers/resend";
 import { connectToMongo, mongoClient } from "@/lib";
 import { User, UserRole } from "@/models";
 
-const { handlers, signIn, signOut, ...rest } = NextAuth({
+const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Resend({
       from: "onboarding@resend.dev",
@@ -65,12 +65,5 @@ const { handlers, signIn, signOut, ...rest } = NextAuth({
   },
 });
 
-const auth = async () =>
-  rest.auth() as unknown as
-    | (Session & {
-        user: SessionUser;
-      })
-    | null;
-
-export { auth, handlers, signIn, signOut };
+export { handlers, signIn, signOut, auth };
 export type SessionUser = Pick<User, "id" | "email" | "role">;
