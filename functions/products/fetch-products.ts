@@ -3,6 +3,7 @@
 import z from "zod";
 
 import { Product, UserRole } from "@/database";
+import { connectToMongo } from "@/lib";
 
 import { getServerSession } from "../auth";
 
@@ -64,6 +65,8 @@ export const fetchProducts = async ({
   ) {
     delete isPublicFilter.isPublic;
   }
+
+  await connectToMongo();
 
   const products = await Product.find({
     ...isPublicFilter,
