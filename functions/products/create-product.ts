@@ -3,10 +3,10 @@
 import z from "zod";
 
 import { connectToMongo } from "@/lib";
-import { Product, UserRole } from "@/models";
+import { Product } from "@/models";
 import { normalize } from "@/models/utils";
 
-import { getServerSession } from "../auth";
+import { adminGuard } from "@/auth/guard";
 
 const dataSchema = z.object({
   name: z
@@ -28,16 +28,7 @@ const dataSchema = z.object({
 
 export type CreateProductData = z.infer<typeof dataSchema>;
 
-export const createProduct = async (data: CreateProductData) => {
-  const session = await getServerSession();
-
-  if (!session || session.user.role !== UserRole.Admin) {
-    return {
-      ok: false,
-      message: "No tienes acceso a este recurso.",
-    };
-  }
-
+export const createProduct = adminGuard(async (data: CreateProductData) => {
   data.name = normalize(data.name);
 
   const validation = await dataSchema.safeParseAsync(data);
@@ -73,4 +64,4 @@ export const createProduct = async (data: CreateProductData) => {
       product: product.toObject(),
     },
   };
-};
+});

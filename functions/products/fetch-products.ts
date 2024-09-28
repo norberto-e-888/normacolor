@@ -16,7 +16,7 @@ const dataSchema = z.object({
       from: 0,
       to: Infinity,
     }),
-  isPublic: z.boolean().optional(),
+  isPublic: z.boolean().optional().default(false),
 });
 
 export type FetchProductData = z.infer<typeof dataSchema>;
