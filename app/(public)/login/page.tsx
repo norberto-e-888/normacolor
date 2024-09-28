@@ -55,6 +55,7 @@ export default function LoginPage() {
               </div>
 
               <SubmitButton
+                disabled={status === "loading"}
                 settledText="Enviar Link"
                 pendingText="Enviando..."
               />
