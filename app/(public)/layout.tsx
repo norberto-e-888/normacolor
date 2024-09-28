@@ -1,7 +1,7 @@
 import Link from "next/link";
 
+import { UserRole } from "@/database";
 import { getServerSession } from "@/functions/auth";
-import { USER_ROLE_TO_ROOT_MAP } from "@/utils";
 
 export default async function PublicLayout({
   children,
@@ -17,7 +17,11 @@ export default async function PublicLayout({
           <li>
             <Link
               href={
-                session ? USER_ROLE_TO_ROOT_MAP[session.user.role] : "/ingreso"
+                session
+                  ? session.user.role === UserRole.Admin
+                    ? "/admin"
+                    : "/"
+                  : "/ingreso"
               }
             >
               {session ? "App" : "Ingresa"}

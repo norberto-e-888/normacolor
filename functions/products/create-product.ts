@@ -3,7 +3,7 @@
 import z from "zod";
 
 import { Product } from "@/database";
-import { adminGuard } from "@/guards";
+import { isAdmin } from "@/guards";
 import { connectToMongo } from "@/lib";
 import { normalize } from "@/utils";
 
@@ -27,7 +27,7 @@ const dataSchema = z.object({
 
 export type CreateProductData = z.infer<typeof dataSchema>;
 
-export const createProduct = adminGuard(async (data: CreateProductData) => {
+export const createProduct = isAdmin(async (data: CreateProductData) => {
   data.name = normalize(data.name);
 
   const validation = await dataSchema.safeParseAsync(data);
