@@ -52,6 +52,7 @@ productSchema.pre(
 
 productSchema.index({
   isPublic: 1,
+  price: 1,
 });
 
 export const Product: Model<Product> =
