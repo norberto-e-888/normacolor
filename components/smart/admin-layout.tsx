@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
   ScrollArea,
 } from "@/components/ui";
+import { signOut } from "@/functions/auth";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -94,7 +95,12 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
                   )}
                   <span>{isDarkMode ? "Light Mode" : "Dark Mode"}</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    await signOut();
+                  }}
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>
