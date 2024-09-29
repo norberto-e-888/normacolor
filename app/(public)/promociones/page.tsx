@@ -1,8 +1,9 @@
 export default function PromotionsPage() {
   return (
-    <div>
-      <main className="p-8">
-        <p>PROMOTIONS</p>
+    <div className="flex flex-col p-8">
+      <h1>PROMOTIONS PAGE</h1>
+      <main>
+        <p>PROMOTIONS LIST</p>
       </main>
     </div>
   );

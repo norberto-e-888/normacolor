@@ -1,3 +1,4 @@
+import { Container, Page } from "@/components/ui";
 import { Sparkles } from "lucide-react";
 import Link from "next/link";
 
@@ -7,7 +8,7 @@ export default function PublicLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex flex-col min-h-screen">
+    <Container>
       <nav className="flex gap-4 items-center p-4 bg-primary text-primary-foreground">
         <Link href="/login" className="flex gap-1 items-center">
           <Sparkles className="h-6 w-6" />
@@ -23,7 +24,14 @@ export default function PublicLayout({
         </Link>
       </nav>
 
-      {children}
-    </div>
+      <Page>{children}</Page>
+
+      <footer className="p-1.5 bg-muted text-center">
+        <p className="text-sm text-muted-foreground">
+          © {new Date().getFullYear()} Normacolor Panama S.A. Todos los derechos
+          reservados.
+        </p>
+      </footer>
+    </Container>
   );
 }
