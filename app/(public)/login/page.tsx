@@ -100,11 +100,11 @@ export default function LoginPage() {
               ref={formRef}
               className="flex gap-4 items-end justify-center"
               action={async (formData) => {
-                const email = formData.get("email");
+                const email = formData.get("email") as string;
 
-                localStorage.setItem("sign-in.email", email as string);
+                localStorage.setItem("sign-in.email", email);
 
-                await signInWithMagicLink(formData, callbackUrl);
+                await signInWithMagicLink(email, callbackUrl);
               }}
             >
               <div className="flex flex-col w-4/5">

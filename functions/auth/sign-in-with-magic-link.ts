@@ -2,12 +2,11 @@
 
 import { signIn } from "@/auth";
 
-export const signInWithMagicLink = async (
-  formData: FormData,
-  callbackUrl = "/"
-) => {
+// also sends OTPs to admins
+
+export const signInWithMagicLink = async (email: string, callbackUrl = "/") => {
   await signIn("resend", {
-    email: formData.get("email"),
+    email,
     redirectTo: callbackUrl,
   });
 };

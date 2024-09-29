@@ -29,35 +29,40 @@ export interface User extends BaseModel {
   password?: string;
 }
 
-const userSchema = getSchema<User>({
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    lowercase: true,
-    trim: true,
+const userSchema = getSchema<User>(
+  {
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+    role: {
+      type: String,
+      required: true,
+      enum: Object.values(UserRole),
+      default: UserRole.Client,
+    },
+    providers: {
+      type: [String],
+      required: true,
+      validate: [isEnumArray(UserProvider)],
+      set: setUniqueMembers,
+    },
+    name: {
+      type: String,
+      lowercase: true,
+      trim: true,
+    },
+    image: {
+      type: String,
+    },
   },
-  role: {
-    type: String,
-    required: true,
-    enum: Object.values(UserRole),
-    default: UserRole.Client,
-  },
-  providers: {
-    type: [String],
-    required: true,
-    validate: [isEnumArray(UserProvider)],
-    set: setUniqueMembers,
-  },
-  name: {
-    type: String,
-    lowercase: true,
-    trim: true,
-  },
-  image: {
-    type: String,
-  },
-});
+  {
+    omitFromTransform: ["password"],
+  }
+);
 
 userSchema.index({
   role: 1,

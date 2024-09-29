@@ -2,12 +2,14 @@ import { SchemaValidator } from "mongoose";
 
 type Validator = SchemaValidator<unknown, unknown>;
 
+const validEmailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
 export const isEnumArray = (
   enumType: Record<string, string>,
   message = "Invalid enum array."
 ): Validator => ({
-  validator: (v: string[]) =>
-    v.every((s) => Object.values(enumType).includes(s)),
+  validator: (value: string[]) =>
+    value.every((s) => Object.values(enumType).includes(s)),
   message,
 });
 
@@ -25,4 +27,9 @@ export const isArrayMaxLength = (
 ): Validator => ({
   validator: (value: unknown[]) => value.length < max,
   message,
+});
+
+export const isEmail = (): Validator => ({
+  validator: (value: string) => validEmailRegex.test(value),
+  message: "Must be an email.",
 });
