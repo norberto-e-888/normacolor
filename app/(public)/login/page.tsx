@@ -30,7 +30,7 @@ export default function LoginPage() {
 
   return (
     <>
-      <div className="hidden md:block md:w-1/2 relative">
+      <div className="hidden xl:block xl:w-1/2 relative">
         <Image
           src="/images/login-hero.svg"
           alt="Hero image"
@@ -41,18 +41,15 @@ export default function LoginPage() {
         />
       </div>
 
-      <div className="w-full md:w-1/2 flex items-center justify-center p-8 bg-background">
+      <div className="w-full xl:w-1/2 flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-md space-y-8">
           <h2 className="text-2xl font-semibold text-center">
             Bienvenido a Normacolor
           </h2>
 
           <main>
-            <form
-              className="flex justify-center gap-4"
-              action={signInWithMagicLink}
-            >
-              <div className="flex flex-col w-full">
+            <form className="flex gap-4 items-end" action={signInWithMagicLink}>
+              <div className="flex flex-col w-3/4">
                 <label htmlFor="email" className="block text-sm font-bold mb-1">
                   Correo
                 </label>
@@ -65,7 +62,7 @@ export default function LoginPage() {
                 />
               </div>
 
-              <div className="self-end">
+              <div className="w-1/4">
                 <SubmitButton
                   disabled={status === "loading" || status === "authenticated"}
                   pendingText="Enviando..."
