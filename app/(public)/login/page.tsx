@@ -54,7 +54,7 @@ export default function LoginPage() {
               className="flex gap-4 items-end justify-center"
               action={signInWithMagicLink}
             >
-              <div className="flex flex-col w-full">
+              <div className="flex flex-col w-4/5">
                 <label htmlFor="email" className="block text-sm font-bold mb-1">
                   Correo
                 </label>
@@ -77,6 +77,7 @@ export default function LoginPage() {
                     <Send size="20px" />
                   )
                 }
+                className="w-1/5"
               />
             </form>
 

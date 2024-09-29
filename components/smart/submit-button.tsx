@@ -8,14 +8,13 @@ export const SubmitButton = ({
   settledText,
   disabled = false,
   disableOnPending = true,
-  buttonProps = {},
+  ...buttonProps
 }: {
   pendingText: string | ReactNode;
   settledText: string | ReactNode;
   disabled?: boolean;
   disableOnPending?: boolean;
-  buttonProps?: ButtonProps;
-}) => {
+} & ButtonProps) => {
   const status = useFormStatus();
   const isDisabled = (disableOnPending && status.pending) || disabled;
 
