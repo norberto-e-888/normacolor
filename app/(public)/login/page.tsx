@@ -72,7 +72,7 @@ export default function LoginPage() {
                 pendingText={<Loader size="20px" className="animate-spin" />}
                 settledText={
                   status === "authenticated" ? (
-                    "Ingresando..."
+                    <Loader size="20px" className="animate-spin" />
                   ) : (
                     <Send size="20px" />
                   )
