@@ -27,8 +27,6 @@ const { handlers, signIn, signOut, auth } = NextAuth({
         email: user.email,
       });
 
-      console.log({ userDocument });
-
       if (userDocument) {
         await User.findByIdAndUpdate(
           userDocument._id,
