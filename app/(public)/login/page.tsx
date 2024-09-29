@@ -1,6 +1,6 @@
 "use client";
 
-import { Hexagon, Loader, Send } from "lucide-react";
+import { Hexagon, Loader, MailCheck, Send } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -15,7 +15,9 @@ export default function LoginPage() {
   const router = useRouter();
   const params = useSearchParams();
   const formRef = useRef<HTMLFormElement>(null);
-  const [emailToVerify, setEmailToVerify] = useState("");
+  const [emailToVerify, setEmailToVerify] = useState(
+    localStorage.getItem("sign-in.email")
+  );
 
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>;
@@ -34,22 +36,27 @@ export default function LoginPage() {
   useEffect(() => {
     const provider = params.get("provider");
     const type = params.get("type");
+    const verify = params.get("verify");
 
     if (provider === "resend" && type === "email") {
+      if (formRef.current) {
+        formRef.current.reset();
+      }
+
+      router.replace("/login?verify=true");
+    } else if (verify === "true") {
       const email = localStorage.getItem("sign-in.email");
 
       if (email) {
         setEmailToVerify(email);
-      }
-
-      if (formRef.current) {
-        formRef.current.reset();
+      } else {
+        router.replace("/login");
       }
     } else {
-      setEmailToVerify("");
+      setEmailToVerify(null);
       localStorage.removeItem("sign-in.email");
     }
-  }, [params]);
+  }, [params, router]);
 
   return (
     <>
@@ -69,17 +76,22 @@ export default function LoginPage() {
           <div className="flex justify-center">
             <Hexagon size="96px" />
           </div>
-          <p className="text-sm text-muted-foreground text-center italic">
-            {emailToVerify ? (
-              <>
+
+          {emailToVerify ? (
+            <div className="flex">
+              <MailCheck size="24px" className="animate-pulse mr-0.5" />
+              <p className="text-sm text-muted-foreground text-center italic mt-0.5">
                 te hemos enviado un correo a{" "}
                 <span className="font-semibold">{emailToVerify}</span> con un
                 link para que ingreses al app
-              </>
-            ) : (
-              "ingresa solo con tu correo, sin preocuparte por una nueva contraseña"
-            )}
-          </p>
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center italic">
+              ingresa solo con tu correo, sin preocuparte por una nueva
+              contraseña
+            </p>
+          )}
 
           <main>
             <form
@@ -98,11 +110,12 @@ export default function LoginPage() {
                   Correo
                 </label>
                 <Input
+                  required
                   id="email"
                   name="email"
                   type="email"
                   placeholder="yo@ejemplo.com"
-                  required
+                  autoComplete="email"
                 />
               </div>
 
@@ -134,6 +147,7 @@ export default function LoginPage() {
                   alt="Google Sign In"
                   width="24"
                   height="24"
+                  priority
                 />
               </Button>
               <Button variant="outline">
@@ -142,15 +156,16 @@ export default function LoginPage() {
                   alt="Facebook Sign In"
                   width="24"
                   height="24"
+                  priority
                 />
               </Button>
               <Button variant="outline">
-                {" "}
                 <Image
                   src="/svg/twitter.svg"
                   alt="Twitter Sign In"
                   width="24"
                   height="24"
+                  priority
                 />
               </Button>
             </div>
