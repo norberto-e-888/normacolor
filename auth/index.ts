@@ -197,4 +197,4 @@ const { handlers, signIn, signOut, auth } = NextAuth({
 });
 
 export { auth, handlers, signIn, signOut };
-export type SessionUser = Pick<User, "id" | "email" | "role">;
+export type SessionUser = Pick<User, "id" | "email" | "role" | "name">;

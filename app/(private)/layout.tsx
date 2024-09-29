@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
-import { getServerSession, signOut } from "@/functions/auth";
+import { AdminLayout } from "@/components/smart/admin-layout"; // don't import from barrel file
+import { getServerSession } from "@/functions/auth";
 
 export default async function AppLayout({
   children,
@@ -13,21 +14,5 @@ export default async function AppLayout({
     redirect("/login");
   }
 
-  return (
-    <div>
-      <nav>
-        <ul className="flex flex-row">
-          <li>
-            <form action={signOut}>
-              <button type="submit" className="border-2 p-2">
-                Salir
-              </button>
-            </form>
-          </li>
-        </ul>
-      </nav>
-
-      {children}
-    </div>
-  );
+  return <AdminLayout user={session.user}>{children}</AdminLayout>;
 }

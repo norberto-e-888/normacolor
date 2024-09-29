@@ -56,7 +56,7 @@ export default function AdminHomePage() {
   }, []);
 
   return (
-    <main className="m-8">
+    <>
       <form
         ref={formRef}
         action={handleForm}
@@ -87,6 +87,6 @@ export default function AdminHomePage() {
           <p>Precio: {formatCents(price)}</p>
         </div>
       ))}
-    </main>
+    </>
   );
 }
