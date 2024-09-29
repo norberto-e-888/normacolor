@@ -26,6 +26,7 @@ export interface User extends BaseModel {
   providers: UserProvider[];
   name?: string;
   image?: string;
+  password?: string;
 }
 
 const userSchema = getSchema<User>({

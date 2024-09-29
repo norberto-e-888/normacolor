@@ -1,5 +1,7 @@
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
+import bcrypt from "bcryptjs";
 import NextAuth from "next-auth";
+import Credentials from "next-auth/providers/credentials";
 import Resend from "next-auth/providers/resend";
 
 import { User, UserRole } from "@/database";
@@ -9,6 +11,37 @@ const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Resend({
       from: "onboarding@resend.dev",
+    }),
+    Credentials({
+      credentials: {
+        email: {},
+        password: {},
+      },
+      authorize: async ({ email, password }) => {
+        if (typeof email !== "string" || typeof password !== "string") {
+          throw new Error("Credenciales invalidas.");
+        }
+
+        const user = await User.findOne({
+          email,
+        });
+
+        if (!user || user.role !== UserRole.Admin) {
+          throw new Error("Credenciales invalidas.");
+        }
+
+        if (!user.password) {
+          throw new Error("Porfavor configura una contraseña.");
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordValid) {
+          throw new Error("Credenciales invalidas.");
+        }
+
+        return user;
+      },
     }),
   ],
   adapter: MongoDBAdapter(getMongoClient),
