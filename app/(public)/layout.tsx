@@ -1,4 +1,4 @@
-import { Sparkles } from "lucide-react";
+import { Hexagon } from "lucide-react";
 import Link from "next/link";
 
 import { Container, Page } from "@/components/ui";
@@ -12,7 +12,7 @@ export default function PublicLayout({
     <Container>
       <nav className="flex gap-4 items-center p-4 bg-primary text-primary-foreground">
         <Link href="/login" className="flex gap-1 items-center">
-          <Sparkles className="h-6 w-6" />
+          <Hexagon size="24px" />
           <span className="text-lg font-bold">Normacolor</span>
         </Link>
 

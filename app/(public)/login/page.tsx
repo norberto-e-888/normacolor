@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader, Send } from "lucide-react";
+import { Hexagon, Loader, Send } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -43,13 +43,18 @@ export default function LoginPage() {
 
       <div className="w-full xl:w-1/2 flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-md space-y-8">
-          <h2 className="text-2xl font-semibold text-center">
-            Bienvenido a Normacolor
-          </h2>
-
+          <div className="flex justify-center">
+            <Hexagon size="96px" />
+          </div>
+          <p className="text-sm text-muted-foreground text-center italic">
+            Ingresa solo con tu correo, sin preocuparte por una nueva contraseña
+          </p>
           <main>
-            <form className="flex gap-4 items-end" action={signInWithMagicLink}>
-              <div className="flex flex-col w-3/4">
+            <form
+              className="flex gap-4 items-end justify-center"
+              action={signInWithMagicLink}
+            >
+              <div className="flex flex-col w-full">
                 <label htmlFor="email" className="block text-sm font-bold mb-1">
                   Correo
                 </label>
@@ -62,19 +67,17 @@ export default function LoginPage() {
                 />
               </div>
 
-              <div className="w-1/4">
-                <SubmitButton
-                  disabled={status === "loading" || status === "authenticated"}
-                  pendingText={<Loader size="20px" className="animate-spin" />}
-                  settledText={
-                    status === "authenticated" ? (
-                      "Ingresando..."
-                    ) : (
-                      <Send size="20px" />
-                    )
-                  }
-                />
-              </div>
+              <SubmitButton
+                disabled={status === "loading" || status === "authenticated"}
+                pendingText={<Loader size="20px" className="animate-spin" />}
+                settledText={
+                  status === "authenticated" ? (
+                    "Ingresando..."
+                  ) : (
+                    <Send size="20px" />
+                  )
+                }
+              />
             </form>
 
             <div className="relative">
