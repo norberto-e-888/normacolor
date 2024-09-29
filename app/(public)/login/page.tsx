@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 
-import { SubmitButton } from "@/components/smart";
+import { OTPInput, SubmitButton } from "@/components/smart";
 import { Button, Input, Separator } from "@/components/ui";
 import { signInAsAdmin, signInWithMagicLink } from "@/functions/auth";
 
@@ -15,9 +15,15 @@ export default function LoginPage() {
   const router = useRouter();
   const params = useSearchParams();
   const formRef = useRef<HTMLFormElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
   const [emailToVerify, setEmailToVerify] = useState("");
-  const [code, setCode] = useState("");
-  const [isAdminFlow, setIsAdminFlow] = useState(false);
+  const [code, setCode] = useState(params.get("code") || "");
+  const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
+  const isAdminFlow = params.get("isAdmin") === "true";
+  const isAdminSettingPassword =
+    params.get("isAdminSettingPassword") === "true";
+
   const callbackUrl = params.get("callbackUrl") || "/";
 
   useEffect(() => {
@@ -38,7 +44,6 @@ export default function LoginPage() {
     const provider = params.get("provider");
     const type = params.get("type");
     const verify = params.get("verify");
-    const isAdmin = params.get("isAdmin");
 
     if (provider === "resend" && type === "email") {
       if (formRef.current) {
@@ -54,17 +59,17 @@ export default function LoginPage() {
       } else {
         router.replace("/login");
       }
-
-      const code = params.get("code") || "";
-
-      setCode(code);
-
-      setIsAdminFlow(isAdmin === "true");
     } else {
       setEmailToVerify("");
       localStorage.removeItem("sign-in.email");
     }
   }, [params, router]);
+
+  useEffect(() => {
+    if (passwordRef.current) {
+      passwordRef.current.focus();
+    }
+  }, []);
 
   return (
     <>
@@ -101,7 +106,7 @@ export default function LoginPage() {
               <KeyRound size="24px" className="animate-pulse mr-0.5" />
               <p className="text-sm text-muted-foreground text-center italic">
                 por favor ingresa tu contraseña y el código que enviamos a{" "}
-                <span className="font-semibold">test@email.com</span>
+                <span className="font-semibold">{emailToVerify}</span>
               </p>
             </div>
           )}
@@ -120,7 +125,13 @@ export default function LoginPage() {
                 className="flex flex-col gap-4 items-end justify-center"
                 action={async (formData) => {
                   const password = formData.get("password") as string;
-                  const code = formData.get("code") as string;
+                  const passwordConfirm = formData.get(
+                    "password-confirm"
+                  ) as string;
+
+                  if (isAdminSettingPassword && password !== passwordConfirm) {
+                    return;
+                  }
 
                   if (emailToVerify) {
                     await signInAsAdmin({
@@ -133,45 +144,66 @@ export default function LoginPage() {
                   }
                 }}
               >
-                <div className="flex flex-col w-full">
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-bold mb-1"
-                  >
-                    Código
-                  </label>
-                  <Input
-                    required
-                    id="code"
-                    name="code"
-                    type="password"
-                    autoComplete="off"
-                    value={code}
-                    onChange={(e) => {
-                      e.preventDefault();
-                      setCode(e.target.value);
-                    }}
-                  />
+                <div className="flex flex-col items-center w-full">
+                  <label className="block text-lg font-bold mb-2">Código</label>
+                  <OTPInput defaultOTP={code} onChange={setCode} />
                 </div>
 
-                <div className="flex flex-col w-full">
+                <div className="flex flex-col w-full mt-4">
                   <label
-                    htmlFor="email"
+                    htmlFor="password"
                     className="block text-sm font-bold mb-1"
                   >
                     Contraseña
                   </label>
                   <Input
+                    ref={passwordRef}
                     required
                     id="password"
                     name="password"
                     type="password"
-                    autoComplete="current-password"
+                    autoComplete={
+                      isAdminSettingPassword ? "off" : "current-password"
+                    }
+                    value={password}
+                    onChange={(e) => {
+                      e.preventDefault();
+                      setPassword(e.target.value.trim());
+                    }}
                   />
                 </div>
 
+                {isAdminSettingPassword && (
+                  <div className="flex flex-col w-full mt-4">
+                    <label
+                      htmlFor="email"
+                      className="block text-sm font-bold mb-1"
+                    >
+                      Confirma tu contraseña
+                    </label>
+                    <Input
+                      required
+                      id="password-confirm"
+                      name="password-confirm"
+                      type="password"
+                      autoComplete="off"
+                      value={passwordConfirm}
+                      onChange={(e) => {
+                        e.preventDefault();
+                        setPasswordConfirm(e.target.value.trim());
+                      }}
+                    />
+                  </div>
+                )}
+
                 <SubmitButton
-                  disabled={status === "loading" || status === "authenticated"}
+                  disabled={
+                    status === "loading" ||
+                    status === "authenticated" ||
+                    code.length !== 6 ||
+                    password.length < 10 ||
+                    (isAdminSettingPassword && password !== passwordConfirm)
+                  }
                   text={
                     status === "authenticated" ? (
                       <Loader size="20px" className="animate-spin" />

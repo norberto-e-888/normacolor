@@ -1,9 +1,6 @@
 import { EmailConfig } from "next-auth/providers";
 
-import { OTP, User, UserRole } from "@/database";
-import { connectToMongo } from "@/lib/server";
-
-export function htmlAdmin({ otp }: { otp: string }) {
+export function htmlAdmin({ otp, url }: { otp: string; url: string }) {
   const brandColor = "#346df1";
   const buttonText = "#fff";
   const color = {
@@ -29,7 +26,7 @@ export function htmlAdmin({ otp }: { otp: string }) {
           <td align="center" style="font-size: 16px; color: ${color.text};">
             <p>Tu código: <span style="font-weight: bold;">${otp}</span></p>
             <span style="border-radius: 5px; height: auto; width: 108px; display: block; background: black;">
-              <a href="http://localhost:3000/login?verify=true&isAdmin=true&code=${otp}"
+              <a href="${url}"
                  target="_blank"
                  style="font-size: 18px; font-family: Helvetica, Arial, sans-serif; color: ${color.buttonText}; text-decoration: none; border-radius: 5px; padding: 10px 20px; display: inline-block; font-weight: bold;">
                 Ingresa
@@ -89,53 +86,7 @@ interface SendVerificationRequestData {
   request: Request;
 }
 
-export const sendVerificationRequest = async ({
-  identifier: to,
-  provider,
-  url,
-}: SendVerificationRequestData) => {
-  await connectToMongo();
-
-  const user = await User.findOne({
-    email: to,
-  });
-
-  if (user?.role === UserRole.Admin) {
-    const existingOtp = await OTP.findOne({
-      requestedBy: to,
-    });
-
-    if (existingOtp && existingOtp.isExpired()) {
-      await OTP.findByIdAndDelete(existingOtp.id);
-    }
-
-    if (existingOtp && !existingOtp.isExpired()) {
-      throw new Error("There's a pending OTP.");
-    }
-
-    const { code, hash } = await OTP.generateRandomCode();
-
-    await OTP.create({
-      requestedBy: to,
-      hash,
-      isPasswordSetting: !user.password,
-    });
-
-    await sendAdminEmail({
-      provider,
-      identifier: to,
-      otp: code,
-    });
-  } else {
-    await sendClientEmail({
-      provider,
-      identifier: to,
-      url,
-    });
-  }
-};
-
-async function sendClientEmail({
+export async function sendClientEmail({
   provider,
   identifier,
   url,
@@ -148,22 +99,26 @@ async function sendClientEmail({
   });
 }
 
-async function sendAdminEmail({
+export async function sendAdminEmail({
   provider,
   identifier,
   otp,
+  isSettingPassword,
 }: Pick<SendVerificationRequestData, "provider" | "identifier"> & {
   otp: string;
+  isSettingPassword: boolean;
 }) {
+  const url = `http://localhost:3000/login?verify=true&isAdmin=true&isAdminSettingPassword=${isSettingPassword}&code=${otp}`;
+
   await sendEmail({
     provider,
     identifier,
     subject: "Ingreso de Administrador Normacolor",
-    html: htmlAdmin({ otp }),
+    html: htmlAdmin({ otp, url }),
   });
 }
 
-async function sendEmail({
+export async function sendEmail({
   provider,
   identifier: to,
   subject,

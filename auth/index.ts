@@ -7,7 +7,7 @@ import Resend from "next-auth/providers/resend";
 import { OTP, User, UserRole } from "@/database";
 import { connectToMongo, getMongoClient } from "@/lib/server";
 
-import { sendVerificationRequest } from "./utils";
+import { sendAdminEmail, sendClientEmail } from "./utils";
 
 const strongPasswordRegex =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{10,}$/;
@@ -16,7 +16,48 @@ const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Resend({
       from: "onboarding@resend.dev",
-      sendVerificationRequest,
+      sendVerificationRequest: async ({ identifier: to, provider, url }) => {
+        await connectToMongo();
+
+        const user = await User.findOne({
+          email: to,
+        });
+
+        if (user?.role === UserRole.Admin) {
+          const existingOtp = await OTP.findOne({
+            requestedBy: to,
+          });
+
+          if (existingOtp && existingOtp.isExpired()) {
+            await OTP.findByIdAndDelete(existingOtp.id);
+          }
+
+          if (existingOtp && !existingOtp.isExpired()) {
+            throw new Error("There's a pending OTP.");
+          }
+
+          const { code, hash } = await OTP.generateRandomCode();
+
+          await OTP.create({
+            requestedBy: to,
+            hash,
+            isPasswordSetting: !user.password,
+          });
+
+          await sendAdminEmail({
+            provider,
+            identifier: to,
+            otp: code,
+            isSettingPassword: !user.password,
+          });
+        } else {
+          await sendClientEmail({
+            provider,
+            identifier: to,
+            url,
+          });
+        }
+      },
     }),
     Credentials({
       credentials: {
