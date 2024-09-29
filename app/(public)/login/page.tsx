@@ -19,6 +19,8 @@ export default function LoginPage() {
     localStorage.getItem("sign-in.email")
   );
 
+  const callbackUrl = params.get("callbackUrl") || "/";
+
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>;
 
@@ -102,7 +104,7 @@ export default function LoginPage() {
 
                 localStorage.setItem("sign-in.email", email as string);
 
-                await signInWithMagicLink(formData);
+                await signInWithMagicLink(formData, callbackUrl);
               }}
             >
               <div className="flex flex-col w-4/5">
