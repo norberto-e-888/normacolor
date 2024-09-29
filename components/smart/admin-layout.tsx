@@ -72,7 +72,7 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
 
   const MenuHeader = () => (
     <header
-      className={`md:hidden flex items-center justify-between px-4 py-2 h-14 w-full bg-gray-300 dark:bg-gray-800 border-gray-800 dark:border-gray-300 ${
+      className={`md:hidden flex items-center justify-between px-4 py-2 h-14 w-full bg-indigo-200 dark:bg-indigo-950 border-indigo-950 dark:border-indigo-200 ${
         isMobileMenuOpen ? "" : "border-b"
       }`}
     >
@@ -89,7 +89,7 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
   return (
     <div className="flex h-screen">
       <aside
-        className={`fixed inset-y-0 left-0 z-5 border-r bg-gray-300 dark:bg-gray-800 border-gray-800 dark:border-gray-300 ${
+        className={`fixed inset-y-0 left-0 z-5 border-r bg-indigo-200 dark:bg-indigo-950 border-indigo-950 dark:border-indigo-200 ${
           isMobileMenuOpen ? "translate-x-0 w-full " : "-translate-x-full"
         } md:relative md:translate-x-0 md:min-w-96`}
       >
@@ -105,8 +105,8 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
                     href={item.href}
                     className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-sm ${
                       pathname === item.href
-                        ? "text-gray-200 dark:text-gray-900 bg-gray-900 dark:bg-gray-200"
-                        : "text-gray-800 dark:text-gray-300 bg-gray-300 dark:bg-gray-800 hover:bg-gray-800 dark:hover:bg-gray-300 hover:text-gray-300 dark:hover:text-gray-800"
+                        ? "text-gray-100 dark:text-gray-950 bg-indigo-950 dark:bg-indigo-200"
+                        : "text-gray-800 dark:text-gray-300 bg-indigo-200 dark:bg-indigo-950 hover:bg-indigo-800 dark:hover:bg-indigo-300 hover:text-gray-200 dark:hover:text-gray-800"
                     }`}
                   >
                     <Icon className="h-5 w-5" />
@@ -116,7 +116,7 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
               })}
             </nav>
           </ScrollArea>
-          <div className=" border-gray-800 dark:border-gray-300 bg-gray-300 dark:bg-gray-800">
+          <div className=" border-indigo-950 dark:border-indigo-200 bg-indigo-200 dark:bg-indigo-950">
             <DropdownMenu>
               <DropdownMenuTrigger asChild className="p-6">
                 <Button
@@ -125,7 +125,7 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
                 >
                   <span className="flex items-center">
                     <Avatar className="h-8 w-8 mr-3">
-                      <AvatarFallback className="bg-gray-800 text-gray-300 dark:bg-gray-300 dark:text-gray-800">
+                      <AvatarFallback className="bg-indigo-950 text-gray-300 dark:bg-indigo-200 dark:text-gray-800">
                         {(user?.name || user?.email)?.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
@@ -141,7 +141,7 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
 
               <DropdownMenuContent
                 align="end"
-                className="w-56 border-gray-800 dark:border-gray-300 bg-gray-300 dark:bg-gray-800"
+                className="w-56 border-indigo-950 dark:border-indigo-200 bg-indigo-200 dark:bg-indigo-950"
               >
                 <DropdownMenuItem onClick={toggleDarkMode}>
                   {isDarkMode ? (
@@ -168,7 +168,7 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <MenuHeader />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-300 dark:bg-gray-800">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-indigo-200 dark:bg-indigo-950">
           <div className="mx-auto min-h-screen px-8 py-8">{children}</div>
         </main>
       </div>
