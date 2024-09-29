@@ -9,6 +9,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { signInWithMagicLink } from "@/functions/auth";
+import { Loader, Send } from "lucide-react";
 
 export default function LoginPage() {
   const { status } = useSession();
@@ -65,9 +66,13 @@ export default function LoginPage() {
               <div className="w-1/4">
                 <SubmitButton
                   disabled={status === "loading" || status === "authenticated"}
-                  pendingText="Enviando..."
+                  pendingText={<Loader size="20px" className="animate-spin" />}
                   settledText={
-                    status === "authenticated" ? "Ingresando..." : "Enviar Link"
+                    status === "authenticated" ? (
+                      "Ingresando..."
+                    ) : (
+                      <Send size="20px" />
+                    )
                   }
                 />
               </div>

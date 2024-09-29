@@ -1,5 +1,6 @@
 import { useFormStatus } from "react-dom";
 import { Button } from "../ui";
+import { ReactNode } from "react";
 
 export const SubmitButton = ({
   disabled = false,
@@ -9,8 +10,8 @@ export const SubmitButton = ({
 }: {
   disabled?: boolean;
   disableOnPending?: boolean;
-  settledText: string;
-  pendingText: string;
+  pendingText: string | ReactNode;
+  settledText: string | ReactNode;
 }) => {
   const status = useFormStatus();
   const isDisabled = (disableOnPending && status.pending) || disabled;
