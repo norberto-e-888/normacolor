@@ -32,7 +32,7 @@ export default function LoginPage() {
     <>
       <div className="hidden xl:block xl:w-1/2 relative">
         <Image
-          src="/images/login-hero.svg"
+          src="/svg/login-hero.svg"
           alt="Hero image"
           fill
           sizes="50vw"
@@ -89,9 +89,31 @@ export default function LoginPage() {
             </div>
 
             <div className="grid grid-cols-3 gap-4">
-              <Button variant="outline">Google</Button>
-              <Button variant="outline">Twitter</Button>
-              <Button variant="outline">Instagram</Button>
+              <Button variant="outline">
+                <Image
+                  src="/svg/google.svg"
+                  alt="Google Sign In"
+                  width="24"
+                  height="24"
+                />
+              </Button>
+              <Button variant="outline">
+                <Image
+                  src="/svg/facebook.svg"
+                  alt="Facebook Sign In"
+                  width="24"
+                  height="24"
+                />
+              </Button>
+              <Button variant="outline">
+                {" "}
+                <Image
+                  src="/svg/twitter.svg"
+                  alt="Twitter Sign In"
+                  width="24"
+                  height="24"
+                />
+              </Button>
             </div>
           </main>
         </div>
