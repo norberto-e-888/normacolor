@@ -65,6 +65,9 @@ const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
   },
+  pages: {
+    verifyRequest: "/login",
+  },
 });
 
 export { auth, handlers, signIn, signOut };

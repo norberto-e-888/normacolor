@@ -2,9 +2,9 @@
 
 import { Hexagon, Loader, Send } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { SubmitButton } from "@/components/smart";
 import { Button, Input, Separator } from "@/components/ui";
@@ -13,6 +13,9 @@ import { signInWithMagicLink } from "@/functions/auth";
 export default function LoginPage() {
   const { status } = useSession();
   const router = useRouter();
+  const params = useSearchParams();
+  const formRef = useRef<HTMLFormElement>(null);
+  const [emailToVerify, setEmailToVerify] = useState("");
 
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>;
@@ -27,6 +30,26 @@ export default function LoginPage() {
       clearTimeout(timeout);
     };
   }, [status, router]);
+
+  useEffect(() => {
+    const provider = params.get("provider");
+    const type = params.get("type");
+
+    if (provider === "resend" && type === "email") {
+      const email = localStorage.getItem("sign-in.email");
+
+      if (email) {
+        setEmailToVerify(email);
+      }
+
+      if (formRef.current) {
+        formRef.current.reset();
+      }
+    } else {
+      setEmailToVerify("");
+      localStorage.removeItem("sign-in.email");
+    }
+  }, [params]);
 
   return (
     <>
@@ -47,12 +70,28 @@ export default function LoginPage() {
             <Hexagon size="96px" />
           </div>
           <p className="text-sm text-muted-foreground text-center italic">
-            Ingresa solo con tu correo, sin preocuparte por una nueva contraseña
+            {emailToVerify ? (
+              <>
+                te hemos enviado un correo a{" "}
+                <span className="font-semibold">{emailToVerify}</span> con un
+                link para que ingreses al app
+              </>
+            ) : (
+              "ingresa solo con tu correo, sin preocuparte por una nueva contraseña"
+            )}
           </p>
+
           <main>
             <form
+              ref={formRef}
               className="flex gap-4 items-end justify-center"
-              action={signInWithMagicLink}
+              action={async (formData) => {
+                const email = formData.get("email");
+
+                localStorage.setItem("sign-in.email", email as string);
+
+                await signInWithMagicLink(formData);
+              }}
             >
               <div className="flex flex-col w-4/5">
                 <label htmlFor="email" className="block text-sm font-bold mb-1">
