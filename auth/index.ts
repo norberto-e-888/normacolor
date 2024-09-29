@@ -89,7 +89,7 @@ const { handlers, signIn, signOut, auth } = NextAuth({
 
         await Promise.all([
           OTP.findByIdAndDelete(otp.id),
-          OTP.db.collection("verification_tokens")?.findOneAndDelete({
+          OTP.db.collection("verification_tokens")?.deleteMany({
             identifier: user.email,
           }),
         ]);
