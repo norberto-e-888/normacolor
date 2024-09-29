@@ -1,6 +1,6 @@
 "use client";
 
-import { Hexagon, Loader, MailCheck, Send } from "lucide-react";
+import { Hexagon, KeyRound, Loader, MailCheck, Send } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -8,17 +8,16 @@ import { useEffect, useRef, useState } from "react";
 
 import { SubmitButton } from "@/components/smart";
 import { Button, Input, Separator } from "@/components/ui";
-import { signInWithMagicLink } from "@/functions/auth";
+import { signInAsAdmin, signInWithMagicLink } from "@/functions/auth";
 
 export default function LoginPage() {
   const { status } = useSession();
   const router = useRouter();
   const params = useSearchParams();
   const formRef = useRef<HTMLFormElement>(null);
-  const [emailToVerify, setEmailToVerify] = useState(
-    localStorage.getItem("sign-in.email")
-  );
-
+  const [emailToVerify, setEmailToVerify] = useState("");
+  const [code, setCode] = useState("");
+  const [isAdminFlow, setIsAdminFlow] = useState(false);
   const callbackUrl = params.get("callbackUrl") || "/";
 
   useEffect(() => {
@@ -39,6 +38,7 @@ export default function LoginPage() {
     const provider = params.get("provider");
     const type = params.get("type");
     const verify = params.get("verify");
+    const isAdmin = params.get("isAdmin");
 
     if (provider === "resend" && type === "email") {
       if (formRef.current) {
@@ -54,8 +54,14 @@ export default function LoginPage() {
       } else {
         router.replace("/login");
       }
+
+      const code = params.get("code") || "";
+
+      setCode(code);
+
+      setIsAdminFlow(isAdmin === "true");
     } else {
-      setEmailToVerify(null);
+      setEmailToVerify("");
       localStorage.removeItem("sign-in.email");
     }
   }, [params, router]);
@@ -79,7 +85,7 @@ export default function LoginPage() {
             <Hexagon size="96px" />
           </div>
 
-          {emailToVerify ? (
+          {emailToVerify && !isAdminFlow && (
             <div className="flex">
               <MailCheck size="24px" className="animate-pulse mr-0.5" />
               <p className="text-sm text-muted-foreground text-center italic mt-0.5">
@@ -88,7 +94,19 @@ export default function LoginPage() {
                 link para que ingreses al app
               </p>
             </div>
-          ) : (
+          )}
+
+          {emailToVerify && isAdminFlow && (
+            <div className="flex">
+              <KeyRound size="24px" className="animate-pulse mr-0.5" />
+              <p className="text-sm text-muted-foreground text-center italic">
+                por favor ingresa tu contraseña y el código que enviamos a{" "}
+                <span className="font-semibold">test@email.com</span>
+              </p>
+            </div>
+          )}
+
+          {!emailToVerify && !isAdminFlow && (
             <p className="text-sm text-muted-foreground text-center italic">
               ingresa solo con tu correo, sin preocuparte por una nueva
               contraseña
@@ -96,81 +114,159 @@ export default function LoginPage() {
           )}
 
           <main>
-            <form
-              ref={formRef}
-              className="flex gap-4 items-end justify-center"
-              action={async (formData) => {
-                const email = formData.get("email") as string;
+            {isAdminFlow && (
+              <form
+                ref={formRef}
+                className="flex flex-col gap-4 items-end justify-center"
+                action={async (formData) => {
+                  const password = formData.get("password") as string;
+                  const code = formData.get("code") as string;
 
-                localStorage.setItem("sign-in.email", email);
+                  if (emailToVerify) {
+                    await signInAsAdmin({
+                      email: emailToVerify,
+                      password,
+                      code,
+                    });
+                  } else {
+                    router.replace("/login");
+                  }
+                }}
+              >
+                <div className="flex flex-col w-full">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-bold mb-1"
+                  >
+                    Código
+                  </label>
+                  <Input
+                    required
+                    id="code"
+                    name="code"
+                    type="password"
+                    autoComplete="off"
+                    value={code}
+                    onChange={(e) => {
+                      e.preventDefault();
+                      setCode(e.target.value);
+                    }}
+                  />
+                </div>
 
-                await signInWithMagicLink(email, callbackUrl);
-              }}
-            >
-              <div className="flex flex-col w-4/5">
-                <label htmlFor="email" className="block text-sm font-bold mb-1">
-                  Correo
-                </label>
-                <Input
-                  required
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="yo@ejemplo.com"
-                  autoComplete="email"
+                <div className="flex flex-col w-full">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-bold mb-1"
+                  >
+                    Contraseña
+                  </label>
+                  <Input
+                    required
+                    id="password"
+                    name="password"
+                    type="password"
+                    autoComplete="current-password"
+                  />
+                </div>
+
+                <SubmitButton
+                  disabled={status === "loading" || status === "authenticated"}
+                  text={
+                    status === "authenticated" ? (
+                      <Loader size="20px" className="animate-spin" />
+                    ) : (
+                      "Ingresar"
+                    )
+                  }
+                  className="w-full"
                 />
-              </div>
+              </form>
+            )}
 
-              <SubmitButton
-                disabled={status === "loading" || status === "authenticated"}
-                pendingText={<Loader size="20px" className="animate-spin" />}
-                settledText={
-                  status === "authenticated" ? (
-                    <Loader size="20px" className="animate-spin" />
-                  ) : (
-                    <Send size="20px" />
-                  )
-                }
-                className="w-1/5"
-              />
-            </form>
+            {!isAdminFlow && (
+              <form
+                ref={formRef}
+                className="flex gap-4 items-end justify-center"
+                action={async (formData) => {
+                  const email = formData.get("email") as string;
 
-            <div className="relative">
-              <Separator className="my-8" />
-              <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-sm text-muted-foreground">
-                O continua con
-              </span>
-            </div>
+                  localStorage.setItem("sign-in.email", email);
 
-            <div className="grid grid-cols-3 gap-4">
-              <Button variant="outline">
-                <Image
-                  src="/svg/google.svg"
-                  alt="Google Sign In"
-                  width="24"
-                  height="24"
-                  priority
+                  await signInWithMagicLink(email, callbackUrl);
+                }}
+              >
+                <div className="flex flex-col w-4/5">
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-bold mb-1"
+                  >
+                    Correo
+                  </label>
+                  <Input
+                    required
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="yo@ejemplo.com"
+                    autoComplete="email"
+                  />
+                </div>
+
+                <SubmitButton
+                  disabled={status === "loading" || status === "authenticated"}
+                  text={
+                    status === "authenticated" ? (
+                      <Loader size="20px" className="animate-spin" />
+                    ) : (
+                      <Send size="20px" />
+                    )
+                  }
+                  className="w-1/5"
                 />
-              </Button>
-              <Button variant="outline">
-                <Image
-                  src="/svg/facebook.svg"
-                  alt="Facebook Sign In"
-                  width="24"
-                  height="24"
-                  priority
-                />
-              </Button>
-              <Button variant="outline">
-                <Image
-                  src="/svg/twitter.svg"
-                  alt="Twitter Sign In"
-                  width="24"
-                  height="24"
-                  priority
-                />
-              </Button>
-            </div>
+              </form>
+            )}
+
+            {!isAdminFlow && (
+              <>
+                <div className="relative">
+                  <Separator className="my-8" />
+                  <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-sm text-muted-foreground">
+                    O continua con
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <Button variant="outline">
+                    <Image
+                      src="/svg/google.svg"
+                      alt="Google Sign In"
+                      width="24"
+                      height="24"
+                      priority
+                    />
+                  </Button>
+                  <Button variant="outline">
+                    <Image
+                      src="/svg/facebook.svg"
+                      alt="Facebook Sign In"
+                      width="24"
+                      height="24"
+                      priority
+                    />
+                  </Button>
+                  <Button variant="outline">
+                    <Image
+                      src="/svg/twitter.svg"
+                      alt="Twitter Sign In"
+                      width="24"
+                      height="24"
+                      priority
+                    />
+                  </Button>
+                </div>
+              </>
+            )}
           </main>
         </div>
       </div>

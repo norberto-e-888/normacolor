@@ -65,6 +65,12 @@ const { handlers, signIn, signOut, auth } = NextAuth({
           }
         }
 
+        if (!user.password && !otp.isPasswordSetting) {
+          throw new Error(
+            "Por favor contactar al administrador y suplementar código de error: OTP_PASS_MISMATCH"
+          );
+        }
+
         if (!user.password && otp.isPasswordSetting) {
           const isPasswordSecure = strongPasswordRegex.test(password);
 
@@ -76,16 +82,17 @@ const { handlers, signIn, signOut, auth } = NextAuth({
 
           const hashedPassword = await bcrypt.hash(password, 10);
 
-          await User.findByIdAndUpdate(user.id, {
+          await User.findByIdAndUpdate(user._id, {
             password: hashedPassword,
           });
         }
 
-        if (!user.password && !otp.isPasswordSetting) {
-          throw new Error(
-            "Por favor contactar al administrador y suplementar código de error: OTP_PASS_MISMATCH"
-          );
-        }
+        await Promise.all([
+          OTP.findByIdAndDelete(otp.id),
+          OTP.db.collection("verification_tokens")?.findOneAndDelete({
+            identifier: user.email,
+          }),
+        ]);
 
         return user.toObject();
       },

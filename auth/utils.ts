@@ -17,24 +17,24 @@ export function htmlAdmin({ otp }: { otp: string }) {
 
   return `
     <body style="background: ${color.background};">
-      <table width="100%" border="0" cellspacing="20" cellpadding="0"
+      <table width="100%" height="350px" border="0" cellspacing="20" cellpadding="0"
         style="background: ${color.mainBackground}; max-width: 600px; margin: auto; border-radius: 10px;">
         <tr>
           <td align="center"
-            style="padding: 10px 0px; font-size: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
-            Ingresa a Normacolor
+            style="font-size: 24px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
+            Normacolor
           </td>
         </tr>
         <tr>
-          <td align="center" style="padding: 20px 0;">
-            <p>Tu código ${otp}</p>
-            <p>Expira en 5 minutos</p>
-          </td>
-        </tr>
-        <tr>
-          <td align="center"
-            style="padding: 0px 0px 10px 0px; font-size: 16px; line-height: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
-            If you did not request this email you can safely ignore it.
+          <td align="center" style="font-size: 16px; color: ${color.text};">
+            <p>Tu código: <span style="font-weight: bold;">${otp}</span></p>
+            <span style="border-radius: 5px; height: auto; width: 108px; display: block; background: black;">
+              <a href="http://localhost:3000/login?verify=true&isAdmin=true&code=${otp}"
+                 target="_blank"
+                 style="font-size: 18px; font-family: Helvetica, Arial, sans-serif; color: ${color.buttonText}; text-decoration: none; border-radius: 5px; padding: 10px 20px; display: inline-block; font-weight: bold;">
+                Ingresa
+              </a>
+            </span>
           </td>
         </tr>
       </table>
@@ -56,30 +56,23 @@ export function htmlClient({ url }: { url: string; otp?: string }) {
 
   return `
     <body style="background: ${color.background};">
-      <table width="100%" border="0" cellspacing="20" cellpadding="0"
+      <table width="100%" height="350px" border="0" cellspacing="20" cellpadding="0"
         style="background: ${color.mainBackground}; max-width: 600px; margin: auto; border-radius: 10px;">
         <tr>
           <td align="center"
-            style="padding: 10px 0px; font-size: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
-            Ingresa a Normacolor
+            style="font-size: 24px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
+            Normacolor
           </td>
         </tr>
         <tr>
-          <td align="center" style="padding: 20px 0;">
-            <table border="0" cellspacing="0" cellpadding="0">
-              <tr>
-                <td align="center" style="border-radius: 5px;" bgcolor="${color.buttonBackground}"><a href="${url}"
-                    target="_blank"
-                    style="font-size: 18px; font-family: Helvetica, Arial, sans-serif; color: ${color.buttonText}; text-decoration: none; border-radius: 5px; padding: 10px 20px; border: 1px solid ${color.buttonBorder}; display: inline-block; font-weight: bold;">Sign
-                    in</a></td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-        <tr>
-          <td align="center"
-            style="padding: 0px 0px 10px 0px; font-size: 16px; line-height: 22px; font-family: Helvetica, Arial, sans-serif; color: ${color.text};">
-            If you did not request this email you can safely ignore it.
+          <td align="center" style="font-size: 16px; color: ${color.text};">
+            <span style="border-radius: 5px; height: auto; width: 108px; display: block; background: black;">
+              <a href="${url}"
+                 target="_blank"
+                 style="font-size: 18px; font-family: Helvetica, Arial, sans-serif; color: ${color.buttonText}; text-decoration: none; border-radius: 5px; padding: 10px 20px; display: inline-block; font-weight: bold;">
+                Ingresa
+              </a>
+            </span>
           </td>
         </tr>
       </table>

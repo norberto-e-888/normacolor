@@ -7,5 +7,8 @@ export const signInAsAdmin = async (data: {
   password: string;
   code: string;
 }) => {
-  await signIn("credentials", data);
+  await signIn("credentials", {
+    ...data,
+    redirectTo: "/admin",
+  });
 };

@@ -78,7 +78,7 @@ export default function AdminHomePage() {
           <input className="border-2" type="number" name="price" id="price" />
           {errors?.price && <p className="text-red-600 ml-1">{errors.price}</p>}
         </div>
-        <SubmitButton settledText="Crear" pendingText="Creando..." />
+        <SubmitButton text="Crear" pendingText="Creando..." />
       </form>
 
       {products.map(({ id, name, price }) => (

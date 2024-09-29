@@ -22,11 +22,11 @@ export enum UserProvider {
 
 export interface User extends BaseModel {
   email: string;
+  password?: string;
   role: UserRole;
   providers: UserProvider[];
   name?: string;
   image?: string;
-  password?: string;
 }
 
 const userSchema = getSchema<User>(
@@ -37,6 +37,9 @@ const userSchema = getSchema<User>(
       unique: true,
       lowercase: true,
       trim: true,
+    },
+    password: {
+      type: String,
     },
     role: {
       type: String,
