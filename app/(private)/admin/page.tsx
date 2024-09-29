@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -9,14 +10,14 @@ import {
   CreateProductData,
   fetchProducts,
 } from "@/functions/products";
-import { formatCents } from "@/utils";
-
+/* import { formatCents } from "@/utils";
+ */
 type ValidationErrors<T> = Partial<{
   [key in keyof T]: string[] | undefined;
 }>;
 
 export default function AdminHomePage() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [, setProducts] = useState<Product[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
   const [errors, setErrors] =
     useState<ValidationErrors<CreateProductData> | null>();
@@ -56,8 +57,8 @@ export default function AdminHomePage() {
   }, []);
 
   return (
-    <>
-      <form
+    <div>
+      {/*  <form
         ref={formRef}
         action={handleForm}
         className="flex flex-col gap-4 flex-ga w-48"
@@ -80,13 +81,13 @@ export default function AdminHomePage() {
         </div>
         <SubmitButton text="Crear" pendingText="Creando..." />
       </form>
-
-      {products.map(({ id, name, price }) => (
+ */}
+      {/*       {products.map(({ id, name, price }) => (
         <div key={id}>
           <p>Nombre: {name}</p>
           <p>Precio: {formatCents(price)}</p>
         </div>
-      ))}
-    </>
+      ))} */}
+    </div>
   );
 }

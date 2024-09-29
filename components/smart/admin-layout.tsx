@@ -1,18 +1,24 @@
 "use client";
 
-import { LogOut, Moon, Sun } from "lucide-react";
 import {
+  ChevronUp,
+  Ellipsis,
   FileText,
   LayoutDashboard,
+  LogOut,
+  Logs,
   MessageSquare,
+  Moon,
   Package,
   ShoppingCart,
+  Sun,
   Tag,
   Users,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useMediaQuery } from "usehooks-ts";
 
 import { SessionUser } from "@/auth";
 import {
@@ -43,9 +49,12 @@ export type AdminLayoutProps = Readonly<{
 }>;
 
 export function AdminLayout({ children, user }: AdminLayoutProps) {
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const pathname = usePathname();
+  const isMediumScreen = useMediaQuery("(min-width: 768px)");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
+  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -55,38 +64,85 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
     }
   }, [isDarkMode]);
 
-  const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
+  useEffect(() => {
+    if (isMediumScreen) {
+      setIsMobileMenuOpen(false);
+    }
+  }, [isMediumScreen]);
+
+  const MenuHeader = () => (
+    <header
+      className={`md:hidden flex items-center justify-between px-4 py-2 h-14 w-full bg-gray-300 dark:bg-gray-800 border-gray-800 dark:border-gray-300 ${
+        isMobileMenuOpen ? "" : "border-b"
+      }`}
+    >
+      <Button
+        className="block md:hidden items-center p-0"
+        variant="ghost"
+        onClick={toggleMobileMenu}
+      >
+        {isMobileMenuOpen ? <ChevronUp size="24px" /> : <Logs size="24px" />}
+      </Button>
+    </header>
+  );
 
   return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="flex h-screen">
       <aside
-        className={`${
-          isMobileMenuOpen ? "block" : "hidden"
-        } md:block md:w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700`}
+        className={`fixed inset-y-0 left-0 z-5 border-r bg-gray-300 dark:bg-gray-800 border-gray-800 dark:border-gray-300 ${
+          isMobileMenuOpen ? "translate-x-0 w-full " : "-translate-x-full"
+        } md:relative md:translate-x-0 md:min-w-96`}
       >
-        <div className="flex flex-col h-full">
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex flex-col justify-between h-full">
+          <ScrollArea className="flex-grow">
+            <MenuHeader />
+            <nav className="p-4 space-y-2">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-sm ${
+                      pathname === item.href
+                        ? "text-gray-200 dark:text-gray-900 bg-gray-900 dark:bg-gray-200"
+                        : "text-gray-800 dark:text-gray-300 bg-gray-300 dark:bg-gray-800 hover:bg-gray-800 dark:hover:bg-gray-300 hover:text-gray-300 dark:hover:text-gray-800"
+                    }`}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+          </ScrollArea>
+          <div className=" border-gray-800 dark:border-gray-300 bg-gray-300 dark:bg-gray-800">
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+              <DropdownMenuTrigger asChild className="p-6">
                 <Button
                   variant="ghost"
-                  className="w-full flex items-center justify-between"
+                  className="flex items-center justify-between w-full rounded-none"
                 >
-                  <div className="flex items-center">
-                    <Avatar className="h-8 w-8 mr-2">
-                      <AvatarFallback>
+                  <span className="flex items-center">
+                    <Avatar className="h-8 w-8 mr-3">
+                      <AvatarFallback className="bg-gray-800 text-gray-300 dark:bg-gray-300 dark:text-gray-800">
                         {(user?.name || user?.email)?.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col items-start">
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                      <span className="text-md text-gray-800 dark:text-gray-300">
                         {user?.name || user?.email}
                       </span>
                     </div>
-                  </div>
+                  </span>
+                  <Ellipsis />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+
+              <DropdownMenuContent
+                align="end"
+                className="w-56 border-gray-800 dark:border-gray-300 bg-gray-300 dark:bg-gray-800"
+              >
                 <DropdownMenuItem onClick={toggleDarkMode}>
                   {isDarkMode ? (
                     <Sun className="mr-2 h-4 w-4" />
@@ -107,39 +163,12 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-
-          <ScrollArea className="flex-grow">
-            <nav className="p-4 space-y-2">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-sm ${
-                      pathname === item.href
-                        ? "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
-                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    }`}
-                  >
-                    <Icon className="h-5 w-5" />
-                    <span>{item.label}</span>
-                  </Link>
-                );
-              })}
-            </nav>
-          </ScrollArea>
         </div>
       </aside>
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="md:hidden p-4">
-          <Button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-            Menu
-          </Button>
-        </div>
-
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-gray-900">
+        <MenuHeader />
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-300 dark:bg-gray-800">
           <div className="mx-auto min-h-screen px-8 py-8">{children}</div>
         </main>
       </div>

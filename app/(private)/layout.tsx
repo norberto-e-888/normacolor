@@ -1,9 +1,8 @@
 import { redirect } from "next/navigation";
 
-import { AdminLayout } from "@/components/smart/admin-layout"; // don't import from barrel file
 import { getServerSession } from "@/functions/auth";
 
-export default async function AppLayout({
+export default async function PrivateLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -14,5 +13,5 @@ export default async function AppLayout({
     redirect("/login");
   }
 
-  return <AdminLayout user={session.user}>{children}</AdminLayout>;
+  return <>{children}</>;
 }

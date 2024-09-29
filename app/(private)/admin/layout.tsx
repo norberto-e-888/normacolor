@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
 
+import { AdminLayout } from "@/components/smart/admin-layout"; // don't import from barrel file
 import { UserRole } from "@/database";
 import { getServerSession } from "@/functions/auth";
 
-export default async function ClientAppLayout({
+export default async function AdminAppLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -14,9 +15,9 @@ export default async function ClientAppLayout({
     redirect("/login");
   }
 
-  if (session.user.role !== UserRole.Client) {
-    redirect("/admin");
+  if (session.user.role !== UserRole.Admin) {
+    redirect("/");
   }
 
-  return <>{children}</>;
+  return <AdminLayout user={session.user}>{children}</AdminLayout>;
 }
