@@ -48,8 +48,11 @@ export default function LoginPage() {
           </h2>
 
           <main>
-            <form className="space-y-4" action={signInWithMagicLink}>
-              <div>
+            <form
+              className="flex justify-center gap-4"
+              action={signInWithMagicLink}
+            >
+              <div className="flex flex-col w-full">
                 <label htmlFor="email" className="block text-sm font-bold mb-1">
                   Correo
                 </label>
@@ -62,13 +65,15 @@ export default function LoginPage() {
                 />
               </div>
 
-              <SubmitButton
-                disabled={status === "loading" || status === "authenticated"}
-                pendingText="Enviando..."
-                settledText={
-                  status === "authenticated" ? "Ingresando..." : "Enviar Link"
-                }
-              />
+              <div className="self-end">
+                <SubmitButton
+                  disabled={status === "loading" || status === "authenticated"}
+                  pendingText="Enviando..."
+                  settledText={
+                    status === "authenticated" ? "Ingresando..." : "Enviar Link"
+                  }
+                />
+              </div>
             </form>
 
             <div className="relative">
@@ -77,13 +82,13 @@ export default function LoginPage() {
                 O continua con
               </span>
             </div>
-          </main>
 
-          <div className="grid grid-cols-3 gap-4">
-            <Button variant="outline">Google</Button>
-            <Button variant="outline">Twitter</Button>
-            <Button variant="outline">Instagram</Button>
-          </div>
+            <div className="grid grid-cols-3 gap-4">
+              <Button variant="outline">Google</Button>
+              <Button variant="outline">Twitter</Button>
+              <Button variant="outline">Instagram</Button>
+            </div>
+          </main>
         </div>
       </div>
     </>
