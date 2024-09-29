@@ -71,11 +71,7 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
   }, [isMediumScreen]);
 
   const MenuHeader = () => (
-    <header
-      className={`md:hidden flex items-center justify-between px-4 py-2 h-14 w-full bg-indigo-200 dark:bg-indigo-950 border-indigo-950 dark:border-indigo-200 ${
-        isMobileMenuOpen ? "" : "border-b"
-      }`}
-    >
+    <header className="md:hidden flex items-center justify-between px-4 py-2 h-14 w-full bg-indigo-200 dark:bg-indigo-950 border-indigo-950 dark:border-indigo-200">
       <Button
         className="block md:hidden items-center p-0"
         variant="ghost"
@@ -116,13 +112,10 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
               })}
             </nav>
           </ScrollArea>
-          <div className=" border-indigo-950 dark:border-indigo-200 bg-indigo-200 dark:bg-indigo-950">
+          <div className="bg-indigo-200 dark:bg-indigo-950 border-t border-indigo-950 dark:border-indigo-200">
             <DropdownMenu>
               <DropdownMenuTrigger asChild className="p-6">
-                <Button
-                  variant="ghost"
-                  className="flex items-center justify-between w-full rounded-none"
-                >
+                <Button className="flex items-center justify-between w-full rounded-none bg-indigo-200 hover:bg-indigo-200 dark:bg-indigo-950 dark:hover:bg-indigo-950">
                   <span className="flex items-center">
                     <Avatar className="h-8 w-8 mr-3">
                       <AvatarFallback className="bg-indigo-950 text-gray-300 dark:bg-indigo-200 dark:text-gray-800">
@@ -135,13 +128,13 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
                       </span>
                     </div>
                   </span>
-                  <Ellipsis />
+                  <Ellipsis className="text-gray-800 dark:text-gray-200" />
                 </Button>
               </DropdownMenuTrigger>
 
               <DropdownMenuContent
                 align="end"
-                className="w-56 border-indigo-950 dark:border-indigo-200 bg-indigo-200 dark:bg-indigo-950"
+                className="w-56 bg-indigo-200 dark:bg-indigo-950"
               >
                 <DropdownMenuItem onClick={toggleDarkMode}>
                   {isDarkMode ? (
