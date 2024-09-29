@@ -1,6 +1,7 @@
-import { Container, Page } from "@/components/ui";
 import { Sparkles } from "lucide-react";
 import Link from "next/link";
+
+import { Container, Page } from "@/components/ui";
 
 export default function PublicLayout({
   children,

@@ -1,6 +1,7 @@
-import { useFormStatus } from "react-dom";
-import { Button } from "../ui";
 import { ReactNode } from "react";
+import { useFormStatus } from "react-dom";
+
+import { Button } from "../ui";
 
 export const SubmitButton = ({
   disabled = false,

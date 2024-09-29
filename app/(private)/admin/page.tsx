@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { SubmitButton } from "@/components/smart";
 import { Product } from "@/database";
 import {
   createProduct,
@@ -9,7 +10,6 @@ import {
   fetchProducts,
 } from "@/functions/products";
 import { formatCents } from "@/utils";
-import { SubmitButton } from "@/components/smart";
 
 type ValidationErrors<T> = Partial<{
   [key in keyof T]: string[] | undefined;

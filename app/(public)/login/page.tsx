@@ -1,15 +1,14 @@
 "use client";
 
-import Image from "next/image";
-
-import { Button, Input, Separator } from "@/components/ui";
-import { SubmitButton } from "@/components/smart";
-
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { signInWithMagicLink } from "@/functions/auth";
 import { Loader, Send } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useEffect } from "react";
+
+import { SubmitButton } from "@/components/smart";
+import { Button, Input, Separator } from "@/components/ui";
+import { signInWithMagicLink } from "@/functions/auth";
 
 export default function LoginPage() {
   const { status } = useSession();
