@@ -62,7 +62,9 @@ export default async function AdminProductsPage({ searchParams }: PageProps) {
     fetch();
   }, []); */
 
-  const { data } = await fetchProducts();
+  const { data } = await fetchProducts({
+    searchTerm: searchParams.query as string,
+  });
 
   return (
     <div>

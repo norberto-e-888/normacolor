@@ -19,6 +19,7 @@ const querySchema = z.object({
     )
     .optional(),
   isPublic: z.boolean().optional(),
+  searchTerm: z.string().optional(),
 });
 
 export type FetchProductQuery = z.infer<typeof querySchema>;
@@ -29,6 +30,7 @@ export const fetchProducts = async ({
     to: Infinity,
   },
   isPublic,
+  searchTerm = "",
 }: FetchProductQuery = {}) => {
   const session = await getServerSession();
   const validation = await querySchema.safeParseAsync({
@@ -68,20 +70,54 @@ export const fetchProducts = async ({
 
   await connectToMongo();
 
-  const products = await Product.find({
-    ...isPublicFilter,
-    price: {
-      $gte: fromPrice,
-      $lte: toPrice,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pipeline: any[] = [
+    {
+      $match: {
+        ...isPublicFilter,
+        price: {
+          $gte: fromPrice,
+          $lte: toPrice,
+        },
+      },
     },
-  }).sort({
-    createdAt: "desc",
-  });
+    {
+      $sort: { createdAt: -1 as -1 },
+    },
+  ];
+
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+  if (normalizedSearchTerm) {
+    pipeline.unshift({
+      $search: {
+        index: "default",
+        compound: {
+          must: normalizedSearchTerm
+            .split(" ")
+            .filter(Boolean)
+            .map((term) => ({
+              wildcard: {
+                query: `${term}*`,
+                path: "name",
+                allowAnalyzedField: true,
+              },
+            })),
+        },
+      },
+    });
+  }
+
+  const products = await Product.aggregate(pipeline);
 
   return {
     ok: true,
     data: {
-      products: products.map((product) => product.toObject()),
+      products: products.map((product) => ({
+        ...product,
+        __v: undefined,
+        _id: undefined,
+        id: product._id.toString(),
+      })),
     },
   };
 };
