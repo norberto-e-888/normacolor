@@ -3,6 +3,7 @@ export * from "./ensure-ref-integrity";
 export * from "./format-cents";
 export * from "./get-schema";
 export * from "./model-name";
+export * from "./page-props";
 export * from "./point";
 export * from "./setters";
 export * from "./validators";

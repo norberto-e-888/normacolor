@@ -1,5 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-"use client";
+
+import { fetchProducts } from "@/functions/products";
+import { PageProps } from "@/utils";
+
+import { Products } from "./products";
+
+/* "use client";
 
 import { useEffect, useRef, useState } from "react";
 
@@ -15,9 +21,9 @@ import { formatCents } from "@/utils";
 type ValidationErrors<T> = Partial<{
   [key in keyof T]: string[] | undefined;
 }>;
-
-export default function AdminHomePage() {
-  const [products, setProducts] = useState<Product[]>([]);
+ */
+export default async function AdminProductsPage({ searchParams }: PageProps) {
+  /*   const [products, setProducts] = useState<Product[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
   const [errors, setErrors] =
     useState<ValidationErrors<CreateProductData> | null>();
@@ -54,7 +60,9 @@ export default function AdminHomePage() {
     };
 
     fetch();
-  }, []);
+  }, []); */
+
+  const { data } = await fetchProducts();
 
   return (
     <div>
@@ -82,12 +90,8 @@ export default function AdminHomePage() {
         <SubmitButton text="Crear" pendingText="Creando..." />
       </form>
  */}
-      {products.map(({ id, name, price }) => (
-        <div key={id}>
-          <p>Nombre: {name}</p>
-          <p>Precio: {formatCents(price)}</p>
-        </div>
-      ))}
+
+      {data && <Products products={data.products} />}
     </div>
   );
 }
