@@ -3,8 +3,8 @@
 import {
   ChevronUp,
   Ellipsis,
-  FileHeart,
-  LayoutDashboard,
+  FileUp,
+  LayoutGrid,
   LogOut,
   Logs,
   MessageCircleQuestion,
@@ -44,19 +44,19 @@ type NavItem = {
 
 const navItemsPerRole: { [key in UserRole]: NavItem[] } = {
   [UserRole.Admin]: [
-    { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/admin", label: "Dashboard", icon: LayoutGrid },
     { href: "/admin/productos", label: "Productos", icon: Package },
     { href: "/admin/ordenes", label: "Ordenes", icon: ShoppingBag },
-    { href: "/admin/artes", label: "Artes", icon: FileHeart },
+    { href: "/admin/artes", label: "Artes", icon: FileUp },
     { href: "/admin/promociones", label: "Promociones", icon: Tag },
     { href: "/admin/clientes", label: "Clientes", icon: Users },
     { href: "/admin/mensajes", label: "Mensajes", icon: MessageSquare },
   ],
   [UserRole.Client]: [
-    { href: "/", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/", label: "Dashboard", icon: LayoutGrid },
     { href: "/productos", label: "Productos", icon: Package },
     { href: "/ordenes", label: "Ordenes", icon: ShoppingBag },
-    { href: "/artes", label: "Artes", icon: FileHeart },
+    { href: "/artes", label: "Artes", icon: FileUp },
     { href: "/promociones", label: "Promociones", icon: Tag },
     { href: "/ayuda", label: "Ayuda", icon: MessageCircleQuestion },
   ],
@@ -125,7 +125,7 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
                         : "text-zinc-800 dark:text-zinc-300 bg-zinc-200 dark:bg-zinc-950 hover:bg-zinc-950 dark:hover:bg-zinc-300 hover:text-zinc-100 dark:hover:text-zinc-800"
                     }`}
                   >
-                    <Icon className="h-5 w-5" />
+                    <Icon size="24px" />
                     <span>{item.label}</span>
                   </Link>
                 );
