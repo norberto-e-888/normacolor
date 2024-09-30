@@ -107,7 +107,7 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
       <aside
         className={`fixed inset-y-0 left-0 z-5 border-r bg-zinc-200 dark:bg-zinc-950 border-zinc-950 dark:border-zinc-200 ${
           isMobileMenuOpen ? "translate-x-0 w-full " : "-translate-x-full"
-        } md:relative md:translate-x-0 md:min-w-96`}
+        } md:relative md:translate-x-0 md:w-80`}
       >
         <div className="flex flex-col justify-between h-full">
           <ScrollArea className="flex-grow">
@@ -119,7 +119,7 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`flex items-center space-x-3 px-3 py-2 rounded-sm text-lg ${
+                    className={`flex items-center space-x-3 px-3 py-2 rounded-sm text-base ${
                       pathname === item.href
                         ? "text-zinc-100 bg-indigo-800"
                         : "text-zinc-800 dark:text-zinc-300 bg-zinc-200 dark:bg-zinc-950 hover:bg-zinc-950 dark:hover:bg-zinc-300 hover:text-zinc-100 dark:hover:text-zinc-800"
@@ -136,19 +136,22 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild className="p-6">
                 <Button className="flex items-center justify-between w-full rounded-none bg-zinc-200 hover:bg-zinc-200 dark:bg-zinc-950 dark:hover:bg-zinc-950">
-                  <span className="flex items-center">
+                  <span className="flex items-center mr-2">
                     <Avatar className="h-8 w-8 mr-3">
                       <AvatarFallback className="text-zinc-100 bg-indigo-800">
                         {(user?.name || user?.email)?.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex flex-col items-start">
-                      <span className="text-base text-zinc-800 dark:text-zinc-300">
-                        {user?.name || user?.email}
+                    <div className="flex flex-col items-star">
+                      <span className="text-sm text-zinc-800 dark:text-zinc-300 max-w-48 overflow-hidden whitespace-nowrap text-ellipsis">
+                        {user.email}
                       </span>
                     </div>
                   </span>
-                  <Ellipsis className="text-zinc-800 dark:text-zinc-100" />
+                  <Ellipsis
+                    size="24px"
+                    className="text-zinc-800 dark:text-zinc-100"
+                  />
                 </Button>
               </DropdownMenuTrigger>
 
