@@ -136,7 +136,10 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
                 align="end"
                 className="w-56 bg-indigo-200 dark:bg-indigo-950"
               >
-                <DropdownMenuItem onClick={toggleDarkMode}>
+                <DropdownMenuItem
+                  onClick={toggleDarkMode}
+                  className="hover:bg-indigo-800 dark:hover:bg-indigo-300 text-gray-800 dark:text-gray-300 hover:text-gray-300 dark:hover:text-gray-800 hover:cursor-pointer"
+                >
                   {isDarkMode ? (
                     <Sun className="mr-2 h-4 w-4" />
                   ) : (
@@ -149,9 +152,12 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
                     e.preventDefault();
                     await signOut();
                   }}
+                  className="hover:bg-indigo-800 dark:hover:bg-indigo-300 text-gray-800 dark:text-gray-300 hover:text-gray-300 dark:hover:text-gray-800 hover:cursor-pointer"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
+                  <span className="hover:text-gray-300 dark:hover:text-gray-800">
+                    Log out
+                  </span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
