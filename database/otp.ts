@@ -80,5 +80,5 @@ interface OTPModel extends Model<OTP, unknown, OTPMethods> {
 }
 
 export const OTP =
-  (mongoose.models.OTP as OTPModel) ||
+  (mongoose.models?.OTP as OTPModel) ||
   mongoose.model<OTP, OTPModel>(ModelName.OTP, otpSchema);

@@ -128,4 +128,4 @@ orderSchema.index({
 });
 
 export const Order: Model<Order> =
-  mongoose.models.Order || mongoose.model<Order>(ModelName.Order, orderSchema);
+  mongoose.models?.Order || mongoose.model<Order>(ModelName.Order, orderSchema);

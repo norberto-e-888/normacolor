@@ -72,4 +72,4 @@ userSchema.index({
 });
 
 export const User: Model<User> =
-  mongoose.models.User || mongoose.model<User>(ModelName.User, userSchema);
+  mongoose.models?.User || mongoose.model<User>(ModelName.User, userSchema);
