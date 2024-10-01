@@ -29,6 +29,14 @@ export const isArrayMaxLength = (
   message,
 });
 
+export const isExactLength = (
+  length: number,
+  message = "Array is not of the given length"
+): Validator => ({
+  validator: (value: unknown[]) => value.length === length,
+  message,
+});
+
 export const isEmail = (): Validator => ({
   validator: (value: string) => validEmailRegex.test(value),
   message: "Must be an email.",

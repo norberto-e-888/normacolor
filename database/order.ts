@@ -15,10 +15,25 @@ import {
 
 import { Product, productSchema } from "./product";
 
+export enum OrderProductOptionsSides {
+  Both = "both",
+  One = "one",
+}
+
+export enum OrderProductOptionsFinish {
+  Plastified = "plastified",
+  UVVarnish = "uvvarnish",
+}
+
 export interface OrderProduct<FE = false> {
   productId: FE extends true ? string : mongoose.Types.ObjectId;
   quantity: number;
 }
+
+export type OrderProductOptions = {
+  sides?: OrderProductOptionsSides;
+  finish?: OrderProductOptionsFinish;
+};
 
 const orderProductSchema = new mongoose.Schema<OrderProduct>(
   {

@@ -3,12 +3,86 @@ import mongoose, {
   Model,
 } from "mongoose";
 
-import { BaseModel, getSchema, ModelName, normalize, round } from "@/utils";
+import {
+  BaseModel,
+  getSchema,
+  isEnumArray,
+  isExactLength,
+  ModelName,
+  normalize,
+  round,
+} from "@/utils";
+
+export enum ProductOptionSides {
+  Both = "both",
+  One = "one",
+}
+
+export enum ProductOptionFinish {
+  Plastified = "plastified",
+  UVVarnish = "uvvarnish",
+}
+
+export enum ProductOptionPaper {
+  HundredLbMatte = "100lbmatte",
+  HundredLbSatin = "100lbsatin",
+  HundredThirtyLbMatte = "130lbmatte",
+  HundredThirtyLbSatin = "130lbsatin",
+  ThreeHundredGMatte = "300gmatte",
+  ThreeHundredGSatin = "300gsatin",
+  Chemical = "chemical",
+  Bond = "bond",
+  Bond20lb = "bond20lb",
+}
+
+export interface ProductOptions {
+  sides?: [ProductOptionSides];
+  finish?: [ProductOptionFinish];
+  paper?: [ProductOptionPaper];
+  dimensions?: [[number, number]];
+}
+
+export const productOptionsSchema = new mongoose.Schema<ProductOptions>(
+  {
+    sides: {
+      type: [String],
+      required: false,
+      validate: [isEnumArray(ProductOptionSides)],
+    },
+    finish: {
+      type: [String],
+      required: false,
+      validate: [isEnumArray(ProductOptionFinish)],
+    },
+    paper: {
+      type: [String],
+      required: false,
+      validate: [isEnumArray(ProductOptionPaper)],
+    },
+    dimensions: {
+      type: [[Number]],
+      required: false,
+      validate: [
+        isExactLength(2),
+        {
+          validator: (dimensions: [[number, number]]) =>
+            dimensions.every(
+              ([x, y]) =>
+                Number.isInteger(x) && x > 0 && Number.isInteger(y) && y > 0
+            ),
+          message: "Each dimension must be a positive integer",
+        },
+      ],
+    },
+  },
+  { _id: false }
+);
 
 export interface Product extends BaseModel {
   name: string;
   price: number;
   images: string[];
+  options: ProductOptions;
   isPublic: boolean;
 }
 
@@ -31,6 +105,11 @@ export const productSchema = getSchema<Product>({
     type: [String],
     required: true,
     default: [],
+  },
+  options: {
+    type: productOptionsSchema,
+    required: true,
+    default: {},
   },
   isPublic: {
     type: Boolean,
