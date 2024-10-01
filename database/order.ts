@@ -55,7 +55,7 @@ export interface Order<FE = false> extends BaseModel {
   customerId: FE extends true ? string : mongoose.Types.ObjectId;
   total: number;
   status: OrderStatus;
-  productsSnapshot?: Map<string, Product>;
+  productSnapshot?: Map<string, Product>;
 }
 
 const orderSchema = getSchema<Order>({
@@ -84,7 +84,7 @@ const orderSchema = getSchema<Order>({
     default: OrderStatus.Draft,
     enum: Object.values(OrderStatus),
   },
-  productsSnapshot: {
+  productSnapshot: {
     type: Map,
     required: function (this: Order) {
       return this.status !== OrderStatus.Draft;
@@ -142,7 +142,7 @@ orderSchema.method(
   "generateSnapshot",
   async function generateSnapshot(
     this: Order
-  ): Promise<Order["productsSnapshot"]> {
+  ): Promise<Order["productSnapshot"]> {
     const snapshot = new Map<string, Product>();
 
     for (const { productId } of this.cart) {
