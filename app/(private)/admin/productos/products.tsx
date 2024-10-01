@@ -4,7 +4,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useDebouncedCallback } from "use-debounce";
 
 import { Product } from "@/database";
-import { formatCents } from "@/utils";
 
 export function Products({ products }: { products: Product[] }) {
   const searchParams = useSearchParams();
@@ -30,11 +29,11 @@ export function Products({ products }: { products: Product[] }) {
           handleSearch(e.target.value);
         }}
         defaultValue={searchParams.get("query")?.toString()}
+        className="mb-3"
       />
-      {products.map(({ id, name, price }) => (
+      {products.map(({ id, name }) => (
         <div key={id}>
           <p>Nombre: {name}</p>
-          <p>Precio: {formatCents(price)}</p>
         </div>
       ))}
     </div>
