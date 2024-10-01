@@ -50,12 +50,14 @@ export enum OrderStatus {
   Cancelled = "cancelled",
 }
 
+type ProductSnapshot = Pick<Product, "name" | "price">;
+
 export interface Order<FE = false> extends BaseModel {
   cart: OrderProduct[];
   customerId: FE extends true ? string : mongoose.Types.ObjectId;
   total: number;
   status: OrderStatus;
-  productSnapshot?: Map<string, Product>;
+  productSnapshots?: Map<string, ProductSnapshot>;
 }
 
 const orderSchema = getSchema<Order>({
@@ -84,7 +86,7 @@ const orderSchema = getSchema<Order>({
     default: OrderStatus.Draft,
     enum: Object.values(OrderStatus),
   },
-  productSnapshot: {
+  productSnapshots: {
     type: Map,
     required: function (this: Order) {
       return this.status !== OrderStatus.Draft;
@@ -139,11 +141,11 @@ orderSchema.index({
 });
 
 orderSchema.method(
-  "generateSnapshot",
-  async function generateSnapshot(
+  "generateSnapshots",
+  async function generateSnapshots(
     this: Order
-  ): Promise<Order["productSnapshot"]> {
-    const snapshot = new Map<string, Product>();
+  ): Promise<Order["productSnapshots"]> {
+    const snapshots = new Map<string, ProductSnapshot>();
 
     for (const { productId } of this.cart) {
       // casting is safe due to order.cart's ensureRefIntegrity hook
@@ -151,15 +153,19 @@ orderSchema.method(
         productId.toString()
       )) as HydratedDocument<Product>;
 
-      snapshot.set(productId.toString(), product.toObject());
+      const { name, price } = product.toObject();
+      snapshots.set(productId.toString(), {
+        name,
+        price,
+      });
     }
 
-    return snapshot;
+    return snapshots;
   }
 );
 
 interface OTPMethods {
-  generateSnapshot(): number;
+  generateSnapshots(): number;
 }
 
 type OrderModel = Model<Order, unknown, OTPMethods>;
