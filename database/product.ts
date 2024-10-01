@@ -12,7 +12,7 @@ export interface Product extends BaseModel {
   isPublic: boolean;
 }
 
-const productSchema = getSchema<Product>({
+export const productSchema = getSchema<Product>({
   name: {
     type: String,
     required: true,
