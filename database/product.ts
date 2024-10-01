@@ -23,7 +23,8 @@ export enum ProductOptionSide {
 export enum ProductOptionFinish {
   PlastifiedGloss = "plastifiedgloss",
   PlastifiedMatte = "plastifiedmatte",
-  UVVarnish = "uvvarnish",
+  UVVarnishGloss = "uvvarnishgloss",
+  UVVarnishMatte = "uvvarnishmatte",
   None = "none",
 }
 
