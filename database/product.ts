@@ -16,6 +16,8 @@ import {
 export enum ProductOptionSides {
   Both = "both",
   One = "one",
+  Diptic = "diptic",
+  Triptic = "triptic",
 }
 
 export enum ProductOptionFinish {
