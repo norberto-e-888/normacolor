@@ -21,7 +21,8 @@ export enum ProductOptionSides {
 }
 
 export enum ProductOptionFinish {
-  Plastified = "plastified",
+  PlastifiedGloss = "plastifiedgloss",
+  PlastifiedMatte = "plastifiedmatte",
   UVVarnish = "uvvarnish",
   None = "none",
 }
