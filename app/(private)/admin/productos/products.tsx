@@ -9,8 +9,6 @@ export function Products({ products }: { products: Product[] }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const handleSearch = useDebouncedCallback((term: string) => {
-    console.log(`Searching... ${term}`);
-
     const params = new URLSearchParams(searchParams);
     if (term) {
       params.set("query", term);
@@ -26,6 +24,7 @@ export function Products({ products }: { products: Product[] }) {
       <input
         placeholder="Busca..."
         onChange={(e) => {
+          e.preventDefault();
           handleSearch(e.target.value);
         }}
         defaultValue={searchParams.get("query")?.toString()}
