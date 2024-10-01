@@ -78,7 +78,7 @@ const seed = async () => {
           ProductOptionFinish.None,
           ProductOptionFinish.PlastifiedGloss,
           ProductOptionFinish.PlastifiedMatte,
-          ProductOptionFinish.UVVarnish,
+          ProductOptionFinish.UVVarnishGloss,
         ],
         paper: [ProductOptionPaper.ThreeHundredGMatte],
         dimensions: [[9, 12]],
@@ -90,7 +90,7 @@ const seed = async () => {
           .set(ProductOptionFinish.None, 1)
           .set(ProductOptionFinish.PlastifiedGloss, 1.3)
           .set(ProductOptionFinish.PlastifiedMatte, 1.3)
-          .set(ProductOptionFinish.UVVarnish, 1.1),
+          .set(ProductOptionFinish.UVVarnishGloss, 1.1),
         paper: new Map().set(ProductOptionPaper.ThreeHundredGMatte, 1),
         dimensions: new Map().set(JSON.stringify([9, 12]), 1),
       },
@@ -147,6 +147,79 @@ const seed = async () => {
           .set(JSON.stringify([3.5, 8.5]), 1)
           .set(JSON.stringify([5.5, 8.5]), 1.2)
           .set(JSON.stringify([8.5, 11]), 1.8),
+      },
+      isPublic: true,
+    },
+    {
+      name: "afiches",
+      images: [],
+      options: {
+        sides: [ProductOptionSide.One],
+        finish: [ProductOptionFinish.None],
+        paper: [
+          ProductOptionPaper.HundredLbMatte,
+          ProductOptionPaper.HundredLbSatin,
+        ],
+        dimensions: [[12, 18]],
+      },
+      baseUnitPrice: 90,
+      pricing: {
+        sides: new Map().set(ProductOptionSide.One, 1),
+        finish: new Map().set(ProductOptionFinish.None, 1),
+        paper: new Map()
+          .set(ProductOptionPaper.HundredLbMatte, 1)
+          .set(ProductOptionPaper.HundredLbSatin, 1),
+        dimensions: new Map().set(JSON.stringify([12, 18]), 1),
+      },
+      isPublic: true,
+    },
+    {
+      name: "plastificado",
+      images: [],
+      options: {
+        sides: [ProductOptionSide.One, ProductOptionSide.Both],
+        finish: [
+          ProductOptionFinish.PlastifiedGloss,
+          ProductOptionFinish.PlastifiedMatte,
+        ],
+        paper: [],
+        dimensions: [[12, 18]],
+      },
+      baseUnitPrice: 45,
+      pricing: {
+        sides: new Map()
+          .set(ProductOptionSide.One, 1)
+          .set(ProductOptionSide.Both, 1.89),
+        finish: new Map()
+          .set(ProductOptionFinish.PlastifiedGloss, 1)
+          .set(ProductOptionFinish.PlastifiedMatte, 1.12),
+        paper: new Map(),
+        dimensions: new Map().set(JSON.stringify([12, 18]), 1),
+      },
+      isPublic: true,
+    },
+    {
+      name: "barniz uv",
+      images: [],
+      options: {
+        sides: [ProductOptionSide.One, ProductOptionSide.Both],
+        finish: [
+          ProductOptionFinish.UVVarnishGloss,
+          ProductOptionFinish.UVVarnishMatte,
+        ],
+        paper: [],
+        dimensions: [[12, 18]],
+      },
+      baseUnitPrice: 15,
+      pricing: {
+        sides: new Map()
+          .set(ProductOptionSide.One, 1)
+          .set(ProductOptionSide.Both, 2),
+        finish: new Map()
+          .set(ProductOptionFinish.UVVarnishGloss, 1)
+          .set(ProductOptionFinish.UVVarnishMatte, 1.34),
+        paper: new Map(),
+        dimensions: new Map().set(JSON.stringify([12, 18]), 1),
       },
       isPublic: true,
     },
