@@ -99,26 +99,24 @@ export interface ProductOptionsPricing {
   dimensions?: Map<string, number>;
 }
 
-export const productOptionsPricing = new mongoose.Schema<ProductOptionsPricing>(
-  {
-    sides: {
-      type: Map,
-      required: false,
-    },
-    finish: {
-      type: Map,
-      required: false,
-    },
-    paper: {
-      type: Map,
-      required: false,
-    },
-    dimensions: {
-      type: Map,
-      required: false,
-    },
-  }
-);
+export const productPricingSchema = new mongoose.Schema<ProductOptionsPricing>({
+  sides: {
+    type: Map,
+    required: false,
+  },
+  finish: {
+    type: Map,
+    required: false,
+  },
+  paper: {
+    type: Map,
+    required: false,
+  },
+  dimensions: {
+    type: Map,
+    required: false,
+  },
+});
 
 export interface Product extends BaseModel {
   name: string;
@@ -155,7 +153,7 @@ export const productSchema = getSchema<Product>({
     set: round,
   },
   pricing: {
-    type: productOptionsSchema,
+    type: productPricingSchema,
     required: true,
     default: {},
   },
