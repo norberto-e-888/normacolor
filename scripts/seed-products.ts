@@ -27,7 +27,7 @@ const seed = async () => {
       images: [],
       options: {
         sides: [ProductOptionSide.One, ProductOptionSide.Both],
-        finish: [ProductOptionFinish.None, ProductOptionFinish.PlastifiedGloss],
+        finish: [ProductOptionFinish.PlastifiedGloss],
         paper: [ProductOptionPaper.ThreeHundredGMatte],
         dimensions: [[3.5, 2]],
       },
@@ -36,9 +36,7 @@ const seed = async () => {
         sides: new Map()
           .set(ProductOptionSide.One, 1)
           .set(ProductOptionSide.Both, 1.8),
-        finish: new Map()
-          .set(ProductOptionFinish.None, 1)
-          .set(ProductOptionFinish.PlastifiedGloss, 1.5),
+        finish: new Map().set(ProductOptionFinish.PlastifiedGloss, 1.5),
         paper: new Map().set(ProductOptionPaper.ThreeHundredGMatte, 1),
         dimensions: new Map().set(JSON.stringify([3.5, 2]), 1),
       },
@@ -49,7 +47,6 @@ const seed = async () => {
       images: [],
       options: {
         sides: [ProductOptionSide.One, ProductOptionSide.Both],
-        finish: [ProductOptionFinish.None],
         paper: [
           ProductOptionPaper.ThreeHundredGMatte,
           ProductOptionPaper.ThreeHundredGSatin,
@@ -61,7 +58,6 @@ const seed = async () => {
         sides: new Map()
           .set(ProductOptionSide.One, 1)
           .set(ProductOptionSide.Both, 1.7),
-        finish: new Map().set(ProductOptionFinish.None, 1),
         paper: new Map()
           .set(ProductOptionPaper.ThreeHundredGMatte, 1)
           .set(ProductOptionPaper.ThreeHundredGSatin, 1),
@@ -75,7 +71,6 @@ const seed = async () => {
       options: {
         sides: [ProductOptionSide.One],
         finish: [
-          ProductOptionFinish.None,
           ProductOptionFinish.PlastifiedGloss,
           ProductOptionFinish.PlastifiedMatte,
           ProductOptionFinish.UVVarnishGloss,
@@ -87,7 +82,7 @@ const seed = async () => {
       pricing: {
         sides: new Map().set(ProductOptionSide.One, 1),
         finish: new Map()
-          .set(ProductOptionFinish.None, 1)
+
           .set(ProductOptionFinish.PlastifiedGloss, 1.3)
           .set(ProductOptionFinish.PlastifiedMatte, 1.3)
           .set(ProductOptionFinish.UVVarnishGloss, 1.1),
@@ -101,14 +96,12 @@ const seed = async () => {
       images: [],
       options: {
         sides: [ProductOptionSide.One],
-        finish: [ProductOptionFinish.None],
         paper: [ProductOptionPaper.Bond20lb],
         dimensions: [[8.5, 11]],
       },
       baseUnitPrice: 80,
       pricing: {
         sides: new Map().set(ProductOptionSide.One, 1),
-        finish: new Map().set(ProductOptionFinish.None, 1),
         paper: new Map().set(ProductOptionPaper.Bond20lb, 1),
         dimensions: new Map().set(JSON.stringify([8.5, 11]), 1),
       },
@@ -119,7 +112,6 @@ const seed = async () => {
       images: [],
       options: {
         sides: [ProductOptionSide.One, ProductOptionSide.Both],
-        finish: [ProductOptionFinish.None],
         paper: [
           ProductOptionPaper.HundredFiftyGMatte,
           ProductOptionPaper.HundredThirtyLbMatte,
@@ -137,7 +129,6 @@ const seed = async () => {
         sides: new Map()
           .set(ProductOptionSide.One, 1)
           .set(ProductOptionSide.Both, 1.8),
-        finish: new Map().set(ProductOptionFinish.None, 1),
         paper: new Map()
           .set(ProductOptionPaper.HundredFiftyGMatte, 1)
           .set(ProductOptionPaper.HundredThirtyLbMatte, 1)
@@ -155,7 +146,6 @@ const seed = async () => {
       images: [],
       options: {
         sides: [ProductOptionSide.One],
-        finish: [ProductOptionFinish.None],
         paper: [
           ProductOptionPaper.HundredLbMatte,
           ProductOptionPaper.HundredLbSatin,
@@ -165,7 +155,6 @@ const seed = async () => {
       baseUnitPrice: 90,
       pricing: {
         sides: new Map().set(ProductOptionSide.One, 1),
-        finish: new Map().set(ProductOptionFinish.None, 1),
         paper: new Map()
           .set(ProductOptionPaper.HundredLbMatte, 1)
           .set(ProductOptionPaper.HundredLbSatin, 1),
@@ -220,6 +209,54 @@ const seed = async () => {
           .set(ProductOptionFinish.UVVarnishMatte, 1.34),
         paper: new Map(),
         dimensions: new Map().set(JSON.stringify([12, 18]), 1),
+      },
+      isPublic: true,
+    },
+    {
+      name: "brochures",
+      images: [],
+      options: {
+        sides: [ProductOptionSide.Diptic, ProductOptionSide.Triptic],
+        paper: [
+          ProductOptionPaper.HundredLbMatte,
+          ProductOptionPaper.HundredLbSatin,
+          ProductOptionPaper.HundredThirtyLbMatte,
+          ProductOptionPaper.HundredThirtyLbSatin,
+        ],
+        dimensions: [[11, 8.5]],
+      },
+      baseUnitPrice: 110,
+      pricing: {
+        sides: new Map()
+          .set(ProductOptionSide.Diptic, 1)
+          .set(ProductOptionSide.Triptic, 1),
+        paper: new Map()
+          .set(ProductOptionPaper.HundredLbMatte, 1)
+          .set(ProductOptionPaper.HundredLbSatin, 1)
+          .set(ProductOptionPaper.HundredThirtyLbMatte, 1.1)
+          .set(ProductOptionPaper.HundredThirtyLbSatin, 1.1),
+        dimensions: new Map().set(JSON.stringify([11, 8.5]), 1),
+      },
+      isPublic: true,
+    },
+    {
+      name: "pad de facturas y recibos",
+      images: [],
+      options: {
+        paper: [ProductOptionPaper.Bond, ProductOptionPaper.Chemical],
+        dimensions: [
+          [5.5, 8.5],
+          [8.5, 11],
+        ],
+      },
+      baseUnitPrice: 25,
+      pricing: {
+        paper: new Map()
+          .set(ProductOptionPaper.Bond, 1)
+          .set(ProductOptionPaper.Chemical, 1),
+        dimensions: new Map()
+          .set(JSON.stringify([5.5, 8.5]), 1)
+          .set(JSON.stringify([8.5, 11]), 1.6),
       },
       isPublic: true,
     },
