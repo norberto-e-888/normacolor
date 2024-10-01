@@ -65,7 +65,6 @@ const seed = async () => {
       pricing: {
         sides: new Map().set("one", 1),
         finish: new Map()
-
           .set("plastifiedgloss", 1.3)
           .set("plastifiedmatte", 1.3)
           .set("uvvarnishgloss", 1.1),
@@ -143,7 +142,6 @@ const seed = async () => {
       options: {
         sides: ["one", "both"],
         finish: ["plastifiedgloss", "plastifiedmatte"],
-        paper: [],
         dimensions: [[12, 18]],
       },
       baseUnitPrice: 45,
@@ -152,7 +150,6 @@ const seed = async () => {
         finish: new Map()
           .set("plastifiedgloss", 1)
           .set("plastifiedmatte", 1.12),
-        paper: new Map(),
         dimensions: new Map().set(JSON.stringify([12, 18]), 1),
       },
       isPublic: true,
@@ -164,14 +161,12 @@ const seed = async () => {
       options: {
         sides: ["one", "both"],
         finish: ["uvvarnishgloss", "uvvarnishmatte"],
-        paper: [],
         dimensions: [[12, 18]],
       },
       baseUnitPrice: 15,
       pricing: {
         sides: new Map().set("one", 1).set("both", 2),
         finish: new Map().set("uvvarnishgloss", 1).set("uvvarnishmatte", 1.34),
-        paper: new Map(),
         dimensions: new Map().set(JSON.stringify([12, 18]), 1),
       },
       isPublic: true,
