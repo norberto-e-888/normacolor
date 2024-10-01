@@ -1,8 +1,4 @@
-import mongoose, {
-  CallbackWithoutResultAndOptionalError,
-  HydratedDocument,
-  Model,
-} from "mongoose";
+import mongoose, { HydratedDocument, Model } from "mongoose";
 
 import {
   BaseModel,
@@ -19,12 +15,12 @@ import {
   ProductOptionFinish,
   ProductOptionPaper,
   ProductOptions,
-  ProductOptionSides,
+  ProductOptionSide,
   productSchema,
 } from "./product";
 
 export interface OrderProductOptions {
-  sides?: ProductOptionSides;
+  sides?: ProductOptionSide;
   finish?: ProductOptionFinish;
   paper?: ProductOptionPaper;
   dimensions?: [number, number];
@@ -34,7 +30,7 @@ const orderProductOptionsSchema = new mongoose.Schema<OrderProductOptions>({
   sides: {
     type: String,
     required: false,
-    enum: Object.values(ProductOptionSides),
+    enum: Object.values(ProductOptionSide),
   },
   finish: {
     type: String,
@@ -104,7 +100,11 @@ export enum OrderStatus {
   Cancelled = "cancelled",
 }
 
-export type ProductSnapshotEntry = Pick<Product, "name" | "price">;
+export type ProductSnapshotEntry = Pick<
+  Product,
+  "name" | "baseUnitPrice" | "pricing"
+>;
+
 export type ProductSnapshots = Map<string, ProductSnapshotEntry>;
 
 export interface Order<FE = false> extends BaseModel {
@@ -151,41 +151,6 @@ const orderSchema = getSchema<Order>({
 });
 
 orderSchema.pre("save", ensureRefIntegrity);
-orderSchema.pre(
-  "save",
-  async function (
-    this: HydratedDocument<Order>,
-    next: CallbackWithoutResultAndOptionalError
-  ) {
-    if (this.status === OrderStatus.Draft) {
-      const productModel = this.db.model<Product>(ModelName.Product);
-      const products = await productModel.find({
-        _id: {
-          $in: this.cart.map(({ productId }) => productId),
-        },
-      });
-
-      const productIdToPriceMap = products.reduce<{ [key: string]: number }>(
-        (_map, { _id, price }) => ({
-          ..._map,
-          [_id.toString()]: price,
-        }),
-        {}
-      );
-
-      const total = this.cart.reduce(
-        (_total, product) =>
-          _total +
-          product.quantity * productIdToPriceMap[product.productId.toString()],
-        0
-      );
-
-      this.total = total;
-    }
-
-    next();
-  }
-);
 
 orderSchema.index({
   "products.productId": 1,
@@ -208,10 +173,11 @@ orderSchema.method(
         productId.toString()
       )) as HydratedDocument<Product>;
 
-      const { name, price } = product.toObject();
+      const { name, baseUnitPrice, pricing } = product.toObject();
       snapshots.set(productId.toString(), {
         name,
-        price,
+        baseUnitPrice,
+        pricing,
       });
     }
 

@@ -13,7 +13,7 @@ import {
   round,
 } from "@/utils";
 
-export enum ProductOptionSides {
+export enum ProductOptionSide {
   One = "one",
   Both = "both",
   Diptic = "diptic",
@@ -34,16 +34,18 @@ export enum ProductOptionPaper {
   HundredThirtyLbSatin = "130lbsatin",
   ThreeHundredGMatte = "300gmatte",
   ThreeHundredGSatin = "300gsatin",
+  HundredFiftyGMatte = "150gmatte",
+  HundredFiftyGSatin = "150gsatin",
   Chemical = "chemical",
   Bond = "bond",
   Bond20lb = "bond20lb",
 }
 
 export interface ProductOptions {
-  sides?: [ProductOptionSides];
-  finish?: [ProductOptionFinish];
-  paper?: [ProductOptionPaper];
-  dimensions?: [[number, number]];
+  sides?: ProductOptionSide[];
+  finish?: ProductOptionFinish[];
+  paper?: ProductOptionPaper[];
+  dimensions?: [number, number][];
 }
 
 export const productOptionsSchema = new mongoose.Schema<ProductOptions>(
@@ -51,7 +53,7 @@ export const productOptionsSchema = new mongoose.Schema<ProductOptions>(
     sides: {
       type: [String],
       required: false,
-      validate: [isEnumArray(ProductOptionSides)],
+      validate: [isEnumArray(ProductOptionSide)],
     },
     finish: {
       type: [String],
@@ -90,12 +92,10 @@ export const productOptionsSchema = new mongoose.Schema<ProductOptions>(
 type PriceMap<K> = Map<K, number>;
 
 export interface ProductOptionsPricing {
-  sides?: PriceMap<ProductOptionSides>;
+  sides?: PriceMap<ProductOptionSide>;
   finish?: PriceMap<ProductOptionFinish>;
   paper?: PriceMap<ProductOptionPaper>;
-  dimensions?: {
-    [key: string]: number;
-  };
+  dimensions?: Map<string, number>;
 }
 
 export const productOptionsPricing = new mongoose.Schema<ProductOptionsPricing>(
