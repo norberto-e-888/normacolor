@@ -67,10 +67,15 @@ export const productOptionsSchema = new mongoose.Schema<ProductOptions>(
         {
           validator: (dimensions: [[number, number]]) =>
             dimensions.every(
-              ([x, y]) =>
-                Number.isInteger(x) && x > 0 && Number.isInteger(y) && y > 0
+              ([x, y, ...rest]) =>
+                Number.isInteger(x) &&
+                x > 0 &&
+                Number.isInteger(y) &&
+                y > 0 &&
+                rest.length === 0
             ),
-          message: "Each dimension must be a positive integer",
+          message:
+            "Each dimension option must be of size 2 and include only positive integers",
         },
       ],
     },

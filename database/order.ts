@@ -9,31 +9,65 @@ import {
   ensureRefIntegrity,
   getSchema,
   isArrayMinLength,
+  isExactLength,
   ModelName,
   round,
 } from "@/utils";
 
-import { Product, productSchema } from "./product";
+import {
+  Product,
+  ProductOptionFinish,
+  ProductOptionPaper,
+  ProductOptions,
+  ProductOptionSides,
+  productSchema,
+} from "./product";
 
-export enum OrderProductOptionsSides {
-  Both = "both",
-  One = "one",
+export interface OrderProductOptions {
+  sides?: ProductOptionSides;
+  finish?: ProductOptionFinish;
+  paper?: ProductOptionPaper;
+  dimensions?: [number, number];
 }
 
-export enum OrderProductOptionsFinish {
-  Plastified = "plastified",
-  UVVarnish = "uvvarnish",
-}
+const orderProductOptionsSchema = new mongoose.Schema<OrderProductOptions>({
+  sides: {
+    type: String,
+    required: false,
+    enum: Object.values(ProductOptionSides),
+  },
+  finish: {
+    type: String,
+    required: false,
+    enum: Object.values(ProductOptionFinish),
+  },
+  paper: {
+    type: String,
+    required: false,
+    enum: Object.values(ProductOptionPaper),
+  },
+  dimensions: {
+    type: [Number],
+    required: false,
+    validate: [
+      isExactLength(2),
+      {
+        validator: (dimensions: [[number, number]]) =>
+          dimensions.every(
+            ([x, y]) =>
+              Number.isInteger(x) && x > 0 && Number.isInteger(y) && y > 0
+          ),
+        message: "Each dimension must be a positive integer",
+      },
+    ],
+  },
+});
 
 export interface OrderProduct<FE = false> {
   productId: FE extends true ? string : mongoose.Types.ObjectId;
   quantity: number;
+  options: OrderProductOptions;
 }
-
-export type OrderProductOptions = {
-  sides?: OrderProductOptionsSides;
-  finish?: OrderProductOptionsFinish;
-};
 
 const orderProductSchema = new mongoose.Schema<OrderProduct>(
   {
@@ -47,6 +81,11 @@ const orderProductSchema = new mongoose.Schema<OrderProduct>(
       required: true,
       isInteger: true,
       min: 1,
+    },
+    options: {
+      type: orderProductOptionsSchema,
+      required: true,
+      default: {},
     },
   },
   { _id: false }
@@ -65,14 +104,15 @@ export enum OrderStatus {
   Cancelled = "cancelled",
 }
 
-type ProductSnapshot = Pick<Product, "name" | "price">;
+export type ProductSnapshotEntry = Pick<Product, "name" | "price">;
+export type ProductSnapshots = Map<string, ProductSnapshotEntry>;
 
 export interface Order<FE = false> extends BaseModel {
   cart: OrderProduct[];
   customerId: FE extends true ? string : mongoose.Types.ObjectId;
   total: number;
   status: OrderStatus;
-  productSnapshots?: Map<string, ProductSnapshot>;
+  productSnapshots?: ProductSnapshots;
 }
 
 const orderSchema = getSchema<Order>({
@@ -160,7 +200,7 @@ orderSchema.method(
   async function generateSnapshots(
     this: Order
   ): Promise<Order["productSnapshots"]> {
-    const snapshots = new Map<string, ProductSnapshot>();
+    const snapshots: ProductSnapshots = new Map();
 
     for (const { productId } of this.cart) {
       // casting is safe due to order.cart's ensureRefIntegrity hook
@@ -179,8 +219,53 @@ orderSchema.method(
   }
 );
 
+orderSchema.method(
+  "validateOptions",
+  async function validateOptions(this: Order): Promise<boolean> {
+    const products = await Product.find({
+      _id: {
+        $in: this.cart.map(({ productId }) => productId),
+      },
+    });
+
+    const optionsMap = products.reduce<{
+      [key: string]: ProductOptions;
+    }>(
+      (map, product) => ({
+        ...map,
+        [product._id.toString()]: product.options,
+      }),
+      {}
+    );
+
+    for (const { productId, options: given } of this.cart) {
+      const required = optionsMap[productId.toString()];
+
+      for (const [name, allowed] of Object.entries(required)) {
+        const value = given[name as keyof ProductOptions];
+
+        // this represent a product having a certain option set, and therefore required, and the new order for that
+        // product not even including a value for it. Note: products don't set default values for options, hence why
+        // there mere presence of an options, makes it required for the request to include. Default values can still
+        // be implemented client-side, in the forms
+        if (!value) {
+          return false;
+        }
+
+        const isAllowed = (allowed as unknown[]).includes(value);
+        if (!isAllowed) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+);
+
 interface OTPMethods {
-  generateSnapshots(): number;
+  generateSnapshots(): Promise<ProductSnapshots>;
+  validateOptions(): Promise<boolean>;
 }
 
 type OrderModel = Model<Order, unknown, OTPMethods>;
