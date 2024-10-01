@@ -8,16 +8,6 @@ import { connectToMongo } from "@/lib/server";
 import { getServerSession } from "../auth";
 
 const querySchema = z.object({
-  priceRange: z
-    .object({
-      from: z.number().optional(),
-      to: z.number().optional(),
-    })
-    .refine(
-      ({ from = 1, to = Infinity }) => from < to,
-      "Limite inferior debe ser menor a limite mayor."
-    )
-    .optional(),
   isPublic: z.boolean().optional(),
   searchTerm: z.string().optional(),
 });
@@ -25,20 +15,13 @@ const querySchema = z.object({
 export type FetchProductQuery = z.infer<typeof querySchema>;
 
 export const fetchProducts = async ({
-  priceRange: { from: fromPrice = 1, to: toPrice = Infinity } = {
-    from: 1,
-    to: Infinity,
-  },
   isPublic,
   searchTerm = "",
 }: FetchProductQuery = {}) => {
   const session = await getServerSession();
   const validation = await querySchema.safeParseAsync({
-    priceRange: {
-      from: fromPrice,
-      to: toPrice,
-    },
     isPublic,
+    searchTerm,
   });
 
   if (!validation.success) {
@@ -75,10 +58,6 @@ export const fetchProducts = async ({
     {
       $match: {
         ...isPublicFilter,
-        price: {
-          $gte: fromPrice,
-          $lte: toPrice,
-        },
       },
     },
     {

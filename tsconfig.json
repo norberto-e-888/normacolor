@@ -26,7 +26,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "config/index.js"
+    "config/index.js",
+    "scripts/seed-products.js"
   ],
   "exclude": ["node_modules"]
 }

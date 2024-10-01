@@ -14,8 +14,8 @@ import {
 } from "@/utils";
 
 export enum ProductOptionSides {
-  Both = "both",
   One = "one",
+  Both = "both",
   Diptic = "diptic",
   Triptic = "triptic",
 }
@@ -23,6 +23,7 @@ export enum ProductOptionSides {
 export enum ProductOptionFinish {
   Plastified = "plastified",
   UVVarnish = "uvvarnish",
+  None = "none",
 }
 
 export enum ProductOptionPaper {
@@ -85,11 +86,44 @@ export const productOptionsSchema = new mongoose.Schema<ProductOptions>(
   { _id: false }
 );
 
+type PriceMap<K> = Map<K, number>;
+
+export interface ProductOptionsPricing {
+  sides?: PriceMap<ProductOptionSides>;
+  finish?: PriceMap<ProductOptionFinish>;
+  paper?: PriceMap<ProductOptionPaper>;
+  dimensions?: {
+    [key: string]: number;
+  };
+}
+
+export const productOptionsPricing = new mongoose.Schema<ProductOptionsPricing>(
+  {
+    sides: {
+      type: Map,
+      required: false,
+    },
+    finish: {
+      type: Map,
+      required: false,
+    },
+    paper: {
+      type: Map,
+      required: false,
+    },
+    dimensions: {
+      type: Map,
+      required: false,
+    },
+  }
+);
+
 export interface Product extends BaseModel {
   name: string;
-  price: number;
   images: string[];
   options: ProductOptions;
+  baseUnitPrice: number;
+  pricing: ProductOptionsPricing;
   isPublic: boolean;
 }
 
@@ -101,19 +135,24 @@ export const productSchema = getSchema<Product>({
     set: normalize,
     minlength: 3,
   },
-  price: {
-    type: Number,
-    required: true,
-    isInteger: true,
-    min: 1,
-    set: round,
-  },
   images: {
     type: [String],
     required: true,
     default: [],
   },
   options: {
+    type: productOptionsSchema,
+    required: true,
+    default: {},
+  },
+  baseUnitPrice: {
+    type: Number,
+    required: true,
+    isInteger: true,
+    min: 1,
+    set: round,
+  },
+  pricing: {
     type: productOptionsSchema,
     required: true,
     default: {},
@@ -138,7 +177,6 @@ productSchema.pre(
 
 productSchema.index({
   isPublic: 1,
-  price: 1,
 });
 
 export const Product: Model<Product> =
