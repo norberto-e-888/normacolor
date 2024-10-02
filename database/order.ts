@@ -1,4 +1,4 @@
-import mongoose, { HydratedDocument, Model } from "mongoose";
+import mongoose, { Model } from "mongoose";
 
 import {
   BaseModel,
@@ -16,78 +16,9 @@ import {
   ProductOptionPaper,
   ProductOptions,
   ProductOptionSide,
-  productSchema,
+  productOptionsSchema,
+  productPricingSchema,
 } from "./product";
-
-export interface OrderProductOptions {
-  sides?: ProductOptionSide;
-  finish?: ProductOptionFinish;
-  paper?: ProductOptionPaper;
-  dimensions?: [number, number];
-}
-
-const orderProductOptionsSchema = new mongoose.Schema<OrderProductOptions>({
-  sides: {
-    type: String,
-    required: false,
-    enum: Object.values(ProductOptionSide),
-  },
-  finish: {
-    type: String,
-    required: false,
-    enum: Object.values(ProductOptionFinish),
-  },
-  paper: {
-    type: String,
-    required: false,
-    enum: Object.values(ProductOptionPaper),
-  },
-  dimensions: {
-    type: [Number],
-    required: false,
-    validate: [
-      isExactLength(2),
-      {
-        validator: (dimensions: [[number, number]]) =>
-          dimensions.every(
-            ([x, y]) =>
-              Number.isInteger(x) && x > 0 && Number.isInteger(y) && y > 0
-          ),
-        message: "Each dimension must be a positive integer",
-      },
-    ],
-  },
-});
-
-export interface OrderProduct<FE = false> {
-  productId: FE extends true ? string : mongoose.Types.ObjectId;
-  quantity: number;
-  options: OrderProductOptions;
-}
-
-const orderProductSchema = new mongoose.Schema<OrderProduct>(
-  {
-    productId: {
-      type: mongoose.Schema.ObjectId,
-      required: true,
-      ref: ModelName.Product,
-    },
-    quantity: {
-      type: Number,
-      required: true,
-      isInteger: true,
-      min: 1,
-    },
-    options: {
-      type: orderProductOptionsSchema,
-      required: true,
-      default: {},
-    },
-  },
-  { _id: false }
-);
-
-orderProductSchema.pre("save", ensureRefIntegrity);
 
 export enum OrderStatus {
   Draft = "draft",
@@ -100,33 +31,126 @@ export enum OrderStatus {
   Cancelled = "cancelled",
 }
 
-export type ProductSnapshotEntry = Pick<
-  Product,
-  "name" | "baseUnitPrice" | "pricing"
->;
-
-export type ProductSnapshots = Map<string, ProductSnapshotEntry>;
-
-export interface Order<FE = false> extends BaseModel {
-  cart: OrderProduct[];
+export type Order<FE = false> = {
   customerId: FE extends true ? string : mongoose.Types.ObjectId;
+  cart: OrderProduct[];
   total: number;
   status: OrderStatus;
-  productSnapshots?: ProductSnapshots;
-}
+} & BaseModel;
+
+export type OrderProduct = {
+  product: ProductSnapshot;
+  options: OrderProductOptions;
+  quantity: number;
+  addedAt: Date;
+};
+
+export type ProductSnapshot = Pick<
+  Product,
+  "id" | "name" | "options" | "pricing"
+>;
+
+export type OrderProductOptions = {
+  sides?: ProductOptionSide;
+  finish?: ProductOptionFinish;
+  paper?: ProductOptionPaper;
+  dimensions?: [number, number];
+};
+
+const orderProductSchema = new mongoose.Schema<OrderProduct>(
+  {
+    product: {
+      type: new mongoose.Schema<ProductSnapshot>({
+        id: {
+          type: String,
+          required: true,
+        },
+        name: {
+          type: String,
+          required: true,
+        },
+        options: {
+          type: productOptionsSchema,
+          required: true,
+        },
+        pricing: {
+          type: productPricingSchema,
+          required: true,
+        },
+      }),
+      required: true,
+    },
+    options: {
+      type: new mongoose.Schema<OrderProductOptions>(
+        {
+          sides: {
+            type: String,
+            required: false,
+            enum: Object.values(ProductOptionSide),
+          },
+          finish: {
+            type: String,
+            required: false,
+            enum: Object.values(ProductOptionFinish),
+          },
+          paper: {
+            type: String,
+            required: false,
+            enum: Object.values(ProductOptionPaper),
+          },
+          dimensions: {
+            type: [Number],
+            required: false,
+            validate: [
+              isExactLength(2),
+              {
+                validator: (dimensions: [[number, number]]) =>
+                  dimensions.every(
+                    ([x, y]) =>
+                      Number.isInteger(x) &&
+                      x > 0 &&
+                      Number.isInteger(y) &&
+                      y > 0
+                  ),
+                message: "Each dimension must be a positive integer",
+              },
+            ],
+          },
+        },
+        {
+          _id: false,
+        }
+      ),
+      required: true,
+      default: {},
+    },
+    quantity: {
+      type: Number,
+      required: true,
+      isInteger: true,
+      min: 1,
+    },
+    addedAt: {
+      type: Date,
+      required: true,
+      default: () => new Date(),
+    },
+  },
+  { _id: false }
+);
 
 const orderSchema = getSchema<Order>({
+  customerId: {
+    type: mongoose.Schema.ObjectId,
+    required: true,
+    ref: ModelName.User,
+  },
   cart: {
     type: [orderProductSchema],
     required: true,
     validate: [
       isArrayMinLength(1, "Products must contain at least one product"),
     ],
-  },
-  customerId: {
-    type: mongoose.Schema.ObjectId,
-    required: true,
-    ref: ModelName.User,
   },
   total: {
     type: Number,
@@ -141,56 +165,24 @@ const orderSchema = getSchema<Order>({
     default: OrderStatus.Draft,
     enum: Object.values(OrderStatus),
   },
-  productSnapshots: {
-    type: Map,
-    required: function (this: Order) {
-      return this.status !== OrderStatus.Draft;
-    },
-    of: productSchema.set("_id", false),
-  },
 });
 
 orderSchema.pre("save", ensureRefIntegrity);
 
 orderSchema.index({
-  "products.productId": 1,
-});
-
-orderSchema.index({
   customerId: 1,
 });
 
-orderSchema.method(
-  "generateSnapshots",
-  async function generateSnapshots(
-    this: Order
-  ): Promise<Order["productSnapshots"]> {
-    const snapshots: ProductSnapshots = new Map();
-
-    for (const { productId } of this.cart) {
-      // casting is safe due to order.cart's ensureRefIntegrity hook
-      const product = (await Product.findById(
-        productId.toString()
-      )) as HydratedDocument<Product>;
-
-      const { name, baseUnitPrice, pricing } = product.toObject();
-      snapshots.set(productId.toString(), {
-        name,
-        baseUnitPrice,
-        pricing,
-      });
-    }
-
-    return snapshots;
-  }
-);
+orderSchema.index({
+  "cart.products.id": 1,
+});
 
 orderSchema.method(
   "validateOptions",
   async function validateOptions(this: Order): Promise<boolean> {
     const products = await Product.find({
       _id: {
-        $in: this.cart.map(({ productId }) => productId),
+        $in: this.cart.map(({ product }) => product.id),
       },
     });
 
@@ -204,8 +196,8 @@ orderSchema.method(
       {}
     );
 
-    for (const { productId, options: given } of this.cart) {
-      const required = optionsMap[productId.toString()];
+    for (const { product, options: given } of this.cart) {
+      const required = optionsMap[product.id];
 
       for (const [name, allowed] of Object.entries(required)) {
         const value = given[name as keyof ProductOptions];
@@ -229,13 +221,10 @@ orderSchema.method(
   }
 );
 
-interface OTPMethods {
-  generateSnapshots(): Promise<ProductSnapshots>;
-  validateOptions(): Promise<boolean>;
-}
-
-type OrderModel = Model<Order, unknown, OTPMethods>;
-
-export const Order: Model<Order> =
-  mongoose.models?.Order ||
-  mongoose.model<Order, OrderModel>(ModelName.Order, orderSchema);
+export const Order: Model<
+  Order,
+  unknown,
+  {
+    validateOptions(): Promise<boolean>;
+  }
+> = mongoose.models?.Order || mongoose.model(ModelName.Order, orderSchema);

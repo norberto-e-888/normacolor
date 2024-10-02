@@ -220,5 +220,4 @@ productSchema.index({
 });
 
 export const Product: Model<Product> =
-  mongoose.models?.Product ||
-  mongoose.model<Product>(ModelName.Product, productSchema);
+  mongoose.models?.Product || mongoose.model(ModelName.Product, productSchema);

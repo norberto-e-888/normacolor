@@ -3,12 +3,33 @@ import mongoose, { HydratedDocument, Model } from "mongoose";
 
 import { BaseModel, getSchema, isEmail, ModelName } from "@/utils";
 
-export interface OTP extends BaseModel {
+export type OTP = {
   requestedBy: string;
   hash: string;
   isPasswordSetting: boolean;
   expires: Date;
-}
+} & BaseModel;
+
+export type GenerateRandomCodeResult = {
+  hash: string;
+  code: string;
+};
+
+export type CheckCodeData = {
+  code: string;
+  requestedBy: string;
+};
+
+export type OTPModel = Model<
+  OTP,
+  unknown,
+  {
+    isExpired(): boolean;
+    checkCode(code: string): Promise<boolean>;
+  }
+> & {
+  generateRandomCode(): Promise<GenerateRandomCodeResult>;
+};
 
 const otpSchema = getSchema<OTP>({
   requestedBy: {
@@ -32,11 +53,6 @@ const otpSchema = getSchema<OTP>({
   },
 });
 
-type GenerateRandomCodeResult = {
-  hash: string;
-  code: string;
-};
-
 otpSchema.static(
   "generateRandomCode",
   async function generateRandomCode(): Promise<GenerateRandomCodeResult> {
@@ -50,11 +66,6 @@ otpSchema.static(
     };
   }
 );
-
-export type CheckCodeData = {
-  code: string;
-  requestedBy: string;
-};
 
 otpSchema.method(
   "checkCode",
@@ -70,15 +81,6 @@ otpSchema.method(
   }
 );
 
-interface OTPMethods {
-  isExpired(): boolean;
-  checkCode(code: string): Promise<boolean>;
-}
-
-interface OTPModel extends Model<OTP, unknown, OTPMethods> {
-  generateRandomCode(): Promise<GenerateRandomCodeResult>;
-}
-
-export const OTP =
+export const OTP: OTPModel =
   (mongoose.models?.OTP as OTPModel) ||
-  mongoose.model<OTP, OTPModel>(ModelName.OTP, otpSchema);
+  mongoose.model(ModelName.OTP, otpSchema);
