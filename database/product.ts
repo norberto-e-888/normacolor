@@ -42,12 +42,32 @@ export enum ProductOptionPaper {
   Bond20lb = "bond20lb",
 }
 
-export interface ProductOptions {
+export type Product = {
+  name: string;
+  images: string[];
+  options: ProductOptions;
+  baseUnitPrice: number;
+  pricing: ProductPricing;
+  isPublic: boolean;
+} & BaseModel;
+
+export type ProductOptions = {
   sides?: ProductOptionSide[];
   finish?: ProductOptionFinish[];
   paper?: ProductOptionPaper[];
   dimensions?: [number, number][];
-}
+};
+
+export type ProductPricing = {
+  baseUnitPrice: number;
+  optionMultipliers: {
+    sides?: Map<ProductOptionSide, number>;
+    finish?: Map<ProductOptionFinish, number>;
+    paper?: Map<ProductOptionPaper, number>;
+    dimensions?: Map<string, number>;
+  };
+  quantityDiscountMultipliers: [number, number][];
+};
 
 export const productOptionsSchema = new mongoose.Schema<ProductOptions>(
   {
@@ -90,42 +110,69 @@ export const productOptionsSchema = new mongoose.Schema<ProductOptions>(
   { _id: false }
 );
 
-type PriceMap<K> = Map<K, number>;
-
-export interface ProductOptionsPricing {
-  sides?: PriceMap<ProductOptionSide>;
-  finish?: PriceMap<ProductOptionFinish>;
-  paper?: PriceMap<ProductOptionPaper>;
-  dimensions?: Map<string, number>;
-}
-
-export const productPricingSchema = new mongoose.Schema<ProductOptionsPricing>({
-  sides: {
-    type: Map,
-    required: false,
+export const productPricingSchema = new mongoose.Schema<ProductPricing>(
+  {
+    baseUnitPrice: {
+      type: Number,
+      required: true,
+      isInteger: true,
+      min: 1,
+      set: round,
+    },
+    optionMultipliers: {
+      type: new mongoose.Schema(
+        {
+          sides: {
+            type: Map,
+            required: false,
+          },
+          finish: {
+            type: Map,
+            required: false,
+          },
+          paper: {
+            type: Map,
+            required: false,
+          },
+          dimensions: {
+            type: Map,
+            required: false,
+          },
+        },
+        { _id: false }
+      ),
+      required: true,
+      default: {},
+    },
+    quantityDiscountMultipliers: {
+      type: [Number],
+      required: true,
+      default: [],
+      validate: [
+        {
+          validator: (val: [number, number][]) =>
+            val.every(
+              ([threshold, multiplier, ...rest]) =>
+                threshold >= 1 &&
+                Number.isInteger(threshold) &&
+                multiplier < 1 &&
+                multiplier > 0 &&
+                rest.length === 0
+            ),
+          message:
+            "Every threshold must be a positive integer and every multiplier must be between 0 and 1 (exclusive)",
+        },
+        {
+          validator: (val: [number, number][]) =>
+            val.every(([, , ...rest]) => rest.length === 0),
+          message: "Every discount multiplier must be a tuple of size 2",
+        },
+      ],
+      set: (val: [number, number][]) => val.sort((a, b) => b[0] - a[0]),
+    },
   },
-  finish: {
-    type: Map,
-    required: false,
-  },
-  paper: {
-    type: Map,
-    required: false,
-  },
-  dimensions: {
-    type: Map,
-    required: false,
-  },
-});
-
-export interface Product extends BaseModel {
-  name: string;
-  images: string[];
-  options: ProductOptions;
-  baseUnitPrice: number;
-  pricing: ProductOptionsPricing;
-  isPublic: boolean;
-}
+  { _id: false }
+);
 
 export const productSchema = getSchema<Product>({
   name: {
@@ -144,13 +191,6 @@ export const productSchema = getSchema<Product>({
     type: productOptionsSchema,
     required: true,
     default: {},
-  },
-  baseUnitPrice: {
-    type: Number,
-    required: true,
-    isInteger: true,
-    min: 1,
-    set: round,
   },
   pricing: {
     type: productPricingSchema,
