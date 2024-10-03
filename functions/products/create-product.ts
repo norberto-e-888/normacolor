@@ -14,16 +14,7 @@ const dataSchema = z.object({
       required_error: '"nombre" es requerido.',
     })
     .max(64, "'nombre' no puede tener mas de 64 caracteres"),
-  price: z
-    .number({
-      message: "'precio' debe ser un numero.",
-      required_error: "'precio' es requerido.",
-    })
-    .int({
-      message: "'precio' debe ser un entero.",
-    })
-    .min(1, "'precio' debe ser mayor a cero."),
-}) satisfies z.ZodType<Pick<Product, "name" | "price">>;
+}) satisfies z.ZodType<Pick<Product, "name">>;
 
 export type CreateProductData = z.infer<typeof dataSchema>;
 
@@ -54,7 +45,6 @@ export const createProduct = isAdmin(async (data: CreateProductData) => {
 
   const product = await Product.create({
     name: data.name,
-    price: data.price,
   });
 
   return {
