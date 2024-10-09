@@ -3,8 +3,7 @@ import { PDFDocument, rgb, setFontAndSize } from "pdf-lib";
 import T from "tesseract.js";
 
 export const curateArt = async () => {
-  const url =
-    "https://www.ijgraphics.co.uk/wp-content/uploads/2022/10/AdobeStock_503564354-scaled.jpeg";
+  const url = "https://www.microprinting.ca/storage/2018/06/Business-Card.jpg";
 
   const imageResponse = await fetch(url);
   const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
@@ -40,7 +39,6 @@ export const curateArt = async () => {
     const da = textField.acroField.getDefaultAppearance() ?? "";
     const newDa = da + "\n" + setFontAndSize("Courier", 12).toString();
 
-    textField.setText(replaceLigatures(wordsInLine));
     textField.acroField.setDefaultAppearance(newDa);
     textField.enableMultiline();
     textField.addToPage(page, {
@@ -65,12 +63,3 @@ export const curateArt = async () => {
     data: "url",
   };
 };
-
-function replaceLigatures(text: string) {
-  return text
-    .replace(/ﬁ/g, "fi")
-    .replace(/ﬂ/g, "fl")
-    .replace(/ﬀ/g, "ff")
-    .replace(/ﬃ/g, "ffi")
-    .replace(/ﬄ/g, "ffl");
-}
