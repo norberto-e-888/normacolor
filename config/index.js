@@ -2,6 +2,7 @@
 const { z } = require("zod");
 
 const Config = z.object({
+  ADOBE_STOCK_API_KEY: z.string(),
   AUTH_SECRET: z.string(),
   AUTH_RESEND_KEY: z.string(),
   AUTH_SENDGRID_KEY: z.string(),
