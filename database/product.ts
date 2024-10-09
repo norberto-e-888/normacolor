@@ -46,7 +46,6 @@ export type Product = {
   name: string;
   images: string[];
   options: ProductOptions;
-  baseUnitPrice: number;
   pricing: ProductPricing;
   isPublic: boolean;
 } & BaseModel;
