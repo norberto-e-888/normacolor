@@ -1,3 +1,4 @@
+import { fetchArts } from "@/functions/art/fetch-arts";
 import { fetchProducts } from "@/functions/products";
 
 import { Products } from "./products";
@@ -20,6 +21,8 @@ export default async function AdminProductsPage({
   const { data } = await fetchProducts({
     searchTerm,
   });
+
+  await fetchArts();
 
   return <div>{data && <Products products={data.products} />}</div>;
 }

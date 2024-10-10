@@ -105,7 +105,7 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
   return (
     <div className="flex h-screen">
       <aside
-        className={`fixed inset-y-0 left-0 z-5 border-r bg-zinc-200 dark:bg-zinc-950 border-zinc-950 dark:border-zinc-200 ${
+        className={`fixed inset-y-0 left-0 z-5 border-r-2 bg-zinc-200 dark:bg-zinc-950 border-zinc-950 dark:border-zinc-200 ${
           isMobileMenuOpen ? "translate-x-0 w-full " : "-translate-x-full"
         } md:relative md:translate-x-0 md:w-80`}
       >
@@ -132,7 +132,7 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
               })}
             </nav>
           </ScrollArea>
-          <div className="bg-zinc-200 dark:bg-zinc-950 border-t border-zinc-950 dark:border-zinc-200">
+          <div className="bg-zinc-200 dark:bg-zinc-950 border-t-2 border-zinc-950 dark:border-zinc-200">
             <DropdownMenu>
               <DropdownMenuTrigger asChild className="p-6">
                 <Button className="flex items-center justify-between w-full rounded-none bg-zinc-200 hover:bg-zinc-200 dark:bg-zinc-950 dark:hover:bg-zinc-950">
@@ -157,7 +157,7 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
 
               <DropdownMenuContent
                 align="end"
-                className="w-52 m-0 -mb-1 bg-zinc-200 dark:bg-zinc-950 border-2 border-zinc-950 dark:border-zinc-200 rounded-none"
+                className="w-52 m-0 -mb-1 bg-zinc-200 dark:bg-zinc-950 border-r-0 border-t-2 border-l-2 border-b-2 border-zinc-950 dark:border-zinc-200 rounded-none"
               >
                 <DropdownMenuItem
                   onClick={(e) => {
