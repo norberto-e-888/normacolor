@@ -10,6 +10,15 @@ const nextConfig = {
 
     return config;
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "img.b2bpic.net",
+        pathname: "/**",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

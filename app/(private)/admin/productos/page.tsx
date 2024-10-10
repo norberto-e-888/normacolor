@@ -1,6 +1,7 @@
-import { fetchArts } from "@/functions/art/fetch-arts";
+import { fetchArts } from "@/functions/art";
 import { fetchProducts } from "@/functions/products";
 
+import { Arts } from "./arts";
 import { Products } from "./products";
 
 export default async function AdminProductsPage({
@@ -22,7 +23,15 @@ export default async function AdminProductsPage({
     searchTerm,
   });
 
-  await fetchArts();
+  const { arts } = await fetchArts({
+    term: "business card print-ready",
+  });
 
-  return <div>{data && <Products products={data.products} />}</div>;
+  return (
+    <div>
+      {data && <Products products={data.products} />}
+
+      {arts && <Arts arts={arts} />}
+    </div>
+  );
 }
