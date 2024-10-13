@@ -1,4 +1,6 @@
-import { fetchArts } from "@/functions/art";
+"use server";
+
+import { fetchArts, getUploadUrl } from "@/functions/art";
 import { fetchProducts } from "@/functions/products";
 
 import { Arts } from "./arts";
@@ -27,10 +29,13 @@ export default async function AdminProductsPage({
     term: "business card print-ready",
   });
 
+  const { read, write } = await getUploadUrl();
+
+  console.log({ read, write });
+
   return (
     <div>
       {data && <Products products={data.products} />}
-
       {arts && <Arts arts={arts} />}
     </div>
   );
