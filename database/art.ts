@@ -13,6 +13,18 @@ export type Art = {
     x: number;
     y: number;
   };
+  editableFields: [
+    {
+      name: string;
+      type: "image" | "text";
+      defaultValue: {
+        content: string;
+        font?: string;
+        fontSize?: string;
+        fontColor?: string;
+      };
+    }
+  ];
 } & BaseModel;
 
 const artSchema = getSchema<Art>({
@@ -55,6 +67,57 @@ const artSchema = getSchema<Art>({
       { _id: false }
     ),
     required: true,
+  },
+  editableFields: {
+    type: [
+      new mongoose.Schema<Art["editableFields"]["0"]>(
+        {
+          name: {
+            type: String,
+            required: true,
+          },
+          type: {
+            type: String,
+            required: true,
+            enum: ["image", "text"],
+          },
+          defaultValue: {
+            type: new mongoose.Schema<
+              Art["editableFields"]["0"]["defaultValue"]
+            >(
+              {
+                content: {
+                  type: String,
+                  required: true,
+                },
+                font: {
+                  type: String,
+                  required: function (this: Art["editableFields"]["0"]) {
+                    return this.type === "text";
+                  },
+                },
+                fontSize: {
+                  type: String,
+                  required: function (this: Art["editableFields"]["0"]) {
+                    return this.type === "text";
+                  },
+                },
+                fontColor: {
+                  type: String,
+                  required: function (this: Art["editableFields"]["0"]) {
+                    return this.type === "text";
+                  },
+                },
+              },
+              { _id: false }
+            ),
+          },
+        },
+        {
+          _id: false,
+        }
+      ),
+    ],
   },
 });
 
