@@ -1,4 +1,5 @@
 export enum ModelName {
+  Art = "Art",
   Order = "Order",
   Product = "Product",
   User = "User",

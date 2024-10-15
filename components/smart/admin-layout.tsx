@@ -91,7 +91,7 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
   }, [isMediumScreen]);
 
   const MenuHeader = () => (
-    <header className="md:hidden flex items-center justify-between px-4 py-2 h-14 w-full bg-zinc-200 dark:bg-zinc-950 border-zinc-950 dark:border-zinc-200">
+    <header className="md:hidden flex items-center justify-between px-4 py-2 h-14 w-full bg-neutral-50 dark:bg-neutral-950 border-neutral-950 dark:border-neutral-50">
       <Button
         className="block md:hidden items-center p-0"
         variant="ghost"
@@ -105,7 +105,7 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
   return (
     <div className="flex h-screen">
       <aside
-        className={`fixed inset-y-0 left-0 z-5 border-r-2 bg-zinc-200 dark:bg-zinc-950 border-zinc-950 dark:border-zinc-200 ${
+        className={`fixed inset-y-0 left-0 z-5 border-r-2 bg-neutral-50 dark:bg-neutral-950 border-neutral-950 dark:border-neutral-50 ${
           isMobileMenuOpen ? "translate-x-0 w-full " : "-translate-x-full"
         } md:relative md:translate-x-0 md:w-80`}
       >
@@ -122,7 +122,7 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
                     className={`flex items-center space-x-3 px-3 py-2 rounded-sm text-base ${
                       pathname === item.href
                         ? "text-zinc-100 bg-indigo-800"
-                        : "text-zinc-800 dark:text-zinc-300 bg-zinc-200 dark:bg-zinc-950 hover:bg-zinc-950 dark:hover:bg-zinc-300 hover:text-zinc-100 dark:hover:text-zinc-800"
+                        : "text-zinc-800 dark:text-zinc-300 bg-neutral-50 dark:bg-neutral-950 hover:bg-neutral-950 dark:hover:bg-zinc-300 hover:text-zinc-100 dark:hover:text-zinc-800"
                     }`}
                   >
                     <Icon size="24px" />
@@ -132,10 +132,10 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
               })}
             </nav>
           </ScrollArea>
-          <div className="bg-zinc-200 dark:bg-zinc-950 border-t-2 border-zinc-950 dark:border-zinc-200">
+          <div className="bg-neutral-50 dark:bg-neutral-950 border-t-2 border-neutral-950 dark:border-neutral-50">
             <DropdownMenu>
               <DropdownMenuTrigger asChild className="p-6">
-                <Button className="flex items-center justify-between w-full rounded-none bg-zinc-200 hover:bg-zinc-200 dark:bg-zinc-950 dark:hover:bg-zinc-950">
+                <Button className="flex items-center justify-between w-full rounded-none bg-neutral-50 hover:bg-neutral-50 dark:bg-neutral-950 dark:hover:bg-neutral-950">
                   <span className="flex items-center mr-2">
                     <Avatar className="h-8 w-8 mr-3">
                       <AvatarFallback className="text-zinc-100 bg-indigo-800">
@@ -157,14 +157,14 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
 
               <DropdownMenuContent
                 align="end"
-                className="w-52 m-0 -mb-1 bg-zinc-200 dark:bg-zinc-950 border-r-0 border-t-2 border-l-2 border-b-2 border-zinc-950 dark:border-zinc-200 rounded-none"
+                className="w-52 m-0 -mb-1 bg-neutral-50 dark:bg-neutral-950 border-r-0 border-t-2 border-l-2 border-b-2 border-neutral-950 dark:border-neutral-50 rounded-none"
               >
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.preventDefault();
                     toggleDarkMode();
                   }}
-                  className="hover:bg-zinc-950 dark:hover:bg-zinc-300 text-zinc-800 dark:text-zinc-300 hover:text-zinc-300 dark:hover:text-zinc-800 hover:cursor-pointer"
+                  className="hover:bg-neutral-950 dark:hover:bg-zinc-300 text-zinc-800 dark:text-zinc-300 hover:text-zinc-300 dark:hover:text-zinc-800 hover:cursor-pointer"
                 >
                   {isDarkMode ? (
                     <Sun className="mr-2 h-4 w-4" />
@@ -180,7 +180,7 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
                     e.preventDefault();
                     await signOut();
                   }}
-                  className="hover:bg-zinc-950 dark:hover:bg-zinc-300 text-zinc-800 dark:text-zinc-300 hover:text-zinc-300 dark:hover:text-zinc-800 hover:cursor-pointer"
+                  className="hover:bg-neutral-950 dark:hover:bg-zinc-300 text-zinc-800 dark:text-zinc-300 hover:text-zinc-300 dark:hover:text-zinc-800 hover:cursor-pointer"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
                   <span className="hover:text-zinc-300 dark:hover:text-zinc-800 text-base">
@@ -195,7 +195,7 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <MenuHeader />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-zinc-200 dark:bg-zinc-950">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-neutral-50 dark:bg-neutral-950">
           <div className="mx-auto min-h-screen px-8 py-8">{children}</div>
         </main>
       </div>

@@ -42,6 +42,8 @@ export const fetchArts = async ({
 
   const json = await response.json();
 
+  console.log({ data: json.data });
+
   return {
     arts: json.data,
   };
