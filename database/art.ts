@@ -9,6 +9,10 @@ export type Art = {
     front: string;
     back: string;
   };
+  dimensions: {
+    x: number;
+    y: number;
+  };
 } & BaseModel;
 
 const artSchema = getSchema<Art>({
@@ -34,6 +38,23 @@ const artSchema = getSchema<Art>({
       },
       { _id: false }
     ),
+    required: true,
+  },
+  dimensions: {
+    type: new mongoose.Schema<Art["dimensions"]>(
+      {
+        x: {
+          type: Number,
+          required: true,
+        },
+        y: {
+          type: Number,
+          required: true,
+        },
+      },
+      { _id: false }
+    ),
+    required: true,
   },
 });
 
