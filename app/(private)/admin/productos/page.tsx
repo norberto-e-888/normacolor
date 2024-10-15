@@ -1,6 +1,7 @@
 "use server";
 
-import { fetchArts, getUploadUrl } from "@/functions/art";
+import { Button } from "@/components/ui";
+import { curateArts, fetchArts, getUploadUrl } from "@/functions/art";
 import { fetchProducts } from "@/functions/products";
 
 import { Arts } from "./arts";
@@ -35,6 +36,9 @@ export default async function AdminProductsPage({
 
   return (
     <div>
+      <form action={curateArts}>
+        <Button type="submit">Curate Arts</Button>
+      </form>
       {data && <Products products={data.products} />}
       {arts && <Arts arts={arts} />}
     </div>
