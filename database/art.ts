@@ -118,6 +118,8 @@ const artSchema = getSchema<Art>({
         }
       ),
     ],
+    required: true,
+    default: [],
   },
 });
 
