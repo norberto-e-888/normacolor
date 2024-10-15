@@ -1,7 +1,7 @@
 "use server";
 
 import { Button } from "@/components/ui";
-import { curateArts, fetchArts, getUploadUrl } from "@/functions/art";
+import { curateArts, fetchArts, getUploadUrls } from "@/functions/art";
 import { fetchProducts } from "@/functions/products";
 
 import { Arts } from "./arts";
@@ -27,12 +27,10 @@ export default async function AdminProductsPage({
   });
 
   const { arts } = await fetchArts({
-    term: "business card print-ready",
+    term: "business card print-ready blue and purple",
   });
 
-  const { read, write } = await getUploadUrl();
-
-  console.log({ read, write });
+  await getUploadUrls();
 
   return (
     <div>
