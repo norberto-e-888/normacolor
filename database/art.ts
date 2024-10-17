@@ -19,43 +19,41 @@ export type Art = {
     x: number;
     y: number;
   };
-  editableFields: [
-    {
-      name: string;
-      type: "image" | "text";
-      defaultValue: {
-        content: string;
-        fontFamily?: string;
-        fontSize?: string;
-        fontColor?: string;
-      };
-      bounds: {
-        height: number;
-        width: number;
-        top: number;
-        left: number;
-      };
-    } & (
-      | {
-          type: "image";
-          defaultValue: {
-            content: string;
-            fontFamily?: undefined;
-            fontSize?: undefined;
-            fontColor?: undefined;
-          };
-        }
-      | {
-          type: "text";
-          defaultValue: {
-            content: string;
-            fontFamily: string;
-            fontSize: string;
-            fontColor: string;
-          };
-        }
-    )
-  ];
+  editableFields: {
+    name: string;
+    type: "image" | "text";
+    defaultValue: {
+      content: string;
+      fontFamily?: string;
+      fontSize?: string;
+      fontColor?: string;
+    };
+    bounds: {
+      height: number;
+      width: number;
+      top: number;
+      left: number;
+    };
+  } & (
+    | {
+        type: "image";
+        defaultValue: {
+          content: string;
+          fontFamily?: undefined;
+          fontSize?: undefined;
+          fontColor?: undefined;
+        };
+      }
+    | {
+        type: "text";
+        defaultValue: {
+          content: string;
+          fontFamily: string;
+          fontSize: string;
+          fontColor: string;
+        };
+      }
+  )[];
 } & BaseModel;
 
 const artSchema = getSchema<Art>({
@@ -101,7 +99,7 @@ const artSchema = getSchema<Art>({
   },
   editableFields: {
     type: [
-      new mongoose.Schema<Art["editableFields"]["0"]>(
+      new mongoose.Schema<Art["editableFields"]>(
         {
           name: {
             type: String,
@@ -113,9 +111,7 @@ const artSchema = getSchema<Art>({
             enum: ["image", "text"],
           },
           defaultValue: {
-            type: new mongoose.Schema<
-              Art["editableFields"]["0"]["defaultValue"]
-            >(
+            type: new mongoose.Schema<Art["editableFields"]["defaultValue"]>(
               {
                 content: {
                   type: String,
@@ -123,10 +119,10 @@ const artSchema = getSchema<Art>({
                 },
                 fontFamily: {
                   type: String,
-                  required: function (this: Art["editableFields"]["0"]) {
+                  required: function (this: Art) {
                     return this.type === "text";
                   },
-                  set: function (this: Art["editableFields"]["0"]) {
+                  set: function (this: Art) {
                     if (this.type === "image") {
                       return undefined;
                     }
@@ -134,10 +130,10 @@ const artSchema = getSchema<Art>({
                 },
                 fontSize: {
                   type: String,
-                  required: function (this: Art["editableFields"]["0"]) {
+                  required: function (this: Art) {
                     return this.type === "text";
                   },
-                  set: function (this: Art["editableFields"]["0"]) {
+                  set: function (this: Art) {
                     if (this.type === "image") {
                       return undefined;
                     }
@@ -145,10 +141,10 @@ const artSchema = getSchema<Art>({
                 },
                 fontColor: {
                   type: String,
-                  required: function (this: Art["editableFields"]["0"]) {
+                  required: function (this: Art) {
                     return this.type === "text";
                   },
-                  set: function (this: Art["editableFields"]["0"]) {
+                  set: function (this: Art) {
                     if (this.type === "image") {
                       return undefined;
                     }
@@ -158,7 +154,7 @@ const artSchema = getSchema<Art>({
               { _id: false }
             ),
           },
-          bounds: new mongoose.Schema<Art["editableFields"]["0"]["bounds"]>({
+          bounds: new mongoose.Schema<Art["editableFields"]["bounds"]>({
             height: {
               type: Number,
               required: true,
