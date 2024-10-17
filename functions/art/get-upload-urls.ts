@@ -20,7 +20,7 @@ const s3 = new S3Client({
 export const getUploadUrls = async () => {
   const readCommand = new GetObjectCommand({
     Bucket: config.AWS_BUCKET_NAME,
-    Key: "business-cards/5/front.psd",
+    Key: "letterhead_21.psd",
   });
 
   const writeCommand = new PutObjectCommand({

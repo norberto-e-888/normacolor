@@ -1,6 +1,12 @@
 import mongoose, { Model } from "mongoose";
 
-import { BaseModel, getSchema, ModelName } from "@/utils";
+import {
+  BaseModel,
+  getSchema,
+  isInteger,
+  isPositive,
+  ModelName,
+} from "@/utils";
 
 export type Art = {
   freepikId: number;
@@ -19,11 +25,36 @@ export type Art = {
       type: "image" | "text";
       defaultValue: {
         content: string;
-        font?: string;
+        fontFamily?: string;
         fontSize?: string;
         fontColor?: string;
       };
-    }
+      bounds: {
+        height: number;
+        width: number;
+        top: number;
+        left: number;
+      };
+    } & (
+      | {
+          type: "image";
+          defaultValue: {
+            content: string;
+            fontFamily?: undefined;
+            fontSize?: undefined;
+            fontColor?: undefined;
+          };
+        }
+      | {
+          type: "text";
+          defaultValue: {
+            content: string;
+            fontFamily: string;
+            fontSize: string;
+            fontColor: string;
+          };
+        }
+    )
   ];
 } & BaseModel;
 
@@ -90,10 +121,15 @@ const artSchema = getSchema<Art>({
                   type: String,
                   required: true,
                 },
-                font: {
+                fontFamily: {
                   type: String,
                   required: function (this: Art["editableFields"]["0"]) {
                     return this.type === "text";
+                  },
+                  set: function (this: Art["editableFields"]["0"]) {
+                    if (this.type === "image") {
+                      return undefined;
+                    }
                   },
                 },
                 fontSize: {
@@ -101,17 +137,49 @@ const artSchema = getSchema<Art>({
                   required: function (this: Art["editableFields"]["0"]) {
                     return this.type === "text";
                   },
+                  set: function (this: Art["editableFields"]["0"]) {
+                    if (this.type === "image") {
+                      return undefined;
+                    }
+                  },
                 },
                 fontColor: {
                   type: String,
                   required: function (this: Art["editableFields"]["0"]) {
                     return this.type === "text";
                   },
+                  set: function (this: Art["editableFields"]["0"]) {
+                    if (this.type === "image") {
+                      return undefined;
+                    }
+                  },
                 },
               },
               { _id: false }
             ),
           },
+          bounds: new mongoose.Schema<Art["editableFields"]["0"]["bounds"]>({
+            height: {
+              type: Number,
+              required: true,
+              validate: [isPositive(), isInteger()],
+            },
+            width: {
+              type: Number,
+              required: true,
+              validate: [isPositive(), isInteger()],
+            },
+            top: {
+              type: Number,
+              required: true,
+              validate: [isPositive(), isInteger()],
+            },
+            left: {
+              type: Number,
+              required: true,
+              validate: [isPositive(), isInteger()],
+            },
+          }),
         },
         {
           _id: false,

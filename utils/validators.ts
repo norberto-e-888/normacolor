@@ -41,3 +41,13 @@ export const isEmail = (): Validator => ({
   validator: (value: string) => validEmailRegex.test(value),
   message: "Must be an email.",
 });
+
+export const isPositive = (): Validator => ({
+  validator: (value: number) => value >= 0,
+  message: "Must be a positive number",
+});
+
+export const isInteger = (): Validator => ({
+  validator: (value: number) => Number.isInteger(value),
+  message: "Must be a an integer",
+});
