@@ -4,8 +4,7 @@ import("./config/index.js");
 const nextConfig = {
   webpack: (config, { isServer }) => {
     if (isServer) {
-      // exclude packages from the server-side bundle
-      config.externals.push("tesseract.js");
+      config.externals.push("psd");
     }
 
     return config;

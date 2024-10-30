@@ -25,15 +25,15 @@ export const getUploadUrls = async () => {
 
   const writeCommand = new PutObjectCommand({
     Bucket: config.AWS_BUCKET_NAME,
-    Key: "business-cards/5/front.psd",
+    Key: "letterheads/1.psd",
   });
 
   const result = {
     read: await getSignedUrl(s3, readCommand, {
-      expiresIn: 60 * 60,
+      expiresIn: 60 * 60 * 24,
     }),
     write: await getSignedUrl(s3, writeCommand, {
-      expiresIn: 60 * 60,
+      expiresIn: 60 * 60 * 24,
     }),
   };
 
