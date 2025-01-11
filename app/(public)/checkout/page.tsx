@@ -52,12 +52,13 @@ export default function CheckoutPage() {
   const handleSubmitOrder = useCallback(async () => {
     if (!allItemsHaveArt) return;
 
+    setIsSubmitting(true);
     const session = await getSession();
     if (!session) {
+      setIsSubmitting(false);
       return router.push("/login?callbackUrl=/checkout?fromLogin=true");
     }
 
-    setIsSubmitting(true);
     try {
       // Create a simplified cart object with only the necessary data
       const cart = items.map(({ productId, quantity, options, art }) => ({
