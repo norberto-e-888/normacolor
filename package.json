@@ -10,7 +10,8 @@
     "lint:fix": "next lint --dir . --fix",
     "up": "docker compose -f ./docker-compose.yaml up -d",
     "down": "docker compose -f ./docker-compose.yaml down",
-    "init": "node scripts/init.js"
+    "init": "node scripts/init.js",
+    "seed": "node scripts/seed.js"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.5.0",

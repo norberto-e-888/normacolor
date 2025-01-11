@@ -228,3 +228,5 @@ seed()
     console.error(`Error running product seed script: ${JSON.stringify(err)}`);
     exit(1);
   });
+
+module.exports = { seed };
