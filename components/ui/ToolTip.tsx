@@ -6,11 +6,13 @@ export function Tooltip({
   children,
   text,
   position = "top",
+  show = true,
   className = "",
 }: {
   children: React.ReactNode;
   text: string;
   position?: Position;
+  show?: boolean;
   className?: string;
 }) {
   const positionClasses = {
@@ -27,6 +29,10 @@ export function Tooltip({
     left: "top-1/2 left-full -translate-y-1/2 -translate-x-1 border-l-black",
     right: "top-1/2 right-full -translate-y-1/2 translate-x-1 border-r-black",
   };
+
+  if (!show) {
+    return children;
+  }
 
   return (
     <div className={`relative inline-block group/tooltip ${className}`}>

@@ -368,12 +368,8 @@ export function ProductCard({ product }: { product: Product }) {
                 {formatPrice(calculatePrice())}
               </span>
               <Tooltip
-                className="mr-6"
-                text={
-                  !isFormComplete()
-                    ? getValidationMessages.join("\n")
-                    : "Todo listo para agregar al carrito"
-                }
+                text={getValidationMessages.join("\n")}
+                show={!isFormComplete()}
               >
                 <button
                   type="submit"
