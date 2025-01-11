@@ -10,9 +10,8 @@ export default async function AdminAppLayout({
   children: React.ReactNode;
 }>) {
   const session = (await getServerSession()) as ExtendedSession;
-  // session will never be null as /(private)/layout.tsx guarantees there's a logged in user
 
-  if (session.user.role !== UserRole.Admin) {
+  if (session?.user.role !== UserRole.Admin) {
     redirect("/");
   }
 
