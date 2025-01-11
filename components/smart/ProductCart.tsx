@@ -368,7 +368,7 @@ export function ProductCard({ product }: { product: Product }) {
                 {formatPrice(calculatePrice())}
               </span>
               <Tooltip
-                className="mr-5"
+                className="mr-6"
                 text={
                   !isFormComplete()
                     ? getValidationMessages.join("\n")
