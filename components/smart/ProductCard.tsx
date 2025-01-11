@@ -339,7 +339,9 @@ export function ProductCard({ product }: { product: Product }) {
                     onChange={(e) =>
                       setSelectedOptions((prev) => ({
                         ...prev,
-                        dimensions: JSON.parse(e.target.value),
+                        dimensions: e.target.value
+                          ? JSON.parse(e.target.value)
+                          : undefined,
                       }))
                     }
                     value={JSON.stringify(selectedOptions.dimensions)}
