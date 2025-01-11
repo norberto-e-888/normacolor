@@ -21,8 +21,7 @@ export function ProductCard({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1);
   const addItem = useCart((state) => state.addItem);
 
-  // Set default values for options with only one choice
-  useEffect(() => {
+  const getDefaultOptions = () => {
     const defaultOptions: Record<string, string> = {};
 
     if (product.options.sides?.length === 1) {
@@ -38,7 +37,12 @@ export function ProductCard({ product }: { product: Product }) {
       defaultOptions.dimensions = JSON.stringify(product.options.dimensions[0]);
     }
 
-    setSelectedOptions(defaultOptions);
+    return defaultOptions;
+  };
+
+  // Set default values for options with only one choice
+  useEffect(() => {
+    setSelectedOptions(getDefaultOptions());
   }, [product.options]);
 
   const calculatePrice = () => {
@@ -91,10 +95,9 @@ export function ProductCard({ product }: { product: Product }) {
       price: calculatePrice(),
     });
 
-    // Reset form
-    setSelectedOptions({});
+    // Reset form while keeping default values
+    setSelectedOptions(getDefaultOptions());
     setQuantity(1);
-    (e.target as HTMLFormElement).reset();
 
     // Show success toast
     toast.success(
