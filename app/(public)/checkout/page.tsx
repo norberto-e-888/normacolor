@@ -4,7 +4,7 @@ import { FileImage, Search, Upload, X } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSession } from "next-auth/react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 
@@ -43,6 +43,7 @@ export default function CheckoutPage() {
     {}
   );
 
+  const payCtaShown = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { items, totalPrice, clearCart, removeItem } = useCart();
@@ -52,85 +53,12 @@ export default function CheckoutPage() {
     setDebouncedSearchTerm(value);
   }, 500);
 
-  useEffect(() => {
-    const fromLogin = searchParams.get("fromLogin");
-    if (fromLogin === "true") {
-      // Add small delay to ensure toast component is mounted
-      const timer = setTimeout(() => {
-        toast.success("Ahora puedes proceder con el pago", {
-          position: "top-center",
-        });
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    if (selectedItem && debouncedSearchTerm.trim()) {
-      const fetchFreepikArts = async () => {
-        setIsLoading(true);
-        try {
-          const baseSearchTerm =
-            SEARCH_TERM_MAP[selectedItem.name] || selectedItem.name;
-
-          const { arts: fetchedArts } = await fetchArts({
-            term: `${debouncedSearchTerm} ${baseSearchTerm}`,
-          });
-
-          setArts(fetchedArts);
-        } catch (error) {
-          console.error("Error fetching arts:", error);
-          toast.error("Error al buscar diseños");
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
-      fetchFreepikArts();
-    }
-  }, [debouncedSearchTerm, selectedItem]);
-
-  const handleArtSelect = (art: Art) => {
-    if (!selectedItemId) return;
-
-    setSelectedArts((prev) => ({
-      ...prev,
-      [selectedItemId]: {
-        source: ArtSource.Freepik,
-        value: art.id.toString(),
-      },
-    }));
-
-    setSelectedItemId(null);
-  };
-
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!selectedItemId || !e.target.files?.[0]) return;
-
-    const file = e.target.files[0];
-    if (!file.name.toLowerCase().endsWith(".psd")) {
-      toast.error("Por favor selecciona un archivo PSD");
-      return;
-    }
-
-    setSelectedArts((prev) => ({
-      ...prev,
-      [selectedItemId]: {
-        source: ArtSource.Custom,
-        value: URL.createObjectURL(file),
-      },
-    }));
-
-    setSelectedItemId(null);
-  };
-
-  const handleSubmitOrder = async () => {
+  const handleSubmitOrder = useCallback(async () => {
     if (!allItemsHaveArt) return;
 
     const session = await getSession();
     if (!session) {
-      router.push("/login?callbackUrl=/checkout?fromLogin=true");
-      return;
+      return router.push("/login?callbackUrl=/checkout?fromLogin=true");
     }
 
     setIsSubmitting(true);
@@ -190,6 +118,84 @@ export default function CheckoutPage() {
     } finally {
       setIsSubmitting(false);
     }
+  }, [allItemsHaveArt, clearCart, items, router, selectedArts, totalPrice]);
+
+  useEffect(() => {
+    const fromLogin = searchParams.get("fromLogin");
+    if (fromLogin === "true" && !payCtaShown.current) {
+      // Add small delay to ensure toast component is mounted
+      const timer = setTimeout(() => {
+        payCtaShown.current = true;
+        toast.success("Ahora puedes proceder con el pago", {
+          position: "top-center",
+          action: {
+            label: "Pagar",
+            onClick: handleSubmitOrder,
+          },
+          closeButton: true,
+        });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [handleSubmitOrder, searchParams]);
+
+  useEffect(() => {
+    if (selectedItem && debouncedSearchTerm.trim()) {
+      const fetchFreepikArts = async () => {
+        setIsLoading(true);
+        try {
+          const baseSearchTerm =
+            SEARCH_TERM_MAP[selectedItem.name] || selectedItem.name;
+
+          const { arts: fetchedArts } = await fetchArts({
+            term: `${debouncedSearchTerm} ${baseSearchTerm}`,
+          });
+
+          setArts(fetchedArts);
+        } catch (error) {
+          console.error("Error fetching arts:", error);
+          toast.error("Error al buscar diseños");
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchFreepikArts();
+    }
+  }, [debouncedSearchTerm, selectedItem]);
+
+  const handleArtSelect = (art: Art) => {
+    if (!selectedItemId) return;
+
+    setSelectedArts((prev) => ({
+      ...prev,
+      [selectedItemId]: {
+        source: ArtSource.Freepik,
+        value: art.id.toString(),
+      },
+    }));
+
+    setSelectedItemId(null);
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!selectedItemId || !e.target.files?.[0]) return;
+
+    const file = e.target.files[0];
+    if (!file.name.toLowerCase().endsWith(".psd")) {
+      toast.error("Por favor selecciona un archivo PSD");
+      return;
+    }
+
+    setSelectedArts((prev) => ({
+      ...prev,
+      [selectedItemId]: {
+        source: ArtSource.Custom,
+        value: URL.createObjectURL(file),
+      },
+    }));
+
+    setSelectedItemId(null);
   };
 
   const handleRemoveItem = (id: string) => {
