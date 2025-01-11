@@ -1,6 +1,6 @@
 "use client";
 
-import { FileImage, Search, Upload } from "lucide-react";
+import { FileImage, Search, Upload, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -40,7 +40,7 @@ export default function CheckoutPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { items, totalPrice, clearCart } = useCart();
+  const { items, totalPrice, clearCart, removeItem } = useCart();
   const selectedItem = items.find((item) => item.id === selectedItemId);
   const allItemsHaveArt = items.every((item) => selectedArts[item.id]);
   const debouncedSearch = useDebouncedCallback((value: string) => {
@@ -166,6 +166,18 @@ export default function CheckoutPage() {
     }
   };
 
+  const handleRemoveItem = (id: string) => {
+    removeItem(id);
+    setSelectedArts((prev) => {
+      const newArts = { ...prev };
+      delete newArts[id];
+      return newArts;
+    });
+    if (selectedItemId === id) {
+      setSelectedItemId(null);
+    }
+  };
+
   if (items.length === 0) {
     return (
       <Content>
@@ -217,11 +229,18 @@ export default function CheckoutPage() {
               {items.map((item) => (
                 <div
                   key={item.id}
-                  className={`p-4 border rounded-lg ${
+                  className={`relative p-4 border rounded-lg ${
                     selectedItemId === item.id ? "border-primary" : ""
                   }`}
                 >
-                  <div className="flex justify-between items-start">
+                  <button
+                    onClick={() => handleRemoveItem(item.id)}
+                    className="absolute top-2 right-2 p-1 rounded-full hover:bg-muted transition-colors"
+                    aria-label="Eliminar item"
+                  >
+                    <X className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                  <div className="flex justify-between items-start pr-8">
                     <div>
                       <h3 className="font-medium capitalize">{item.name}</h3>
                       <p className="text-sm text-muted-foreground">

@@ -66,6 +66,7 @@ export type ProductPricingOptionMultipliers = {
 
 export type ProductPricing = {
   baseUnitPrice: number;
+  minimumPurchase: number;
   optionMultipliers: ProductPricingOptionMultipliers;
   quantityDiscountMultipliers: [number, number][];
 };
@@ -114,6 +115,13 @@ export const productOptionsSchema = new mongoose.Schema<ProductOptions>(
 export const productPricingSchema = new mongoose.Schema<ProductPricing>(
   {
     baseUnitPrice: {
+      type: Number,
+      required: true,
+      isInteger: true,
+      min: 1,
+      set: round,
+    },
+    minimumPurchase: {
       type: Number,
       required: true,
       isInteger: true,

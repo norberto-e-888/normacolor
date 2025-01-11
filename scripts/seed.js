@@ -26,6 +26,7 @@ const seed = async () => {
         dimensions: [[3.5, 2]],
       },
       pricing: {
+        minimumPurchase: 5000,
         baseUnitPrice: 10,
         optionMultipliers: {
           sides: new Map().set("one", 1).set("both", 1.8),
@@ -51,6 +52,7 @@ const seed = async () => {
         dimensions: [[4, 6]],
       },
       pricing: {
+        minimumPurchase: 10000,
         baseUnitPrice: 20,
         optionMultipliers: {
           sides: new Map().set("one", 1).set("both", 1.7),
@@ -75,6 +77,7 @@ const seed = async () => {
         dimensions: [[9, 12]],
       },
       pricing: {
+        minimumPurchase: 10000,
         baseUnitPrice: 190,
         optionMultipliers: {
           sides: new Map().set("one", 1),
@@ -102,6 +105,7 @@ const seed = async () => {
         dimensions: [[8.5, 11]],
       },
       pricing: {
+        minimumPurchase: 10000,
         baseUnitPrice: 80,
         optionMultipliers: {
           sides: new Map().set("one", 1),
@@ -130,6 +134,7 @@ const seed = async () => {
         ],
       },
       pricing: {
+        minimumPurchase: 10000,
         baseUnitPrice: 25,
         optionMultipliers: {
           sides: new Map().set("one", 1).set("both", 1.8),
@@ -163,6 +168,7 @@ const seed = async () => {
         dimensions: [[12, 18]],
       },
       pricing: {
+        minimumPurchase: 10000,
         baseUnitPrice: 90,
         optionMultipliers: {
           sides: new Map().set("one", 1),
@@ -187,6 +193,7 @@ const seed = async () => {
         dimensions: [[12, 18]],
       },
       pricing: {
+        minimumPurchase: 25000,
         baseUnitPrice: 45,
         optionMultipliers: {
           sides: new Map().set("one", 1).set("both", 1.89),
@@ -213,6 +220,7 @@ const seed = async () => {
         dimensions: [[12, 18]],
       },
       pricing: {
+        minimumPurchase: 25000,
         baseUnitPrice: 15,
         optionMultipliers: {
           sides: new Map().set("one", 1).set("both", 2),
@@ -239,6 +247,7 @@ const seed = async () => {
         dimensions: [[11, 8.5]],
       },
       pricing: {
+        minimumPurchase: 10000,
         baseUnitPrice: 110,
         optionMultipliers: {
           sides: new Map().set("diptic", 1).set("triptic", 1.5),
@@ -270,6 +279,7 @@ const seed = async () => {
         ],
       },
       pricing: {
+        minimumPurchase: 10000,
         baseUnitPrice: 25,
         optionMultipliers: {
           paper: new Map().set("bond", 1).set("chemical", 1.2),
