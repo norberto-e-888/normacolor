@@ -31,6 +31,16 @@ export enum OrderStatus {
   Cancelled = "cancelled",
 }
 
+export enum ArtSource {
+  Freepik = "freepik",
+  Custom = "custom",
+}
+
+export type OrderArt = {
+  source: ArtSource;
+  value: string; // Freepik ID or S3 URL
+};
+
 export type Order<FE = false> = {
   customerId: FE extends true ? string : mongoose.Types.ObjectId;
   cart: OrderProduct[];
@@ -39,10 +49,11 @@ export type Order<FE = false> = {
 } & BaseModel;
 
 export type OrderProduct = {
-  product: ProductSnapshot;
+  productId: string;
+  productSnapshot: ProductSnapshot;
   options: OrderProductOptions;
   quantity: number;
-  addedAt: Date;
+  art?: OrderArt;
 };
 
 export type ProductSnapshot = Pick<
@@ -57,9 +68,28 @@ export type OrderProductOptions = {
   dimensions?: [number, number];
 };
 
+const orderArtSchema = new mongoose.Schema<OrderArt>(
+  {
+    source: {
+      type: String,
+      required: true,
+      enum: Object.values(ArtSource),
+    },
+    value: {
+      type: String,
+      required: true,
+    },
+  },
+  { _id: false }
+);
+
 const orderProductSchema = new mongoose.Schema<OrderProduct>(
   {
-    product: {
+    productId: {
+      type: String,
+      required: true,
+    },
+    productSnapshot: {
       type: new mongoose.Schema<ProductSnapshot>({
         id: {
           type: String,
@@ -130,10 +160,9 @@ const orderProductSchema = new mongoose.Schema<OrderProduct>(
       isInteger: true,
       min: 1,
     },
-    addedAt: {
-      type: Date,
-      required: true,
-      default: () => new Date(),
+    art: {
+      type: orderArtSchema,
+      required: false,
     },
   },
   { _id: false }
@@ -174,7 +203,7 @@ orderSchema.index({
 });
 
 orderSchema.index({
-  "cart.products.id": 1,
+  "cart.productId": 1,
 });
 
 orderSchema.method(
@@ -182,7 +211,7 @@ orderSchema.method(
   async function validateOptions(this: Order): Promise<boolean> {
     const products = await Product.find({
       _id: {
-        $in: this.cart.map(({ product }) => product.id),
+        $in: this.cart.map(({ productId }) => productId),
       },
     });
 
@@ -196,16 +225,12 @@ orderSchema.method(
       {}
     );
 
-    for (const { product, options: given } of this.cart) {
-      const required = optionsMap[product.id];
+    for (const { productId, options: given } of this.cart) {
+      const required = optionsMap[productId];
 
       for (const [name, allowed] of Object.entries(required)) {
         const value = given[name as keyof ProductOptions];
 
-        // this represent a product having a certain option set, and therefore required, and the new order for that
-        // product not even including a value for it. Note: products don't set default values for options, hence why
-        // there mere presence of an options, makes it required for the request to include. Default values can still
-        // be implemented client-side, in the forms
         if (!value) {
           return false;
         }

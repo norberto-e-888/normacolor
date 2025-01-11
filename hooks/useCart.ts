@@ -1,3 +1,4 @@
+import { v4 as uuid } from "uuid";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -31,7 +32,7 @@ export const useCart = create<CartStore>()(
             ...state.items,
             {
               ...item,
-              id: crypto.randomUUID(),
+              id: uuid(),
             },
           ],
         }));
