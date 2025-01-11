@@ -55,9 +55,13 @@ export default function CheckoutPage() {
   useEffect(() => {
     const fromLogin = searchParams.get("fromLogin");
     if (fromLogin === "true") {
-      toast.success("Ahora puedes proceder con el pago", {
-        position: "top-center",
-      });
+      // Add small delay to ensure toast component is mounted
+      const timer = setTimeout(() => {
+        toast.success("Ahora puedes proceder con el pago", {
+          position: "top-center",
+        });
+      }, 100);
+      return () => clearTimeout(timer);
     }
   }, [searchParams]);
 
