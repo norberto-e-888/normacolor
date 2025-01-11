@@ -1,7 +1,13 @@
-import { Hexagon } from "lucide-react";
+import { Hexagon, ShoppingCart } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 
-import { Container, Page } from "@/components/ui";
+import { Container } from "@/components/ui";
+
+const CartCount = dynamic(
+  () => import("@/components/smart/CartCount").then((mod) => mod.CartCount),
+  { ssr: false }
+);
 
 export default function PublicLayout({
   children,
@@ -23,11 +29,16 @@ export default function PublicLayout({
         <Link href="/promociones">
           <span className="text-lg">Promociones</span>
         </Link>
+
+        <div className="ml-auto">
+          <Link href="/checkout" className="relative">
+            <ShoppingCart size="24px" />
+            <CartCount />
+          </Link>
+        </div>
       </nav>
 
-      <main className="flex-1 overflow-auto">
-        <Page>{children}</Page>
-      </main>
+      <main className="flex-1 overflow-auto">{children}</main>
 
       <footer className="p-1.5 bg-muted text-center">
         <p className="text-sm text-muted-foreground">

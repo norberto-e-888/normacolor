@@ -57,14 +57,16 @@ export type ProductOptions = {
   dimensions?: [number, number][];
 };
 
+export type ProductPricingOptionMultipliers = {
+  sides?: Map<ProductOptionSide, number>;
+  finish?: Map<ProductOptionFinish, number>;
+  paper?: Map<ProductOptionPaper, number>;
+  dimensions?: Map<string, number>;
+};
+
 export type ProductPricing = {
   baseUnitPrice: number;
-  optionMultipliers: {
-    sides?: Map<ProductOptionSide, number>;
-    finish?: Map<ProductOptionFinish, number>;
-    paper?: Map<ProductOptionPaper, number>;
-    dimensions?: Map<string, number>;
-  };
+  optionMultipliers: ProductPricingOptionMultipliers;
   quantityDiscountMultipliers: [number, number][];
 };
 
