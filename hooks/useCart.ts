@@ -18,6 +18,7 @@ type CartStore = {
   items: CartItem[];
   addItem: (item: Omit<CartItem, "id">) => void;
   removeItem: (id: string) => void;
+  updateItemArt: (id: string, art: OrderArt) => void;
   clearCart: () => void;
   totalItems: () => number;
   totalPrice: () => number;
@@ -41,6 +42,13 @@ export const useCart = create<CartStore>()(
       removeItem: (id) => {
         set((state) => ({
           items: state.items.filter((item) => item.id !== id),
+        }));
+      },
+      updateItemArt: (id, art) => {
+        set((state) => ({
+          items: state.items.map((item) =>
+            item.id === id ? { ...item, art } : item
+          ),
         }));
       },
       clearCart: () => set({ items: [] }),

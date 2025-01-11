@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 
 import { Content, Tooltip } from "@/components/ui";
-import { ArtSource, OrderArt, OrderProductOptions } from "@/database";
+import { ArtSource, OrderProductOptions } from "@/database";
 import { Art, fetchArts } from "@/functions/art";
 import { createOrder } from "@/functions/orders";
 import { useCart } from "@/hooks/useCart";
@@ -39,16 +39,12 @@ export default function CheckoutPage() {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [arts, setArts] = useState<Art[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedArts, setSelectedArts] = useState<Record<string, OrderArt>>(
-    {}
-  );
-
   const payCtaShown = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { items, totalPrice, clearCart, removeItem } = useCart();
+  const { items, totalPrice, clearCart, removeItem, updateItemArt } = useCart();
   const selectedItem = items.find((item) => item.id === selectedItemId);
-  const allItemsHaveArt = items.every((item) => selectedArts[item.id]);
+  const allItemsHaveArt = items.every((item) => item.art);
   const debouncedSearch = useDebouncedCallback((value: string) => {
     setDebouncedSearchTerm(value);
   }, 500);
@@ -84,7 +80,7 @@ export default function CheckoutPage() {
           productId: item.productId,
           quantity: item.quantity,
           options,
-          art: selectedArts[item.id],
+          art: item.art!,
         };
       });
 
@@ -94,10 +90,10 @@ export default function CheckoutPage() {
       if (uploadUrls.length > 0) {
         await Promise.all(
           uploadUrls.map(async ({ url, itemId }) => {
-            const art = selectedArts[itemId];
-            if (art.source !== ArtSource.Custom) return;
+            const item = items.find((i) => i.productId === itemId);
+            if (!item?.art || item.art.source !== ArtSource.Custom) return;
 
-            const response = await fetch(art.value);
+            const response = await fetch(item.art.value);
             const blob = await response.blob();
             await fetch(url, {
               method: "PUT",
@@ -122,11 +118,11 @@ export default function CheckoutPage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [allItemsHaveArt, clearCart, items, router, selectedArts, totalPrice]);
+  }, [allItemsHaveArt, clearCart, items, router, totalPrice]);
 
   useEffect(() => {
     const fromLogin = searchParams.get("fromLogin");
-    if (fromLogin === "true" && !payCtaShown.current) {
+    if (fromLogin === "true" && !payCtaShown.current && allItemsHaveArt) {
       // Add small delay to ensure toast component is mounted
       const timer = setTimeout(() => {
         payCtaShown.current = true;
@@ -141,7 +137,7 @@ export default function CheckoutPage() {
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [handleSubmitOrder, searchParams]);
+  }, [allItemsHaveArt, handleSubmitOrder, searchParams]);
 
   useEffect(() => {
     if (selectedItem && debouncedSearchTerm.trim()) {
@@ -173,13 +169,10 @@ export default function CheckoutPage() {
   const handleArtSelect = (art: Art) => {
     if (!selectedItemId) return;
 
-    setSelectedArts((prev) => ({
-      ...prev,
-      [selectedItemId]: {
-        source: ArtSource.Freepik,
-        value: art.id.toString(),
-      },
-    }));
+    updateItemArt(selectedItemId, {
+      source: ArtSource.Freepik,
+      value: art.id.toString(),
+    });
 
     setSelectedItemId(null);
   };
@@ -195,24 +188,16 @@ export default function CheckoutPage() {
       return;
     }
 
-    setSelectedArts((prev) => ({
-      ...prev,
-      [selectedItemId]: {
-        source: ArtSource.Custom,
-        value: URL.createObjectURL(file),
-      },
-    }));
+    updateItemArt(selectedItemId, {
+      source: ArtSource.Custom,
+      value: URL.createObjectURL(file),
+    });
 
     setSelectedItemId(null);
   };
 
   const handleRemoveItem = (id: string) => {
     removeItem(id);
-    setSelectedArts((prev) => {
-      const newArts = { ...prev };
-      delete newArts[id];
-      return newArts;
-    });
     if (selectedItemId === id) {
       setSelectedItemId(null);
     }
@@ -232,7 +217,7 @@ export default function CheckoutPage() {
   }
 
   const getTooltipText = () => {
-    const itemsWithoutArt = items.filter((item) => !selectedArts[item.id]);
+    const itemsWithoutArt = items.filter((item) => !item.art);
 
     if (itemsWithoutArt.length === 0) {
       return "Proceder al pago";
@@ -302,7 +287,7 @@ export default function CheckoutPage() {
                         Precio: {formatCents(item.price)}
                       </p>
                     </div>
-                    {selectedArts[item.id] ? (
+                    {item.art ? (
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-green-600">
                           ✓ Diseño seleccionado
