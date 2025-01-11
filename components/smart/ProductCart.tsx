@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Product, ProductPricingOptionMultipliers } from "@/database";
@@ -18,10 +18,10 @@ export function ProductCard({ product }: { product: Product }) {
   const [selectedOptions, setSelectedOptions] = useState<
     Record<string, string>
   >({});
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState<number | "">(1);
   const addItem = useCart((state) => state.addItem);
 
-  const getDefaultOptions = () => {
+  const getDefaultOptions = useCallback(() => {
     const defaultOptions: Record<string, string> = {};
 
     if (product.options.sides?.length === 1) {
@@ -38,14 +38,22 @@ export function ProductCard({ product }: { product: Product }) {
     }
 
     return defaultOptions;
-  };
+  }, [
+    product.options.dimensions,
+    product.options.finish,
+    product.options.paper,
+    product.options.sides,
+  ]);
 
   // Set default values for options with only one choice
   useEffect(() => {
     setSelectedOptions(getDefaultOptions());
-  }, [product.options]);
+  }, [getDefaultOptions, product.options]);
 
   const calculatePrice = () => {
+    const qty = typeof quantity === "number" ? quantity : 0;
+    if (!qty || qty < 1) return 0;
+
     let price = product.pricing.baseUnitPrice;
 
     // Apply option multipliers
@@ -65,13 +73,13 @@ export function ProductCard({ product }: { product: Product }) {
     const discounts = product.pricing.quantityDiscountMultipliers || [];
     const applicableDiscount = discounts
       .sort((a, b) => b[0] - a[0])
-      .find(([threshold]) => quantity >= threshold);
+      .find(([threshold]) => qty >= threshold);
 
     if (applicableDiscount) {
       price *= applicableDiscount[1];
     }
 
-    return price * quantity;
+    return price * qty;
   };
 
   const isFormComplete = () => {
@@ -80,12 +88,14 @@ export function ProductCard({ product }: { product: Product }) {
     if (product.options.paper && !selectedOptions.paper) return false;
     if (product.options.finish && !selectedOptions.finish) return false;
     if (product.options.dimensions && !selectedOptions.dimensions) return false;
-    if (!quantity || quantity < 1) return false;
+    if (typeof quantity !== "number" || quantity < 1) return false;
     return true;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (typeof quantity !== "number") return;
 
     addItem({
       productId: product.id,
@@ -225,7 +235,11 @@ export function ProductCard({ product }: { product: Product }) {
               type="number"
               min="1"
               value={quantity}
-              onChange={(e) => setQuantity(parseInt(e.target.value))}
+              onChange={(e) => {
+                const val =
+                  e.target.value === "" ? "" : parseInt(e.target.value);
+                setQuantity(val);
+              }}
               className="w-full border rounded-md p-2"
               required
             />
