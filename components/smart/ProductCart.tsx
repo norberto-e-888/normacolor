@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Tooltip } from "@/components/ui";
@@ -54,8 +54,7 @@ export function ProductCard({ product }: { product: Product }) {
   >(getDefaultOptions());
   const [quantity, setQuantity] = useState<number | "">(1);
   const addItem = useCart((state) => state.addItem);
-
-  const calculatePrice = () => {
+  const calculatePrice = useCallback(() => {
     const qty = typeof quantity === "number" ? quantity : 0;
     if (!qty || qty < 1) return 0;
 
@@ -85,17 +84,57 @@ export function ProductCard({ product }: { product: Product }) {
     }
 
     return Math.round(price * qty);
-  };
+  }, [
+    product.pricing.baseUnitPrice,
+    product.pricing.optionMultipliers,
+    product.pricing.quantityDiscountMultipliers,
+    quantity,
+    selectedOptions,
+  ]);
 
-  const isFormComplete = () => {
-    // Check if all required options are selected
-    if (product.options.sides && !selectedOptions.sides) return false;
-    if (product.options.paper && !selectedOptions.paper) return false;
-    if (product.options.finish && !selectedOptions.finish) return false;
-    if (product.options.dimensions && !selectedOptions.dimensions) return false;
-    if (typeof quantity !== "number" || quantity < 1) return false;
-    return true;
-  };
+  const getValidationMessages = useMemo(() => {
+    const messages: string[] = [];
+    const totalPrice = calculatePrice();
+
+    // Check required options
+    if (product.options.sides && !selectedOptions.sides) {
+      messages.push("Selecciona los lados");
+    }
+    if (product.options.paper && !selectedOptions.paper) {
+      messages.push("Selecciona el papel");
+    }
+    if (product.options.finish && !selectedOptions.finish) {
+      messages.push("Selecciona el acabado");
+    }
+    if (product.options.dimensions && !selectedOptions.dimensions) {
+      messages.push("Selecciona las dimensiones");
+    }
+    if (typeof quantity !== "number" || quantity < 1) {
+      messages.push("Ingresa una cantidad válida");
+    }
+    if (totalPrice < product.pricing.minimumPurchase) {
+      messages.push(
+        `El monto mínimo de compra es ${formatPrice(
+          product.pricing.minimumPurchase
+        )}`
+      );
+    }
+
+    return messages;
+  }, [
+    product.options.sides,
+    product.options.paper,
+    product.options.finish,
+    product.options.dimensions,
+    product.pricing.minimumPurchase,
+    selectedOptions,
+    quantity,
+    calculatePrice,
+  ]);
+
+  const isFormComplete = useCallback(() => {
+    return getValidationMessages.length === 0;
+  }, [getValidationMessages]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -328,13 +367,22 @@ export function ProductCard({ product }: { product: Product }) {
               <span className="text-lg font-bold">
                 {formatPrice(calculatePrice())}
               </span>
-              <button
-                type="submit"
-                disabled={!isFormComplete()}
-                className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              <Tooltip
+                className="mr-5"
+                text={
+                  !isFormComplete()
+                    ? getValidationMessages.join("\n")
+                    : "Todo listo para agregar al carrito"
+                }
               >
-                Agregar al carrito
-              </button>
+                <button
+                  type="submit"
+                  disabled={!isFormComplete()}
+                  className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Agregar al carrito
+                </button>
+              </Tooltip>
             </div>
             <p className="text-sm text-muted-foreground mt-2">
               Mínimo de compra: {formatPrice(product.pricing.minimumPurchase)}
