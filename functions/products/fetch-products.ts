@@ -86,17 +86,18 @@ export const fetchProducts = async ({
     });
   }
 
-  const products = await Product.aggregate(pipeline);
+  const aggregation = await Product.aggregate(pipeline);
+  const productDocs = aggregation.map((product) => new Product(product));
+  const productPlainObjs = productDocs.map((product) => ({
+    ...product.toObject(),
+    __v: undefined,
+    _id: undefined,
+  }));
 
   return {
     ok: true,
     data: {
-      products: products.map((product) => ({
-        ...product,
-        __v: undefined,
-        _id: undefined,
-        id: product._id.toString(),
-      })),
+      products: productPlainObjs,
     },
   };
 };

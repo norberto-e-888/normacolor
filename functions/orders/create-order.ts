@@ -133,18 +133,6 @@ export const createOrder = async (
       validatedOptions.dimensions = dimensions as [number, number];
     }
 
-    // Convert option multipliers to plain objects
-    const optionMultipliers: Record<string, Record<string, number>> = {};
-    for (const [key, value] of Object.entries(
-      product.pricing.optionMultipliers
-    )) {
-      if (value instanceof Map) {
-        optionMultipliers[key] = Object.fromEntries(value);
-      } else {
-        optionMultipliers[key] = value;
-      }
-    }
-
     const cartItem: OrderProduct = {
       productId: item.productId,
       quantity: item.quantity,
@@ -153,10 +141,7 @@ export const createOrder = async (
         id: product.id,
         name: product.name,
         options: product.options,
-        pricing: {
-          ...product.pricing,
-          optionMultipliers,
-        },
+        pricing: product.pricing,
       },
     };
 
@@ -185,7 +170,7 @@ export const createOrder = async (
   });
 
   return {
-    order,
+    order: order.toObject(),
     uploadUrls: uploadUrls.filter(Boolean) as UploadUrl[],
   };
 };

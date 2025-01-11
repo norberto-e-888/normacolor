@@ -58,10 +58,10 @@ export type ProductOptions = {
 };
 
 export type ProductPricingOptionMultipliers = {
-  sides?: Map<ProductOptionSide, number>;
-  finish?: Map<ProductOptionFinish, number>;
-  paper?: Map<ProductOptionPaper, number>;
-  dimensions?: Map<string, number>;
+  sides?: Record<ProductOptionSide, number>;
+  finish?: Record<ProductOptionFinish, number>;
+  paper?: Record<ProductOptionPaper, number>;
+  dimensions?: Record<string, number>;
 };
 
 export type ProductPricing = {
@@ -75,22 +75,26 @@ export const productOptionsSchema = new mongoose.Schema<ProductOptions>(
   {
     sides: {
       type: [String],
-      required: false,
+      required: true,
+      default: [],
       validate: [isEnumArray(ProductOptionSide)],
     },
     finish: {
       type: [String],
-      required: false,
+      required: true,
+      default: [],
       validate: [isEnumArray(ProductOptionFinish)],
     },
     paper: {
       type: [String],
-      required: false,
+      required: true,
+      default: [],
       validate: [isEnumArray(ProductOptionPaper)],
     },
     dimensions: {
       type: [[Number]],
-      required: false,
+      required: true,
+      default: [],
       validate: [
         isExactLength(2),
         {
@@ -132,19 +136,19 @@ export const productPricingSchema = new mongoose.Schema<ProductPricing>(
       type: new mongoose.Schema(
         {
           sides: {
-            type: Map,
+            type: Object,
             required: false,
           },
           finish: {
-            type: Map,
+            type: Object,
             required: false,
           },
           paper: {
-            type: Map,
+            type: Object,
             required: false,
           },
           dimensions: {
-            type: Map,
+            type: Object,
             required: false,
           },
         },

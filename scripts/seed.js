@@ -29,10 +29,10 @@ const seed = async () => {
         minimumPurchase: 5000,
         baseUnitPrice: 10,
         optionMultipliers: {
-          sides: new Map().set("one", 1).set("both", 1.8),
-          finish: new Map().set("plastifiedgloss", 1.5),
-          paper: new Map().set("300gmatte", 1),
-          dimensions: new Map().set(JSON.stringify([3.5, 2]), 1),
+          sides: { one: 1, both: 1.8 },
+          finish: { plastifiedgloss: 1.5 },
+          paper: { "300gmatte": 1 },
+          dimensions: { [[3.5, 2]]: 1 },
         },
         quantityDiscountMultipliers: [
           [1000, 0.8],
@@ -48,6 +48,7 @@ const seed = async () => {
       images: [],
       options: {
         sides: ["one", "both"],
+        finish: [],
         paper: ["300gmatte", "300gsatin"],
         dimensions: [[4, 6]],
       },
@@ -55,9 +56,10 @@ const seed = async () => {
         minimumPurchase: 10000,
         baseUnitPrice: 20,
         optionMultipliers: {
-          sides: new Map().set("one", 1).set("both", 1.7),
-          paper: new Map().set("300gmatte", 1).set("300gsatin", 1.1),
-          dimensions: new Map().set(JSON.stringify([4, 6]), 1),
+          sides: { one: 1, both: 1.7 },
+          finish: {},
+          paper: { "300gmatte": 1, "300gsatin": 1.1 },
+          dimensions: { [[4, 6]]: 1 },
         },
         quantityDiscountMultipliers: [
           [500, 0.8],
@@ -80,13 +82,14 @@ const seed = async () => {
         minimumPurchase: 10000,
         baseUnitPrice: 190,
         optionMultipliers: {
-          sides: new Map().set("one", 1),
-          finish: new Map()
-            .set("plastifiedgloss", 1.3)
-            .set("plastifiedmatte", 1.3)
-            .set("uvvarnishgloss", 1.1),
-          paper: new Map().set("300gmatte", 1),
-          dimensions: new Map().set(JSON.stringify([9, 12]), 1),
+          sides: { one: 1 },
+          finish: {
+            plastifiedgloss: 1.3,
+            plastifiedmatte: 1.3,
+            uvvarnishgloss: 1.1,
+          },
+          paper: { "300gmatte": 1 },
+          dimensions: { [[9, 12]]: 1 },
         },
         quantityDiscountMultipliers: [
           [100, 0.85],
@@ -101,6 +104,7 @@ const seed = async () => {
       images: [],
       options: {
         sides: ["one"],
+        finish: [],
         paper: ["bond20lb"],
         dimensions: [[8.5, 11]],
       },
@@ -108,9 +112,10 @@ const seed = async () => {
         minimumPurchase: 10000,
         baseUnitPrice: 80,
         optionMultipliers: {
-          sides: new Map().set("one", 1),
-          paper: new Map().set("bond20lb", 1),
-          dimensions: new Map().set(JSON.stringify([8.5, 11]), 1),
+          sides: { one: 1 },
+          finish: {},
+          paper: { bond20lb: 1 },
+          dimensions: { [[8.5, 11]]: 1 },
         },
         quantityDiscountMultipliers: [
           [1000, 0.8],
@@ -126,6 +131,7 @@ const seed = async () => {
       images: [],
       options: {
         sides: ["one", "both"],
+        finish: [],
         paper: ["150gmatte", "130lbmatte", "100lbmatte", "100lbsatin"],
         dimensions: [
           [3.5, 8.5],
@@ -137,16 +143,19 @@ const seed = async () => {
         minimumPurchase: 10000,
         baseUnitPrice: 25,
         optionMultipliers: {
-          sides: new Map().set("one", 1).set("both", 1.8),
-          paper: new Map()
-            .set("150gmatte", 1.2)
-            .set("130lbmatte", 1.1)
-            .set("100lbmatte", 1)
-            .set("100lbsatin", 1.1),
-          dimensions: new Map()
-            .set(JSON.stringify([3.5, 8.5]), 1)
-            .set(JSON.stringify([5.5, 8.5]), 1.2)
-            .set(JSON.stringify([8.5, 11]), 1.8),
+          sides: { one: 1, both: 1.8 },
+          finish: {},
+          paper: {
+            "150gmatte": 1.2,
+            "130lbmatte": 1.1,
+            "100lbmatte": 1,
+            "100lbsatin": 1.1,
+          },
+          dimensions: {
+            [[3.5, 8.5]]: 1,
+            [[5.5, 8.5]]: 1.2,
+            [[8.5, 11]]: 1.8,
+          },
         },
         quantityDiscountMultipliers: [
           [5000, 0.7],
@@ -164,6 +173,7 @@ const seed = async () => {
       images: [],
       options: {
         sides: ["one"],
+        finish: [],
         paper: ["100lbmatte", "100lbsatin"],
         dimensions: [[12, 18]],
       },
@@ -171,9 +181,10 @@ const seed = async () => {
         minimumPurchase: 10000,
         baseUnitPrice: 90,
         optionMultipliers: {
-          sides: new Map().set("one", 1),
-          paper: new Map().set("100lbmatte", 1).set("100lbsatin", 1.1),
-          dimensions: new Map().set(JSON.stringify([12, 18]), 1),
+          sides: { one: 1 },
+          finish: {},
+          paper: { "100lbmatte": 1, "100lbsatin": 1.1 },
+          dimensions: { [[12, 18]]: 1 },
         },
         quantityDiscountMultipliers: [
           [100, 0.8],
@@ -190,17 +201,17 @@ const seed = async () => {
       options: {
         sides: ["one", "both"],
         finish: ["plastifiedgloss", "plastifiedmatte"],
+        paper: [],
         dimensions: [[12, 18]],
       },
       pricing: {
         minimumPurchase: 25000,
         baseUnitPrice: 45,
         optionMultipliers: {
-          sides: new Map().set("one", 1).set("both", 1.89),
-          finish: new Map()
-            .set("plastifiedgloss", 1)
-            .set("plastifiedmatte", 1.12),
-          dimensions: new Map().set(JSON.stringify([12, 18]), 1),
+          sides: { one: 1, both: 1.89 },
+          finish: { plastifiedgloss: 1, plastifiedmatte: 1.12 },
+          paper: {},
+          dimensions: { [[12, 18]]: 1 },
         },
         quantityDiscountMultipliers: [
           [100, 0.85],
@@ -217,17 +228,17 @@ const seed = async () => {
       options: {
         sides: ["one", "both"],
         finish: ["uvvarnishgloss", "uvvarnishmatte"],
+        paper: [],
         dimensions: [[12, 18]],
       },
       pricing: {
         minimumPurchase: 25000,
         baseUnitPrice: 15,
         optionMultipliers: {
-          sides: new Map().set("one", 1).set("both", 2),
-          finish: new Map()
-            .set("uvvarnishgloss", 1)
-            .set("uvvarnishmatte", 1.34),
-          dimensions: new Map().set(JSON.stringify([12, 18]), 1),
+          sides: { one: 1, both: 2 },
+          finish: { uvvarnishgloss: 1, uvvarnishmatte: 1.34 },
+          paper: {},
+          dimensions: { [[12, 18]]: 1 },
         },
         quantityDiscountMultipliers: [
           [100, 0.85],
@@ -243,6 +254,7 @@ const seed = async () => {
       images: [],
       options: {
         sides: ["diptic", "triptic"],
+        finish: [],
         paper: ["100lbmatte", "100lbsatin", "130lbmatte", "130lbsatin"],
         dimensions: [[11, 8.5]],
       },
@@ -250,13 +262,15 @@ const seed = async () => {
         minimumPurchase: 10000,
         baseUnitPrice: 110,
         optionMultipliers: {
-          sides: new Map().set("diptic", 1).set("triptic", 1.5),
-          paper: new Map()
-            .set("100lbmatte", 1)
-            .set("100lbsatin", 1.1)
-            .set("130lbmatte", 1.2)
-            .set("130lbsatin", 1.3),
-          dimensions: new Map().set(JSON.stringify([11, 8.5]), 1),
+          sides: { diptic: 1, triptic: 1.5 },
+          finish: {},
+          paper: {
+            "100lbmatte": 1,
+            "100lbsatin": 1.1,
+            "130lbmatte": 1.2,
+            "130lbsatin": 1.3,
+          },
+          dimensions: { [[11, 8.5]]: 1 },
         },
         quantityDiscountMultipliers: [
           [1000, 0.8],
@@ -272,6 +286,8 @@ const seed = async () => {
       name: "pad de facturas y recibos",
       images: [],
       options: {
+        sides: ["one"],
+        finish: [],
         paper: ["bond", "chemical"],
         dimensions: [
           [5.5, 8.5],
@@ -282,10 +298,10 @@ const seed = async () => {
         minimumPurchase: 10000,
         baseUnitPrice: 25,
         optionMultipliers: {
-          paper: new Map().set("bond", 1).set("chemical", 1.2),
-          dimensions: new Map()
-            .set(JSON.stringify([5.5, 8.5]), 1)
-            .set(JSON.stringify([8.5, 11]), 1.6),
+          sides: { one: 1 },
+          finish: {},
+          paper: { bond: 1, chemical: 1.2 },
+          dimensions: { [[5.5, 8.5]]: 1, [[8.5, 11]]: 1.6 },
         },
         quantityDiscountMultipliers: [
           [100, 0.85],

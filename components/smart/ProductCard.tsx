@@ -14,19 +14,13 @@ import {
   ProductPricingOptionMultipliers,
 } from "@/database";
 import { useCart } from "@/hooks/useCart";
+import { formatCents } from "@/utils";
 
 const formatOptionLabel = (option: string) => {
   return option
     .replace(/([A-Z])/g, " $1")
     .toLowerCase()
     .replace(/^./, (str) => str.toUpperCase());
-};
-
-const formatPrice = (cents: number) => {
-  return (cents / 100).toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
-  });
 };
 
 const TOOLTIP_TEXT = "única opción disponible";
@@ -70,10 +64,13 @@ export function ProductCard({ product }: { product: Product }) {
 
     // Apply option multipliers
     Object.entries(selectedOptions).forEach(([key, value]) => {
-      const typedKey = key as keyof ProductPricingOptionMultipliers;
-      const optionMultiplier = product.pricing.optionMultipliers[typedKey];
+      const optionMultiplier =
+        product.pricing.optionMultipliers[
+          key as keyof ProductPricingOptionMultipliers
+        ];
+
       const multiplier = optionMultiplier
-        ? optionMultiplier[value as unknown as keyof typeof optionMultiplier]
+        ? optionMultiplier[value as keyof typeof optionMultiplier]
         : undefined;
 
       if (multiplier) {
@@ -105,16 +102,16 @@ export function ProductCard({ product }: { product: Product }) {
     const totalPrice = calculatePrice();
 
     // Check required options
-    if (product.options.sides && !selectedOptions.sides) {
+    if (product.options.sides?.length && !selectedOptions.sides) {
       messages.push("Selecciona los lados");
     }
-    if (product.options.paper && !selectedOptions.paper) {
+    if (product.options.paper?.length && !selectedOptions.paper) {
       messages.push("Selecciona el papel");
     }
-    if (product.options.finish && !selectedOptions.finish) {
+    if (product.options.finish?.length && !selectedOptions.finish) {
       messages.push("Selecciona el acabado");
     }
-    if (product.options.dimensions && !selectedOptions.dimensions) {
+    if (product.options.dimensions?.length && !selectedOptions.dimensions) {
       messages.push("Selecciona las dimensiones");
     }
     if (typeof quantity !== "number" || quantity < 1) {
@@ -122,7 +119,7 @@ export function ProductCard({ product }: { product: Product }) {
     }
     if (totalPrice < product.pricing.minimumPurchase) {
       messages.push(
-        `El monto mínimo de compra es ${formatPrice(
+        `El monto mínimo de compra es ${formatCents(
           product.pricing.minimumPurchase
         )}`
       );
@@ -152,7 +149,7 @@ export function ProductCard({ product }: { product: Product }) {
     const totalPrice = calculatePrice();
     if (totalPrice < product.pricing.minimumPurchase) {
       toast.error(
-        `El monto mínimo de compra es ${formatPrice(
+        `El monto mínimo de compra es ${formatCents(
           product.pricing.minimumPurchase
         )}`,
         {
@@ -196,7 +193,7 @@ export function ProductCard({ product }: { product: Product }) {
 
         <form onSubmit={handleSubmit} className="mt-4 flex-1 flex flex-col">
           <div className="space-y-4 flex-1">
-            {product.options.sides && (
+            {!!product.options.sides?.length && (
               <div>
                 <label className="block text-sm font-medium mb-1">Lados</label>
                 {product.options.sides.length === 1 ? (
@@ -235,7 +232,7 @@ export function ProductCard({ product }: { product: Product }) {
               </div>
             )}
 
-            {product.options.paper && (
+            {!!product.options.paper?.length && (
               <div>
                 <label className="block text-sm font-medium mb-1">Papel</label>
                 {product.options.paper.length === 1 ? (
@@ -274,7 +271,7 @@ export function ProductCard({ product }: { product: Product }) {
               </div>
             )}
 
-            {product.options.finish && (
+            {!!product.options.finish?.length && (
               <div>
                 <label className="block text-sm font-medium mb-1">
                   Acabado
@@ -315,7 +312,7 @@ export function ProductCard({ product }: { product: Product }) {
               </div>
             )}
 
-            {product.options.dimensions && (
+            {!!product.options.dimensions?.length && (
               <div>
                 <label className="block text-sm font-medium mb-1">
                   Dimensiones
@@ -379,7 +376,7 @@ export function ProductCard({ product }: { product: Product }) {
           <div className="mt-4 pt-4">
             <div className="flex justify-between items-center">
               <span className="text-lg font-bold">
-                {formatPrice(calculatePrice())}
+                {formatCents(calculatePrice())}
               </span>
               <Tooltip
                 text={getValidationMessages.join("\n")}
@@ -395,7 +392,7 @@ export function ProductCard({ product }: { product: Product }) {
               </Tooltip>
             </div>
             <p className="text-sm text-muted-foreground mt-2">
-              Mínimo de compra: {formatPrice(product.pricing.minimumPurchase)}
+              Mínimo de compra: {formatCents(product.pricing.minimumPurchase)}
             </p>
           </div>
         </form>

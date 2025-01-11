@@ -129,8 +129,7 @@ const orderProductSchema = new mongoose.Schema<OrderProduct>(
               required: true,
             },
             optionMultipliers: {
-              type: Map,
-              of: Map,
+              type: Object,
               required: true,
             },
             quantityDiscountMultipliers: {

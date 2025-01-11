@@ -59,15 +59,16 @@ export default function CheckoutPage() {
 
     setIsSubmitting(true);
     try {
-      const cart = items.map((item) => ({
-        productId: item.productId,
-        quantity: item.quantity,
-        options: item.options,
-        art: item.art!,
+      // Create a simplified cart object with only the necessary data
+      const cart = items.map(({ productId, quantity, options, art }) => ({
+        productId,
+        quantity,
+        options,
+        art: art!,
       }));
 
       const { uploadUrls } = await createOrder(cart, totalPrice());
-      // Handle custom art uploads
+
       if (uploadUrls.length > 0) {
         await Promise.all(
           uploadUrls.map(async ({ url, itemId }) => {
@@ -90,7 +91,9 @@ export default function CheckoutPage() {
       toast.success("Orden creada exitosamente", {
         closeButton: true,
       });
+
       clearCart();
+      router.push("/productos?fromCheckout=true");
     } catch (error) {
       console.error("Error creating order:", error);
       toast.error("Error al crear la orden", {
@@ -307,7 +310,7 @@ export default function CheckoutPage() {
                   }`}
                 >
                   <FileImage className="w-5 h-5 inline-block mr-2" />
-                  Diseños Freepik
+                  Galería
                 </button>
                 <button
                   onClick={() => setSelectedTab("custom")}
