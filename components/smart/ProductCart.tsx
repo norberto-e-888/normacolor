@@ -1,7 +1,8 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { Product, ProductPricingOptionMultipliers } from "@/database";
 import { useCart } from "@/hooks/useCart";
@@ -19,6 +20,26 @@ export function ProductCard({ product }: { product: Product }) {
   >({});
   const [quantity, setQuantity] = useState(1);
   const addItem = useCart((state) => state.addItem);
+
+  // Set default values for options with only one choice
+  useEffect(() => {
+    const defaultOptions: Record<string, string> = {};
+
+    if (product.options.sides?.length === 1) {
+      defaultOptions.sides = product.options.sides[0];
+    }
+    if (product.options.paper?.length === 1) {
+      defaultOptions.paper = product.options.paper[0];
+    }
+    if (product.options.finish?.length === 1) {
+      defaultOptions.finish = product.options.finish[0];
+    }
+    if (product.options.dimensions?.length === 1) {
+      defaultOptions.dimensions = JSON.stringify(product.options.dimensions[0]);
+    }
+
+    setSelectedOptions(defaultOptions);
+  }, [product.options]);
 
   const calculatePrice = () => {
     let price = product.pricing.baseUnitPrice;
@@ -49,6 +70,16 @@ export function ProductCard({ product }: { product: Product }) {
     return price * quantity;
   };
 
+  const isFormComplete = () => {
+    // Check if all required options are selected
+    if (product.options.sides && !selectedOptions.sides) return false;
+    if (product.options.paper && !selectedOptions.paper) return false;
+    if (product.options.finish && !selectedOptions.finish) return false;
+    if (product.options.dimensions && !selectedOptions.dimensions) return false;
+    if (!quantity || quantity < 1) return false;
+    return true;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -59,6 +90,18 @@ export function ProductCard({ product }: { product: Product }) {
       options: selectedOptions,
       price: calculatePrice(),
     });
+
+    // Reset form
+    setSelectedOptions({});
+    setQuantity(1);
+    (e.target as HTMLFormElement).reset();
+
+    // Show success toast
+    toast.success(
+      `${quantity} ${product.name} agregado${
+        quantity > 1 ? "s" : ""
+      } al carrito`
+    );
   };
 
   return (
@@ -82,6 +125,8 @@ export function ProductCard({ product }: { product: Product }) {
                     sides: e.target.value,
                   }))
                 }
+                value={selectedOptions.sides || ""}
+                disabled={product.options.sides.length === 1}
                 required
               >
                 <option value="">Seleccionar lado</option>
@@ -105,6 +150,8 @@ export function ProductCard({ product }: { product: Product }) {
                     paper: e.target.value,
                   }))
                 }
+                value={selectedOptions.paper || ""}
+                disabled={product.options.paper.length === 1}
                 required
               >
                 <option value="">Seleccionar papel</option>
@@ -128,6 +175,8 @@ export function ProductCard({ product }: { product: Product }) {
                     finish: e.target.value,
                   }))
                 }
+                value={selectedOptions.finish || ""}
+                disabled={product.options.finish.length === 1}
                 required
               >
                 <option value="">Seleccionar acabado</option>
@@ -153,6 +202,8 @@ export function ProductCard({ product }: { product: Product }) {
                     dimensions: e.target.value,
                   }))
                 }
+                value={selectedOptions.dimensions || ""}
+                disabled={product.options.dimensions.length === 1}
                 required
               >
                 <option value="">Seleccionar dimensiones</option>
@@ -183,7 +234,8 @@ export function ProductCard({ product }: { product: Product }) {
             </span>
             <button
               type="submit"
-              className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90"
+              disabled={!isFormComplete()}
+              className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Agregar al carrito
             </button>

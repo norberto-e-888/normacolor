@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build", 
     "start": "next start",
     "lint": "next lint --dir .",
     "lint:fix": "next lint --dir . --fix",
@@ -40,6 +40,7 @@
     "react-dom": "^18",
     "redis": "^4.7.0",
     "sharp": "^0.33.5",
+    "sonner": "^1.4.3",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "tesseract.js": "^4.1.4",
