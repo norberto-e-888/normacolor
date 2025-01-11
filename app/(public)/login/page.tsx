@@ -105,7 +105,7 @@ export default function LoginPage() {
             <div className="flex">
               <KeyRound size="24px" className="animate-pulse mr-0.5" />
               <p className="text-sm text-muted-foreground text-center italic">
-                por favor ingresa tu contraseña y el código que enviamos a{" "}
+                crea tu contraseña e ingresa el código que enviamos a{" "}
                 <span className="font-semibold">{emailToVerify}</span>
               </p>
             </div>
