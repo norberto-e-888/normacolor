@@ -2,10 +2,12 @@
 
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import mongoose from "mongoose";
 import { v4 as uuid } from "uuid";
 
 import { config } from "@/config";
 import { ArtSource, Order, OrderProduct, Product } from "@/database";
+import { getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
 
 const s3 = new S3Client({
@@ -28,6 +30,11 @@ export const createOrder = async (
   uploadUrls: UploadUrl[];
 }> => {
   await connectToMongo();
+
+  const session = await getServerSession();
+  if (!session) {
+    throw new Error("Must be logged in to create an order");
+  }
 
   // Fetch product snapshots
   const products = await Product.find({
@@ -72,8 +79,23 @@ export const createOrder = async (
       throw new Error(`Product not found: ${item.productId}`);
     }
 
+    // Ensure dimensions are properly formatted as numbers
+    const dimensions = item.options.dimensions?.map((d): [number, number] => {
+      if (Array.isArray(d)) {
+        return [Number(d[0]), Number(d[1])];
+      }
+      // Handle case where d might be a string or other type
+      const nums = String(d).split(",").map(Number);
+      return [nums[0], nums[1]];
+    });
+
     const cartItem: OrderProduct = {
-      ...item,
+      productId: item.productId,
+      quantity: item.quantity,
+      options: {
+        ...item.options,
+        dimensions: dimensions ? dimensions[0] : undefined,
+      },
       productSnapshot: {
         id: product.id,
         name: product.name,
@@ -82,13 +104,17 @@ export const createOrder = async (
       },
     };
 
-    if (item.art.source === ArtSource.Custom) {
-      const upload = uploadUrls.find((u) => u?.itemId === item.productId);
-      if (upload) {
-        cartItem.art = {
-          ...item.art,
-          value: `s3://${config.AWS_BUCKET_NAME}/${upload.key}`,
-        };
+    if (item.art) {
+      if (item.art.source === ArtSource.Custom) {
+        const upload = uploadUrls.find((u) => u?.itemId === item.productId);
+        if (upload) {
+          cartItem.art = {
+            source: item.art.source,
+            value: `s3://${config.AWS_BUCKET_NAME}/${upload.key}`,
+          };
+        }
+      } else {
+        cartItem.art = item.art;
       }
     }
 
@@ -97,7 +123,7 @@ export const createOrder = async (
 
   // Create order
   const order = await Order.create({
-    customerId: "anonymous", // We'll update this later when implementing auth
+    customerId: new mongoose.Types.ObjectId(session.user.id),
     cart: updatedCart,
     total,
   });

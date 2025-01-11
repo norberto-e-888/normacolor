@@ -2,6 +2,8 @@
 
 import { FileImage, Search, Upload, X } from "lucide-react";
 import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
+import { getSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
@@ -29,6 +31,8 @@ const SEARCH_TERM_MAP: Record<string, string> = {
 type ArtTab = "freepik" | "custom";
 
 export default function CheckoutPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState<ArtTab>("freepik");
   const [searchTerm, setSearchTerm] = useState("");
@@ -38,6 +42,7 @@ export default function CheckoutPage() {
   const [selectedArts, setSelectedArts] = useState<Record<string, OrderArt>>(
     {}
   );
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { items, totalPrice, clearCart, removeItem } = useCart();
@@ -48,15 +53,26 @@ export default function CheckoutPage() {
   }, 500);
 
   useEffect(() => {
+    const fromLogin = searchParams.get("fromLogin");
+    if (fromLogin === "true") {
+      toast.success("Ahora puedes proceder con el pago", {
+        position: "top-center",
+      });
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     if (selectedItem && debouncedSearchTerm.trim()) {
       const fetchFreepikArts = async () => {
         setIsLoading(true);
         try {
           const baseSearchTerm =
             SEARCH_TERM_MAP[selectedItem.name] || selectedItem.name;
+
           const { arts: fetchedArts } = await fetchArts({
             term: `${debouncedSearchTerm} ${baseSearchTerm}`,
           });
+
           setArts(fetchedArts);
         } catch (error) {
           console.error("Error fetching arts:", error);
@@ -106,6 +122,12 @@ export default function CheckoutPage() {
 
   const handleSubmitOrder = async () => {
     if (!allItemsHaveArt) return;
+
+    const session = await getSession();
+    if (!session) {
+      router.push("/login?callbackUrl=/checkout?fromLogin=true");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
