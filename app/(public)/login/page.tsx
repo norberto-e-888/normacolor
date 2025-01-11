@@ -72,15 +72,14 @@ export default function LoginPage() {
   }, []);
 
   return (
-    <>
+    <div className="flex min-h-screen w-full">
       <div className="hidden xl:block xl:w-1/2 relative">
         <Image
           src="/svg/login-hero.svg"
           alt="Hero image"
           fill
-          sizes="50vw"
-          style={{ objectFit: "cover" }}
           priority
+          className="object-cover"
         />
       </div>
 
@@ -302,6 +301,6 @@ export default function LoginPage() {
           </main>
         </div>
       </div>
-    </>
+    </div>
   );
 }
