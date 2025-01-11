@@ -146,7 +146,10 @@ export function ProductCard({ product }: { product: Product }) {
       toast.error(
         `El monto mínimo de compra es ${formatPrice(
           product.pricing.minimumPurchase
-        )}`
+        )}`,
+        {
+          closeButton: true,
+        }
       );
       return;
     }
@@ -167,7 +170,10 @@ export function ProductCard({ product }: { product: Product }) {
     toast.success(
       `${quantity} ${product.name} agregado${
         quantity > 1 ? "s" : ""
-      } al carrito`
+      } al carrito`,
+      {
+        closeButton: true,
+      }
     );
   };
 

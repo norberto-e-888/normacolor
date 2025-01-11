@@ -110,11 +110,15 @@ export default function CheckoutPage() {
         );
       }
 
-      toast.success("Orden creada exitosamente");
+      toast.success("Orden creada exitosamente", {
+        closeButton: true,
+      });
       clearCart();
     } catch (error) {
       console.error("Error creating order:", error);
-      toast.error("Error al crear la orden");
+      toast.error("Error al crear la orden", {
+        closeButton: true,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -154,7 +158,9 @@ export default function CheckoutPage() {
           setArts(fetchedArts);
         } catch (error) {
           console.error("Error fetching arts:", error);
-          toast.error("Error al buscar diseños");
+          toast.error("Error al buscar diseños", {
+            closeButton: true,
+          });
         } finally {
           setIsLoading(false);
         }
@@ -183,7 +189,9 @@ export default function CheckoutPage() {
 
     const file = e.target.files[0];
     if (!file.name.toLowerCase().endsWith(".psd")) {
-      toast.error("Por favor selecciona un archivo PSD");
+      toast.error("Por favor selecciona un archivo PSD", {
+        closeButton: true,
+      });
       return;
     }
 
