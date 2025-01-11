@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 
 import { OTPInput, SubmitButton } from "@/components/smart";
-import { Button, Input, Separator } from "@/components/ui";
+import { Button, Container, Input, Separator } from "@/components/ui";
 import { signInAsAdmin, signInWithMagicLink } from "@/functions/auth";
 
 export default function LoginPage() {
@@ -72,7 +72,7 @@ export default function LoginPage() {
   }, []);
 
   return (
-    <div className="flex min-h-screen w-full">
+    <Container direction="row">
       <div className="hidden xl:block xl:w-1/2 relative">
         <Image
           src="/svg/login-hero.svg"
@@ -301,6 +301,6 @@ export default function LoginPage() {
           </main>
         </div>
       </div>
-    </div>
+    </Container>
   );
 }

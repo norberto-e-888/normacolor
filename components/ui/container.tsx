@@ -1,5 +1,23 @@
+import { cn } from "@/lib/client";
+
+type ContainerProps = Readonly<{
+  children: React.ReactNode;
+  className?: string;
+  direction?: "row" | "col";
+}>;
+
 export const Container = ({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) => <div className="flex flex-col min-h-screen w-full">{children}</div>;
+  className,
+  direction = "col",
+}: ContainerProps) => (
+  <div
+    className={cn(
+      "min-h-screen w-full",
+      direction === "col" ? "flex flex-col" : "flex",
+      className
+    )}
+  >
+    {children}
+  </div>
+);
