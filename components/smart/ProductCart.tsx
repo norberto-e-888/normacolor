@@ -1,9 +1,10 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
+import { Tooltip } from "@/components/ui";
 import { Product, ProductPricingOptionMultipliers } from "@/database";
 import { useCart } from "@/hooks/useCart";
 
@@ -14,13 +15,9 @@ const formatOptionLabel = (option: string) => {
     .replace(/^./, (str) => str.toUpperCase());
 };
 
-export function ProductCard({ product }: { product: Product }) {
-  const [selectedOptions, setSelectedOptions] = useState<
-    Record<string, string>
-  >({});
-  const [quantity, setQuantity] = useState<number | "">(1);
-  const addItem = useCart((state) => state.addItem);
+const TOOLTIP_TEXT = "única opción disponible";
 
+export function ProductCard({ product }: { product: Product }) {
   const getDefaultOptions = useCallback(() => {
     const defaultOptions: Record<string, string> = {};
 
@@ -45,10 +42,11 @@ export function ProductCard({ product }: { product: Product }) {
     product.options.sides,
   ]);
 
-  // Set default values for options with only one choice
-  useEffect(() => {
-    setSelectedOptions(getDefaultOptions());
-  }, [getDefaultOptions, product.options]);
+  const [selectedOptions, setSelectedOptions] = useState<
+    Record<string, string>
+  >(getDefaultOptions());
+  const [quantity, setQuantity] = useState<number | "">(1);
+  const addItem = useCart((state) => state.addItem);
 
   const calculatePrice = () => {
     const qty = typeof quantity === "number" ? quantity : 0;
@@ -130,75 +128,117 @@ export function ProductCard({ product }: { product: Product }) {
           {product.options.sides && (
             <div>
               <label className="block text-sm font-medium mb-1">Lados</label>
-              <select
-                className="w-full border rounded-md p-2"
-                onChange={(e) =>
-                  setSelectedOptions((prev) => ({
-                    ...prev,
-                    sides: e.target.value,
-                  }))
-                }
-                value={selectedOptions.sides || ""}
-                disabled={product.options.sides.length === 1}
-                required
-              >
-                <option value="">Seleccionar lado</option>
-                {product.options.sides.map((side) => (
-                  <option key={side} value={side}>
-                    {formatOptionLabel(side)}
-                  </option>
-                ))}
-              </select>
+              {product.options.sides.length === 1 ? (
+                <Tooltip text={TOOLTIP_TEXT}>
+                  <select
+                    className="w-full border rounded-md p-2"
+                    value={selectedOptions.sides || ""}
+                    disabled
+                    required
+                  >
+                    <option value={product.options.sides[0]}>
+                      {formatOptionLabel(product.options.sides[0])}
+                    </option>
+                  </select>
+                </Tooltip>
+              ) : (
+                <select
+                  className="w-full border rounded-md p-2"
+                  onChange={(e) =>
+                    setSelectedOptions((prev) => ({
+                      ...prev,
+                      sides: e.target.value,
+                    }))
+                  }
+                  value={selectedOptions.sides || ""}
+                  required
+                >
+                  <option value="">Seleccionar lado</option>
+                  {product.options.sides.map((side) => (
+                    <option key={side} value={side}>
+                      {formatOptionLabel(side)}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           )}
 
           {product.options.paper && (
             <div>
               <label className="block text-sm font-medium mb-1">Papel</label>
-              <select
-                className="w-full border rounded-md p-2"
-                onChange={(e) =>
-                  setSelectedOptions((prev) => ({
-                    ...prev,
-                    paper: e.target.value,
-                  }))
-                }
-                value={selectedOptions.paper || ""}
-                disabled={product.options.paper.length === 1}
-                required
-              >
-                <option value="">Seleccionar papel</option>
-                {product.options.paper.map((paper) => (
-                  <option key={paper} value={paper}>
-                    {formatOptionLabel(paper)}
-                  </option>
-                ))}
-              </select>
+              {product.options.paper.length === 1 ? (
+                <Tooltip text={TOOLTIP_TEXT}>
+                  <select
+                    className="w-full border rounded-md p-2"
+                    value={selectedOptions.paper || ""}
+                    disabled
+                    required
+                  >
+                    <option value={product.options.paper[0]}>
+                      {formatOptionLabel(product.options.paper[0])}
+                    </option>
+                  </select>
+                </Tooltip>
+              ) : (
+                <select
+                  className="w-full border rounded-md p-2"
+                  onChange={(e) =>
+                    setSelectedOptions((prev) => ({
+                      ...prev,
+                      paper: e.target.value,
+                    }))
+                  }
+                  value={selectedOptions.paper || ""}
+                  required
+                >
+                  <option value="">Seleccionar papel</option>
+                  {product.options.paper.map((paper) => (
+                    <option key={paper} value={paper}>
+                      {formatOptionLabel(paper)}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           )}
 
           {product.options.finish && (
             <div>
               <label className="block text-sm font-medium mb-1">Acabado</label>
-              <select
-                className="w-full border rounded-md p-2"
-                onChange={(e) =>
-                  setSelectedOptions((prev) => ({
-                    ...prev,
-                    finish: e.target.value,
-                  }))
-                }
-                value={selectedOptions.finish || ""}
-                disabled={product.options.finish.length === 1}
-                required
-              >
-                <option value="">Seleccionar acabado</option>
-                {product.options.finish.map((finish) => (
-                  <option key={finish} value={finish}>
-                    {formatOptionLabel(finish)}
-                  </option>
-                ))}
-              </select>
+              {product.options.finish.length === 1 ? (
+                <Tooltip text={TOOLTIP_TEXT}>
+                  <select
+                    className="w-full border rounded-md p-2"
+                    value={selectedOptions.finish || ""}
+                    disabled
+                    required
+                  >
+                    <option value={product.options.finish[0]}>
+                      {formatOptionLabel(product.options.finish[0])}
+                    </option>
+                  </select>
+                </Tooltip>
+              ) : (
+                <select
+                  className="w-full border rounded-md p-2"
+                  onChange={(e) =>
+                    setSelectedOptions((prev) => ({
+                      ...prev,
+                      finish: e.target.value,
+                    }))
+                  }
+                  value={selectedOptions.finish || ""}
+                  required
+                >
+                  <option value="">Seleccionar acabado</option>
+                  {product.options.finish.map((finish) => (
+                    <option key={finish} value={finish}>
+                      {formatOptionLabel(finish)}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           )}
 
@@ -207,25 +247,42 @@ export function ProductCard({ product }: { product: Product }) {
               <label className="block text-sm font-medium mb-1">
                 Dimensiones
               </label>
-              <select
-                className="w-full border rounded-md p-2"
-                onChange={(e) =>
-                  setSelectedOptions((prev) => ({
-                    ...prev,
-                    dimensions: e.target.value,
-                  }))
-                }
-                value={selectedOptions.dimensions || ""}
-                disabled={product.options.dimensions.length === 1}
-                required
-              >
-                <option value="">Seleccionar dimensiones</option>
-                {product.options.dimensions.map((dim) => (
-                  <option key={dim.join("x")} value={JSON.stringify(dim)}>
-                    {dim[0]}" x {dim[1]}"
-                  </option>
-                ))}
-              </select>
+              {product.options.dimensions.length === 1 ? (
+                <Tooltip text={TOOLTIP_TEXT}>
+                  <select
+                    className="w-full border rounded-md p-2"
+                    value={selectedOptions.dimensions || ""}
+                    disabled
+                    required
+                  >
+                    <option
+                      value={JSON.stringify(product.options.dimensions[0])}
+                    >
+                      {product.options.dimensions[0][0]}" x{" "}
+                      {product.options.dimensions[0][1]}"
+                    </option>
+                  </select>
+                </Tooltip>
+              ) : (
+                <select
+                  className="w-full border rounded-md p-2"
+                  onChange={(e) =>
+                    setSelectedOptions((prev) => ({
+                      ...prev,
+                      dimensions: e.target.value,
+                    }))
+                  }
+                  value={selectedOptions.dimensions || ""}
+                  required
+                >
+                  <option value="">Seleccionar dimensiones</option>
+                  {product.options.dimensions.map((dim) => (
+                    <option key={dim.join("x")} value={JSON.stringify(dim)}>
+                      {dim[0]}" x {dim[1]}"
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
           )}
 

@@ -7,3 +7,4 @@ export * from "./input";
 export * from "./page";
 export * from "./scroll-area";
 export * from "./separator";
+export * from "./ToolTip";
