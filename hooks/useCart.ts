@@ -2,7 +2,7 @@ import { v4 as uuid } from "uuid";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import { ProductOptions } from "@/database";
+import { OrderArt, ProductOptions } from "@/database";
 
 export type CartItem = {
   id: string;
@@ -10,6 +10,7 @@ export type CartItem = {
   name: string;
   quantity: number;
   options: Partial<ProductOptions>;
+  art?: OrderArt;
   price: number;
 };
 
