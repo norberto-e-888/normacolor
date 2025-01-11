@@ -16,8 +16,6 @@ import {
   ProductOptionPaper,
   ProductOptions,
   ProductOptionSide,
-  productOptionsSchema,
-  productPricingSchema,
 } from "./product";
 
 export enum OrderStatus {
@@ -100,11 +98,46 @@ const orderProductSchema = new mongoose.Schema<OrderProduct>(
           required: true,
         },
         options: {
-          type: productOptionsSchema,
+          type: new mongoose.Schema<ProductOptions>({
+            sides: {
+              type: [String],
+              required: false,
+            },
+            finish: {
+              type: [String],
+              required: false,
+            },
+            paper: {
+              type: [String],
+              required: false,
+            },
+            dimensions: {
+              type: [[Number]],
+              required: false,
+            },
+          }),
           required: true,
         },
         pricing: {
-          type: productPricingSchema,
+          type: new mongoose.Schema({
+            baseUnitPrice: {
+              type: Number,
+              required: true,
+            },
+            minimumPurchase: {
+              type: Number,
+              required: true,
+            },
+            optionMultipliers: {
+              type: Map,
+              of: Map,
+              required: true,
+            },
+            quantityDiscountMultipliers: {
+              type: [[Number]],
+              required: true,
+            },
+          }),
           required: true,
         },
       }),
@@ -134,15 +167,9 @@ const orderProductSchema = new mongoose.Schema<OrderProduct>(
             validate: [
               isExactLength(2),
               {
-                validator: (dimensions: [[number, number]]) =>
-                  dimensions.every(
-                    ([x, y]) =>
-                      Number.isInteger(x) &&
-                      x > 0 &&
-                      Number.isInteger(y) &&
-                      y > 0
-                  ),
-                message: "Each dimension must be a positive integer",
+                validator: (dimensions: [number, number]) =>
+                  dimensions.every((d) => d > 0),
+                message: "Each dimension must be a positive number",
               },
             ],
           },
@@ -157,12 +184,11 @@ const orderProductSchema = new mongoose.Schema<OrderProduct>(
     quantity: {
       type: Number,
       required: true,
-      isInteger: true,
       min: 1,
     },
     art: {
       type: orderArtSchema,
-      required: false,
+      required: true,
     },
   },
   { _id: false }
@@ -184,7 +210,6 @@ const orderSchema = getSchema<Order>({
   total: {
     type: Number,
     required: true,
-    isInteger: true,
     min: 1,
     set: round,
   },

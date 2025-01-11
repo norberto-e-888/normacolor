@@ -6,7 +6,13 @@ import mongoose from "mongoose";
 import { v4 as uuid } from "uuid";
 
 import { config } from "@/config";
-import { ArtSource, Order, OrderProduct, Product } from "@/database";
+import {
+  ArtSource,
+  Order,
+  OrderProduct,
+  OrderProductOptions,
+  Product,
+} from "@/database";
 import { getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
 
@@ -79,28 +85,78 @@ export const createOrder = async (
       throw new Error(`Product not found: ${item.productId}`);
     }
 
-    // Ensure dimensions are properly formatted as numbers
-    const dimensions = item.options.dimensions?.map((d): [number, number] => {
-      if (Array.isArray(d)) {
-        return [Number(d[0]), Number(d[1])];
+    // Validate options against product's allowed options
+    const validatedOptions: OrderProductOptions = {};
+
+    if (item.options.sides) {
+      if (!product.options.sides?.includes(item.options.sides)) {
+        throw new Error(
+          `Invalid sides option for product ${product.name}: ${item.options.sides}`
+        );
       }
-      // Handle case where d might be a string or other type
-      const nums = String(d).split(",").map(Number);
-      return [nums[0], nums[1]];
-    });
+      validatedOptions.sides = item.options.sides;
+    }
+
+    if (item.options.finish) {
+      if (!product.options.finish?.includes(item.options.finish)) {
+        throw new Error(
+          `Invalid finish option for product ${product.name}: ${item.options.finish}`
+        );
+      }
+      validatedOptions.finish = item.options.finish;
+    }
+
+    if (item.options.paper) {
+      if (!product.options.paper?.includes(item.options.paper)) {
+        throw new Error(
+          `Invalid paper option for product ${product.name}: ${item.options.paper}`
+        );
+      }
+      validatedOptions.paper = item.options.paper;
+    }
+
+    if (item.options.dimensions) {
+      const dimensions = Array.isArray(item.options.dimensions)
+        ? item.options.dimensions
+        : JSON.parse(item.options.dimensions);
+
+      const dimensionStr = JSON.stringify(dimensions);
+      const validDimension = product.options.dimensions?.some(
+        (d) => JSON.stringify(d) === dimensionStr
+      );
+
+      if (!validDimension) {
+        throw new Error(
+          `Invalid dimensions for product ${product.name}: ${dimensionStr}`
+        );
+      }
+      validatedOptions.dimensions = dimensions as [number, number];
+    }
+
+    // Convert option multipliers to plain objects
+    const optionMultipliers: Record<string, Record<string, number>> = {};
+    for (const [key, value] of Object.entries(
+      product.pricing.optionMultipliers
+    )) {
+      if (value instanceof Map) {
+        optionMultipliers[key] = Object.fromEntries(value);
+      } else {
+        optionMultipliers[key] = value;
+      }
+    }
 
     const cartItem: OrderProduct = {
       productId: item.productId,
       quantity: item.quantity,
-      options: {
-        ...item.options,
-        dimensions: dimensions ? dimensions[0] : undefined,
-      },
+      options: validatedOptions,
       productSnapshot: {
         id: product.id,
         name: product.name,
         options: product.options,
-        pricing: product.pricing,
+        pricing: {
+          ...product.pricing,
+          optionMultipliers,
+        },
       },
     };
 

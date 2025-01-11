@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 
 import { Content, Tooltip } from "@/components/ui";
-import { ArtSource, OrderProductOptions } from "@/database";
+import { ArtSource } from "@/database";
 import { Art, fetchArts } from "@/functions/art";
 import { createOrder } from "@/functions/orders";
 import { useCart } from "@/hooks/useCart";
@@ -59,33 +59,14 @@ export default function CheckoutPage() {
 
     setIsSubmitting(true);
     try {
-      const cart = items.map((item) => {
-        // Convert array options to single values
-        const options: OrderProductOptions = {};
-
-        if (item.options.sides?.length) {
-          options.sides = item.options.sides[0];
-        }
-        if (item.options.finish?.length) {
-          options.finish = item.options.finish[0];
-        }
-        if (item.options.paper?.length) {
-          options.paper = item.options.paper[0];
-        }
-        if (item.options.dimensions?.length) {
-          options.dimensions = item.options.dimensions[0];
-        }
-
-        return {
-          productId: item.productId,
-          quantity: item.quantity,
-          options,
-          art: item.art!,
-        };
-      });
+      const cart = items.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        options: item.options,
+        art: item.art!,
+      }));
 
       const { uploadUrls } = await createOrder(cart, totalPrice());
-
       // Handle custom art uploads
       if (uploadUrls.length > 0) {
         await Promise.all(
@@ -122,7 +103,7 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     const fromLogin = searchParams.get("fromLogin");
-    if (fromLogin === "true" && !payCtaShown.current && allItemsHaveArt) {
+    if (fromLogin === "true" && !payCtaShown.current) {
       // Add small delay to ensure toast component is mounted
       const timer = setTimeout(() => {
         payCtaShown.current = true;
@@ -137,7 +118,7 @@ export default function CheckoutPage() {
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [allItemsHaveArt, handleSubmitOrder, searchParams]);
+  }, [handleSubmitOrder, searchParams]);
 
   useEffect(() => {
     if (selectedItem && debouncedSearchTerm.trim()) {

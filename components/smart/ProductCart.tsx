@@ -5,7 +5,14 @@ import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Tooltip } from "@/components/ui";
-import { Product, ProductPricingOptionMultipliers } from "@/database";
+import {
+  OrderProductOptions,
+  Product,
+  ProductOptionFinish,
+  ProductOptionPaper,
+  ProductOptionSide,
+  ProductPricingOptionMultipliers,
+} from "@/database";
 import { useCart } from "@/hooks/useCart";
 
 const formatOptionLabel = (option: string) => {
@@ -26,7 +33,7 @@ const TOOLTIP_TEXT = "única opción disponible";
 
 export function ProductCard({ product }: { product: Product }) {
   const getDefaultOptions = useCallback(() => {
-    const defaultOptions: Record<string, string> = {};
+    const defaultOptions: OrderProductOptions = {};
 
     if (product.options.sides?.length === 1) {
       defaultOptions.sides = product.options.sides[0];
@@ -38,7 +45,7 @@ export function ProductCard({ product }: { product: Product }) {
       defaultOptions.finish = product.options.finish[0];
     }
     if (product.options.dimensions?.length === 1) {
-      defaultOptions.dimensions = JSON.stringify(product.options.dimensions[0]);
+      defaultOptions.dimensions = product.options.dimensions[0];
     }
 
     return defaultOptions;
@@ -49,9 +56,10 @@ export function ProductCard({ product }: { product: Product }) {
     product.options.sides,
   ]);
 
-  const [selectedOptions, setSelectedOptions] = useState<
-    Record<string, string>
-  >(getDefaultOptions());
+  const [selectedOptions, setSelectedOptions] = useState<OrderProductOptions>(
+    getDefaultOptions()
+  );
+
   const [quantity, setQuantity] = useState<number | "">(1);
   const addItem = useCart((state) => state.addItem);
   const calculatePrice = useCallback(() => {
@@ -65,7 +73,7 @@ export function ProductCard({ product }: { product: Product }) {
       const typedKey = key as keyof ProductPricingOptionMultipliers;
       const optionMultiplier = product.pricing.optionMultipliers[typedKey];
       const multiplier = optionMultiplier
-        ? optionMultiplier[value as keyof typeof optionMultiplier]
+        ? optionMultiplier[value as unknown as keyof typeof optionMultiplier]
         : undefined;
 
       if (multiplier) {
@@ -210,7 +218,7 @@ export function ProductCard({ product }: { product: Product }) {
                     onChange={(e) =>
                       setSelectedOptions((prev) => ({
                         ...prev,
-                        sides: e.target.value,
+                        sides: e.target.value as ProductOptionSide,
                       }))
                     }
                     value={selectedOptions.sides || ""}
@@ -249,7 +257,7 @@ export function ProductCard({ product }: { product: Product }) {
                     onChange={(e) =>
                       setSelectedOptions((prev) => ({
                         ...prev,
-                        paper: e.target.value,
+                        paper: e.target.value as ProductOptionPaper,
                       }))
                     }
                     value={selectedOptions.paper || ""}
@@ -290,7 +298,7 @@ export function ProductCard({ product }: { product: Product }) {
                     onChange={(e) =>
                       setSelectedOptions((prev) => ({
                         ...prev,
-                        finish: e.target.value,
+                        finish: e.target.value as ProductOptionFinish,
                       }))
                     }
                     value={selectedOptions.finish || ""}
@@ -316,7 +324,7 @@ export function ProductCard({ product }: { product: Product }) {
                   <Tooltip text={TOOLTIP_TEXT}>
                     <select
                       className="w-full border rounded-md p-2"
-                      value={selectedOptions.dimensions || ""}
+                      value={JSON.stringify(selectedOptions.dimensions)}
                       disabled
                       required
                     >
@@ -334,10 +342,10 @@ export function ProductCard({ product }: { product: Product }) {
                     onChange={(e) =>
                       setSelectedOptions((prev) => ({
                         ...prev,
-                        dimensions: e.target.value,
+                        dimensions: JSON.parse(e.target.value),
                       }))
                     }
-                    value={selectedOptions.dimensions || ""}
+                    value={JSON.stringify(selectedOptions.dimensions)}
                     required
                   >
                     <option value="">Seleccionar dimensiones</option>

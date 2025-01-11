@@ -2,14 +2,24 @@ import { v4 as uuid } from "uuid";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import { OrderArt, ProductOptions } from "@/database";
+import {
+  OrderArt,
+  ProductOptionFinish,
+  ProductOptionPaper,
+  ProductOptionSide,
+} from "@/database";
 
 export type CartItem = {
   id: string;
   productId: string;
   name: string;
   quantity: number;
-  options: Partial<ProductOptions>;
+  options: {
+    sides?: ProductOptionSide;
+    finish?: ProductOptionFinish;
+    paper?: ProductOptionPaper;
+    dimensions?: [number, number];
+  };
   art?: OrderArt;
   price: number;
 };
