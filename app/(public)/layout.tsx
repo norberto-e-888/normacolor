@@ -10,7 +10,7 @@ export default function PublicLayout({
 }>) {
   return (
     <Container>
-      <nav className="flex gap-4 items-center p-4 bg-primary text-primary-foreground">
+      <nav className="sticky top-0 z-50 flex gap-4 items-center p-4 bg-primary text-primary-foreground">
         <Link href="/login" className="flex gap-1 items-center">
           <Hexagon size="24px" />
           <span className="text-lg font-bold">Normacolor</span>
@@ -25,7 +25,9 @@ export default function PublicLayout({
         </Link>
       </nav>
 
-      <Page>{children}</Page>
+      <main className="flex-1 overflow-auto">
+        <Page>{children}</Page>
+      </main>
 
       <footer className="p-1.5 bg-muted text-center">
         <p className="text-sm text-muted-foreground">
