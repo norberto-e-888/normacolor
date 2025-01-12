@@ -26,6 +26,11 @@ const nextConfig = {
         hostname: "downloadscdn5.freepik.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "normacolor-staging.s3.us-east-1.amazonaws.com",
+        pathname: "/**",
+      },
     ],
   },
 };

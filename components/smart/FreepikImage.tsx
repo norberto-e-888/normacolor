@@ -18,6 +18,7 @@ export function FreepikImage({ id }: { id: string }) {
         const data = await response.json();
         setImageUrl(data.url);
       } catch (err) {
+        console.error(err, "Failed to load Freepik image");
         setError(err instanceof Error ? err.message : "Failed to load image");
       } finally {
         setIsLoading(false);
