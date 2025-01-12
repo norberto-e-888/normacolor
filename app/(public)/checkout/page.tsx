@@ -68,7 +68,7 @@ export default function CheckoutPage() {
         art: art!,
       }));
 
-      const { uploadUrls } = await createOrder(cart, totalPrice());
+      const { uploadUrls, order } = await createOrder(cart, totalPrice());
 
       if (uploadUrls.length > 0) {
         await Promise.all(
@@ -94,7 +94,7 @@ export default function CheckoutPage() {
       });
 
       clearCart();
-      router.push("/pagar");
+      router.push(`/pagar/${order.id}`);
     } catch (error) {
       console.error("Error creating order:", error);
       toast.error("Error al crear la orden", {
