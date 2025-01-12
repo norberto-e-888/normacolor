@@ -9,6 +9,7 @@ import {
   ModelName,
   round,
 } from "@/utils";
+import { calculatePrice } from "@/utils/calculate-price";
 
 import {
   Product,
@@ -50,6 +51,7 @@ export type OrderProduct = {
   productSnapshot: ProductSnapshot;
   options: OrderProductOptions;
   quantity: number;
+  totalPrice: number;
   art?: OrderArt;
 };
 
@@ -188,10 +190,23 @@ const orderProductSchema = new mongoose.Schema<OrderProduct>(
       type: orderArtSchema,
       required: true,
     },
+    totalPrice: {
+      type: Number,
+      required: true,
+      set: round,
+    },
   },
   { _id: false }
 );
 
+// Add pre-save hook to calculate totalPrice
+orderProductSchema.pre("save", function (this: OrderProduct) {
+  this.totalPrice = calculatePrice(
+    this.quantity,
+    this.productSnapshot.pricing,
+    this.options
+  );
+});
 const orderSchema = getSchema<Order>({
   customerId: {
     type: mongoose.Schema.ObjectId,

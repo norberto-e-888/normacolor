@@ -22,6 +22,7 @@ export default function OrdersPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { isIntersecting } = useIntersectionObserver(loadMoreRef as any) ?? {};
   const justPaidOrderId = searchParams.get("justPaidOrderId");
+  const selectedId = searchParams.get("selectedId");
 
   const fetchOrders = async (cursor?: string, selectedId?: string) => {
     try {
@@ -42,7 +43,11 @@ export default function OrdersPage() {
 
   useEffect(() => {
     const init = async () => {
-      const data = await fetchOrders(undefined, justPaidOrderId || undefined);
+      const data = await fetchOrders(
+        undefined,
+        selectedId || justPaidOrderId || undefined
+      );
+
       if (data) {
         setOrders(data.orders);
         setNextCursor(data.nextCursor);
@@ -52,7 +57,7 @@ export default function OrdersPage() {
     };
 
     init();
-  }, [justPaidOrderId]);
+  }, [justPaidOrderId, selectedId]);
 
   useEffect(() => {
     if (isIntersecting && nextCursor && !isFetchingMore) {
@@ -182,10 +187,7 @@ export default function OrdersPage() {
                             {item.productSnapshot.name}
                           </h4>
                           <span className="text-sm">
-                            {formatCents(
-                              item.quantity *
-                                item.productSnapshot.pricing.baseUnitPrice
-                            )}
+                            {formatCents(item.totalPrice)}
                           </span>
                         </div>
                         <p className="text-sm text-muted-foreground">

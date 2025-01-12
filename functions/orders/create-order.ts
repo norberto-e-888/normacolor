@@ -15,6 +15,7 @@ import {
 } from "@/database";
 import { getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
+import { calculatePrice } from "@/utils/calculate-price";
 
 const s3 = new S3Client({
   region: "us-east-1",
@@ -143,6 +144,11 @@ export const createOrder = async (
         options: product.options,
         pricing: product.pricing,
       },
+      totalPrice: calculatePrice(
+        item.quantity,
+        product.pricing,
+        validatedOptions
+      ),
     };
 
     if (item.art) {

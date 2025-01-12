@@ -85,6 +85,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     // Clean up toast params without refresh
     const newParams = new URLSearchParams(searchParams.toString());
     newParams.delete("toast");
+    newParams.delete("toastId");
     const paramsToDelete = Array.from(newParams.keys()).filter((key) =>
       key.startsWith("toastData_")
     );

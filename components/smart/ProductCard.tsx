@@ -11,10 +11,10 @@ import {
   ProductOptionFinish,
   ProductOptionPaper,
   ProductOptionSide,
-  ProductPricingOptionMultipliers,
 } from "@/database";
 import { useCart } from "@/hooks/useCart";
 import { formatCents } from "@/utils";
+import { calculatePrice } from "@/utils/calculate-price";
 
 const formatOptionLabel = (option: string) => {
   return option
@@ -56,50 +56,17 @@ export function ProductCard({ product }: { product: Product }) {
 
   const [quantity, setQuantity] = useState<number | "">(1);
   const addItem = useCart((state) => state.addItem);
-  const calculatePrice = useCallback(() => {
-    const qty = typeof quantity === "number" ? quantity : 0;
-    if (!qty || qty < 1) return 0;
-
-    let price = product.pricing.baseUnitPrice;
-
-    // Apply option multipliers
-    Object.entries(selectedOptions).forEach(([key, value]) => {
-      const optionMultiplier =
-        product.pricing.optionMultipliers[
-          key as keyof ProductPricingOptionMultipliers
-        ];
-
-      const multiplier = optionMultiplier
-        ? optionMultiplier[value as keyof typeof optionMultiplier]
-        : undefined;
-
-      if (multiplier) {
-        price *= multiplier as number;
-      }
-    });
-
-    // Apply quantity discount
-    const discounts = product.pricing.quantityDiscountMultipliers || [];
-    const applicableDiscount = discounts
-      .sort((a, b) => b[0] - a[0])
-      .find(([threshold]) => qty >= threshold);
-
-    if (applicableDiscount) {
-      price *= applicableDiscount[1];
-    }
-
-    return Math.round(price * qty);
-  }, [
-    product.pricing.baseUnitPrice,
-    product.pricing.optionMultipliers,
-    product.pricing.quantityDiscountMultipliers,
-    quantity,
-    selectedOptions,
-  ]);
+  const calculateItemPrice = useCallback(() => {
+    return calculatePrice(
+      typeof quantity === "number" ? quantity : 0,
+      product.pricing,
+      selectedOptions
+    );
+  }, [quantity, product.pricing, selectedOptions]);
 
   const getValidationMessages = useMemo(() => {
     const messages: string[] = [];
-    const totalPrice = calculatePrice();
+    const totalPrice = calculateItemPrice();
 
     // Check required options
     if (product.options.sides?.length && !selectedOptions.sides) {
@@ -127,14 +94,17 @@ export function ProductCard({ product }: { product: Product }) {
 
     return messages;
   }, [
-    product.options.sides,
-    product.options.paper,
-    product.options.finish,
-    product.options.dimensions,
+    calculateItemPrice,
+    product.options.sides?.length,
+    product.options.paper?.length,
+    product.options.finish?.length,
+    product.options.dimensions?.length,
     product.pricing.minimumPurchase,
-    selectedOptions,
+    selectedOptions.sides,
+    selectedOptions.paper,
+    selectedOptions.finish,
+    selectedOptions.dimensions,
     quantity,
-    calculatePrice,
   ]);
 
   const isFormComplete = useCallback(() => {
@@ -146,7 +116,7 @@ export function ProductCard({ product }: { product: Product }) {
 
     if (typeof quantity !== "number") return;
 
-    const totalPrice = calculatePrice();
+    const totalPrice = calculateItemPrice();
     if (totalPrice < product.pricing.minimumPurchase) {
       toast.error(
         `El monto mínimo de compra es ${formatCents(
@@ -378,7 +348,7 @@ export function ProductCard({ product }: { product: Product }) {
           <div className="mt-4 pt-4">
             <div className="flex justify-between items-center">
               <span className="text-lg font-bold">
-                {formatCents(calculatePrice())}
+                {formatCents(calculateItemPrice())}
               </span>
               <Tooltip
                 text={getValidationMessages.join("\n")}
