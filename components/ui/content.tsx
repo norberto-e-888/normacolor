@@ -9,7 +9,13 @@ export const Content = ({
   center?: boolean;
   className?: string;
 }>) => (
-  <div className={cn("w-full p-4", center && "flex justify-center", className)}>
+  <div
+    className={cn(
+      "w-full h-full p-4",
+      center && "flex justify-center",
+      className
+    )}
+  >
     {children}
   </div>
 );

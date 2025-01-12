@@ -36,12 +36,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="h-full">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased h-full flex flex-col`}
       >
         <ToastProvider>
-          <nav className="sticky top-0 z-50 flex gap-4 items-center p-4 bg-primary text-primary-foreground">
+          <nav className="flex gap-4 items-center p-4 bg-primary text-primary-foreground shrink-0">
             <Link href="/login" className="flex gap-1 items-center">
               <Hexagon size="24px" />
               <span className="text-lg font-bold">Normacolor</span>
@@ -63,7 +63,13 @@ export default function RootLayout({
             </div>
           </nav>
 
-          {children}
+          <main className="flex-1 overflow-y-auto">{children}</main>
+          <footer className="p-1.5 bg-muted text-center">
+            <p className="text-sm text-muted-foreground">
+              © {new Date().getFullYear()} Normacolor Panama S.A. Todos los
+              derechos reservados.
+            </p>
+          </footer>
           <Toaster richColors position="top-center" />
         </ToastProvider>
       </body>

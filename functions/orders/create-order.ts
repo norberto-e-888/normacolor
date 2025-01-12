@@ -25,7 +25,7 @@ const s3 = new S3Client({
   },
 });
 
-type CreateOrderItem = Omit<OrderProduct, "productSnapshot"> & {
+type CreateOrderItem = Omit<OrderProduct, "productSnapshot" | "totalPrice"> & {
   art: { source: ArtSource; value: string };
 };
 
