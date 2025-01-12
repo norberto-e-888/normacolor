@@ -124,12 +124,9 @@ export default function OrdersPage() {
                       ${
                         selectedOrder?.id === order.id
                           ? "border-primary bg-primary/5"
-                          : "hover:border-primary/50"
-                      }
-                      ${
-                        justPaidOrderId === order.id
+                          : justPaidOrderId === order.id
                           ? "border-green-500 bg-green-50"
-                          : ""
+                          : "hover:border-primary/50"
                       }
                     `}
                     onClick={() => handleOrderClick(order)}

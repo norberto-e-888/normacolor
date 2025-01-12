@@ -89,8 +89,8 @@ export default function CheckoutPage() {
         );
       }
 
-      clearCart();
       router.push(`/pagar/${order.id}`);
+      clearCart();
     } catch (error) {
       console.error("Error creating order:", error);
       toast.error("Error al crear la orden", {
