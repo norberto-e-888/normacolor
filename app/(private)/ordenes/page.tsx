@@ -90,11 +90,23 @@ export default function OrdersPage() {
     );
   }
 
+  if (orders.length === 0) {
+    return (
+      <Content>
+        <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
+          <p className="text-lg text-muted-foreground">No tienes órdenes</p>
+          <a href="/productos" className="text-primary hover:underline">
+            Ver productos
+          </a>
+        </div>
+      </Content>
+    );
+  }
+
   return (
     <Content>
       <div className="flex flex-col md:flex-row h-[calc(100vh-8rem)] gap-4">
         <div className="w-full md:w-1/2 lg:w-2/5 overflow-hidden flex flex-col">
-          <h1 className="text-2xl font-bold mb-4">Mis Órdenes</h1>
           <div className="flex-1 overflow-y-auto">
             <div className="space-y-2">
               <AnimatePresence>
@@ -218,10 +230,10 @@ export default function OrdersPage() {
               </div>
             </div>
           ) : (
-            <div className="h-full flex items-center justify-center text-muted-foreground">
-              {orders.length > 0
-                ? "Selecciona una orden para ver sus detalles"
-                : "No tienes órdenes"}
+            <div className="h-full flex items-center justify-center">
+              <p className="text-lg text-muted-foreground">
+                Selecciona una orden para ver sus detalles
+              </p>
             </div>
           )}
         </div>

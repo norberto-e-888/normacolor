@@ -1,18 +1,11 @@
 import "./globals.css";
 
-import { Hexagon, ShoppingCart } from "lucide-react";
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
 import localFont from "next/font/local";
-import Link from "next/link";
 import { Toaster } from "sonner";
 
+import { Navigation } from "@/components/smart/Navigation";
 import { ToastProvider } from "@/hooks/useToast";
-
-const CartCount = dynamic(
-  () => import("@/components/smart/CartCount").then((mod) => mod.CartCount),
-  { ssr: false }
-);
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -41,28 +34,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-full flex flex-col`}
       >
         <ToastProvider>
-          <nav className="flex gap-4 items-center p-4 bg-primary text-primary-foreground shrink-0">
-            <Link href="/login" className="flex gap-1 items-center">
-              <Hexagon size="24px" />
-              <span className="text-lg font-bold">Normacolor</span>
-            </Link>
-
-            <Link href="/productos">
-              <span className="text-lg">Productos</span>
-            </Link>
-
-            <Link href="/ordenes">
-              <span className="text-lg">Ordenes</span>
-            </Link>
-
-            <div className="ml-auto">
-              <Link href="/checkout" className="relative">
-                <ShoppingCart size="24px" />
-                <CartCount />
-              </Link>
-            </div>
-          </nav>
-
+          <Navigation />
           <main className="flex-1 overflow-y-auto">{children}</main>
           <footer className="p-1.5 bg-muted text-center">
             <p className="text-sm text-muted-foreground">

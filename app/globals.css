@@ -12,6 +12,15 @@ body {
   }
 }
 
+@keyframes scaleX {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
