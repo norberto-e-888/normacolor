@@ -89,10 +89,6 @@ export default function CheckoutPage() {
         );
       }
 
-      toast.success("Orden creada exitosamente", {
-        closeButton: true,
-      });
-
       clearCart();
       router.push(`/pagar/${order.id}`);
     } catch (error) {

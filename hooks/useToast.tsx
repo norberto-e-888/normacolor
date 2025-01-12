@@ -54,6 +54,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     if (!toastType) return;
 
     const config = TOAST_MESSAGES[toastType as ToastType];
+    console.log({ config });
     if (!config) return;
 
     const toastId = searchParams.get("toastId");

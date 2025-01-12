@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Order } from "@/database";
+import { getToastUrlConfig, ToastType } from "@/utils/get-toast-url-config";
 
 export default function PaymentPage() {
   const { orderId } = useParams();
@@ -147,7 +148,12 @@ export default function PaymentPage() {
                     throw new Error("Failed to capture PayPal payment");
                   }
 
-                  router.push("/ordenes?toast=paymentSuccess");
+                  const { orderId } = await response.json();
+                  router.push(
+                    `/ordenes?${getToastUrlConfig(
+                      ToastType.PaymentSuccess
+                    )}&justPaidOrderId=${orderId}`
+                  );
                 } catch (error) {
                   console.error("Error capturing PayPal payment:", error);
                   toast.error("Error al finalizar el pago", {
