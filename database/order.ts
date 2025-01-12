@@ -52,6 +52,7 @@ export type OrderProduct = {
   quantity: number;
   totalPrice: number;
   art?: OrderArt;
+  designerImageUrls: string[]; // S3 URLs for designer's work-in-progress images
 };
 
 export type ProductSnapshot = Pick<
@@ -193,6 +194,16 @@ const orderProductSchema = new mongoose.Schema<OrderProduct>(
       type: Number,
       required: true,
       set: round,
+    },
+    designerImageUrls: {
+      type: [String],
+      required: true,
+      default: [],
+      validate: {
+        validator: (urls: string[]) =>
+          urls.every((url) => url.startsWith("s3://")),
+        message: "Designer image URLs must be S3 URLs",
+      },
     },
   },
   { _id: false }
