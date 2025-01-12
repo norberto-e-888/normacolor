@@ -122,10 +122,10 @@ export default function OrdersPage() {
                     className={`
                       cursor-pointer p-4 rounded-lg border transition-colors
                       ${
-                        selectedOrder?.id === order.id
-                          ? "border-primary bg-primary/5"
-                          : justPaidOrderId === order.id
+                        justPaidOrderId === order.id
                           ? "border-green-500 bg-green-50"
+                          : selectedOrder?.id === order.id
+                          ? "border-primary bg-primary/5"
                           : "hover:border-primary/50"
                       }
                     `}
