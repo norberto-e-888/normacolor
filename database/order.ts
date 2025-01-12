@@ -19,8 +19,7 @@ import {
 } from "./product";
 
 export enum OrderStatus {
-  Draft = "draft",
-  Placed = "placed",
+  WaitingForPayment = "waiting_for_payment",
   Paid = "paid",
   InProgress = "in-progress",
   ReadyToPickUp = "ready-to-pickup",
@@ -215,7 +214,7 @@ const orderSchema = getSchema<Order>({
   status: {
     type: String,
     required: true,
-    default: OrderStatus.Draft,
+    default: OrderStatus.WaitingForPayment,
     enum: Object.values(OrderStatus),
   },
 });
