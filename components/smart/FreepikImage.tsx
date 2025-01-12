@@ -46,7 +46,14 @@ export function FreepikImage({ id }: { id: string }) {
 
   return (
     <div className="relative w-32 h-32">
-      <Image src={imageUrl} alt="Art preview" fill className="object-contain" />
+      <Image
+        src={imageUrl}
+        alt="Art preview"
+        fill
+        className="object-contain"
+        sizes="(max-width: 768px) 128px, 128px"
+        priority
+      />
     </div>
   );
 }
