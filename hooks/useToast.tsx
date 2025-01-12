@@ -1,34 +1,36 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { createContext, useContext, useEffect } from "react";
+import { createContext, useContext, useEffect, useRef } from "react";
 import { toast } from "sonner";
+
+import { ToastType } from "@/utils/get-toast-url-config";
 
 type ToastConfig = {
   title: string;
   description: string | ((data: Record<string, string>) => string);
-  type?: "success" | "error" | "info" | "warning";
+  type?: "success" | "error" | "warning" | "info";
 };
 
 type ToastContextType = {
   showToast: (type: string, data?: Record<string, string>) => void;
 };
 
-const TOAST_MESSAGES: Record<string, ToastConfig> = {
-  orderNotFound: {
+const TOAST_MESSAGES: Record<ToastType, ToastConfig> = {
+  [ToastType.OrderNotFound]: {
     title: "Orden no encontrada",
     description: "La orden que buscas no existe o fue eliminada.",
     type: "error",
   },
-  unauthorized: {
+  [ToastType.Unauthorized]: {
     title: "Acceso denegado",
     description: "No tienes permiso para acceder a esta orden.",
     type: "error",
   },
-  invalidOrderStatus: {
+  [ToastType.InvalidOrderStatus]: {
     title: "Estado inválido",
     description: (data) =>
-      `La orden debe estar en estado "Esperando pago", pero está en estado "${data.status}".`,
+      `La orden debe estar en estado "Esperando pago", pero está en estado "${data.orderStatus}".`,
     type: "error",
   },
 };
@@ -40,13 +42,19 @@ const ToastContext = createContext<ToastContextType>({
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const shownToasts = useRef(new Set<string | number>());
 
   useEffect(() => {
     const toastType = searchParams.get("toast");
     if (!toastType) return;
 
-    const config = TOAST_MESSAGES[toastType];
+    const config = TOAST_MESSAGES[toastType as ToastType];
     if (!config) return;
+
+    const toastId = searchParams.get("toastId");
+    if (!toastId || shownToasts.current.has(toastId)) return;
+
+    shownToasts.current.add(toastId);
 
     // Get all data params (any param starting with toastData_)
     const data: Record<string, string> = {};

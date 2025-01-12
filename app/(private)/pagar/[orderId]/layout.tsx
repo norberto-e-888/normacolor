@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Order, OrderStatus } from "@/database";
 import { getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
+import { getToastUrlConfig, ToastType } from "@/utils/get-toast-url-config";
 
 export default async function PaymentLayout({
   children,
@@ -29,7 +30,9 @@ export default async function PaymentLayout({
 
   if (order.status !== OrderStatus.WaitingForPayment) {
     redirect(
-      `/productos?toast=invalidOrderStatus&toastData_status=${order.status}`
+      `/productos?${getToastUrlConfig(ToastType.InvalidOrderStatus, {
+        orderStatus: order.status,
+      })}`
     );
   }
 
