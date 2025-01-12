@@ -6,8 +6,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useIntersectionObserver } from "usehooks-ts";
 
+import { FreepikImage } from "@/components/smart/FreepikImage";
 import { Content } from "@/components/ui";
-import { Order, OrderStatus } from "@/database";
+import { ArtSource, Order, OrderStatus } from "@/database";
 import { formatCents } from "@/utils";
 
 export default function OrdersPage() {
@@ -19,8 +20,9 @@ export default function OrdersPage() {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { isIntersecting } = useIntersectionObserver(loadMoreRef as any) ?? {};
+  const { isIntersecting } =
+    useIntersectionObserver(loadMoreRef as never) ?? {};
+
   const justPaidOrderId = searchParams.get("justPaidOrderId");
   const selectedId = searchParams.get("selectedId");
 
@@ -211,6 +213,20 @@ export default function OrdersPage() {
                             {Array.isArray(value) ? value.join("x") : value}
                           </p>
                         ))}
+                        {item.art && (
+                          <div className="mt-4">
+                            <p className="text-sm font-medium mb-2">Arte:</p>
+                            {item.art?.source === ArtSource.Freepik ? (
+                              <div className="relative w-32 h-32">
+                                <FreepikImage id={item.art.value} />
+                              </div>
+                            ) : (
+                              <div className="text-sm text-muted-foreground">
+                                Arte personalizado
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
