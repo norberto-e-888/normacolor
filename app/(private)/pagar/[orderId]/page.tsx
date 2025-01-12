@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Order } from "@/database";
+import { useCart } from "@/hooks/useCart";
 import { getToastUrlConfig, ToastType } from "@/utils/get-toast-url-config";
 
 export default function PaymentPage() {
@@ -15,6 +16,7 @@ export default function PaymentPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
+  const { clearCart } = useCart();
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -160,6 +162,7 @@ export default function PaymentPage() {
                     closeButton: true,
                   });
                 } finally {
+                  clearCart();
                   setIsProcessing(false);
                 }
               }}

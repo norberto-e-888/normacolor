@@ -168,6 +168,15 @@ export const createOrder = async (
     return cartItem;
   });
 
+  const totalOrderPrice = updatedCart.reduce(
+    (acc, item) => acc + item.totalPrice,
+    0
+  );
+
+  if (totalOrderPrice !== total) {
+    throw new Error(`Total price mismatch: ${totalOrderPrice} !== ${total}`);
+  }
+
   // Create order
   const order = await Order.create({
     customerId: new mongoose.Types.ObjectId(session.user.id),

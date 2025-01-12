@@ -42,7 +42,7 @@ export default function CheckoutPage() {
   const payCtaShown = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { items, totalPrice, clearCart, removeItem, updateItemArt } = useCart();
+  const { items, totalPrice, removeItem, updateItemArt } = useCart();
   const selectedItem = items.find((item) => item.id === selectedItemId);
   const allItemsHaveArt = items.every((item) => item.art);
   const debouncedSearch = useDebouncedCallback((value: string) => {
@@ -90,7 +90,6 @@ export default function CheckoutPage() {
       }
 
       router.push(`/pagar/${order.id}`);
-      clearCart();
     } catch (error) {
       console.error("Error creating order:", error);
       toast.error("Error al crear la orden", {
@@ -99,7 +98,7 @@ export default function CheckoutPage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [allItemsHaveArt, clearCart, items, router, totalPrice]);
+  }, [allItemsHaveArt, items, router, totalPrice]);
 
   useEffect(() => {
     const fromLogin = searchParams.get("fromLogin");
