@@ -28,10 +28,9 @@ const TOAST_MESSAGES: Record<string, ToastConfig> = {
   invalidOrderStatus: {
     title: "Estado inválido",
     description: (data) =>
-      `La orden no está en estado de pago (${data.status}).`,
+      `La orden debe estar en estado "Esperando pago", pero está en estado "${data.status}".`,
     type: "error",
   },
-  // Add more toast configurations here
 };
 
 const ToastContext = createContext<ToastContextType>({
