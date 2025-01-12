@@ -219,7 +219,9 @@ export default function OrdersPage() {
             </div>
           ) : (
             <div className="h-full flex items-center justify-center text-muted-foreground">
-              Selecciona una orden para ver sus detalles
+              {orders.length > 0
+                ? "Selecciona una orden para ver sus detalles"
+                : "No tienes órdenes"}
             </div>
           )}
         </div>
