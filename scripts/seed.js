@@ -260,7 +260,7 @@ const seed = async () => {
       },
       pricing: {
         minimumPurchase: 10000,
-        baseUnitPrice: 110,
+        baseUnitPrice: 75,
         optionMultipliers: {
           sides: { diptic: 1, triptic: 1.5 },
           finish: {},
@@ -273,10 +273,9 @@ const seed = async () => {
           dimensions: { [[11, 8.5]]: 1 },
         },
         quantityDiscountMultipliers: [
-          [1000, 0.8],
-          [500, 0.85],
+          [1000, 0.65],
+          [500, 0.8],
           [100, 0.9],
-          [50, 0.95],
         ],
       },
       isPublic: true,
