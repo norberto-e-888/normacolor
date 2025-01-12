@@ -29,7 +29,7 @@ export default async function PaymentLayout({
 
   if (order.status !== OrderStatus.WaitingForPayment) {
     redirect(
-      `/productos?toast=invalidOrderStatus&toastData_status=${order.status}}`
+      `/productos?toast=invalidOrderStatus&toastData_status=${order.status}`
     );
   }
 
