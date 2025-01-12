@@ -2,7 +2,6 @@
 
 import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 import { LockIcon } from "lucide-react";
-import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -88,18 +87,6 @@ export default function PaymentPage() {
         </div>
 
         <div className="space-y-6">
-          <div className="flex items-center justify-center gap-2 text-sm text-gray-600 mb-4">
-            <span>Procesado de forma segura por</span>
-            <Image
-              src="/svg/paypal.svg"
-              alt="PayPal"
-              width={80}
-              height={20}
-              className="inline-block"
-              priority
-            />
-          </div>
-
           <PayPalScriptProvider
             options={{
               clientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID!,
