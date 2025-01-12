@@ -33,6 +33,11 @@ const TOAST_MESSAGES: Record<ToastType, ToastConfig> = {
       `La orden debe estar en estado "Esperando pago", pero está en estado "${data.orderStatus}".`,
     type: "error",
   },
+  [ToastType.PaymentSuccess]: {
+    title: "Pago exitoso",
+    description: "Tu pago fue procesado con éxito.",
+    type: "success",
+  },
 };
 
 const ToastContext = createContext<ToastContextType>({

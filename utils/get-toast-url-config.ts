@@ -4,6 +4,7 @@ export enum ToastType {
   OrderNotFound = "orderNotFound",
   Unauthorized = "unauthorized",
   InvalidOrderStatus = "invalidOrderStatus",
+  PaymentSuccess = "paymentSuccess",
 }
 
 export const getToastUrlConfig = (
