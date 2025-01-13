@@ -1,9 +1,21 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import { useCart } from "@/hooks/useCart";
 
 export function CartCount() {
+  const [mounted, setMounted] = useState(false);
   const totalItems = useCart((state) => state.totalItems());
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Return empty span during server render and hydration
+  if (!mounted) {
+    return <span className="hidden" />;
+  }
 
   if (totalItems === 0) {
     return null;
