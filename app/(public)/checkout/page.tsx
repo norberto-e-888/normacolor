@@ -306,7 +306,7 @@ export default function CheckoutPage() {
                   }`}
                 >
                   <FileImage className="w-5 h-5 inline-block mr-2" />
-                  Galería
+                  Plantillas
                 </button>
                 <button
                   onClick={() => setSelectedTab("custom")}

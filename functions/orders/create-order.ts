@@ -25,7 +25,10 @@ const s3 = new S3Client({
   },
 });
 
-type CreateOrderItem = Omit<OrderProduct, "productSnapshot" | "totalPrice"> & {
+type CreateOrderItem = Omit<
+  OrderProduct,
+  "productSnapshot" | "totalPrice" | "id" | "_id"
+> & {
   art: { source: ArtSource; value: string };
 };
 
@@ -134,7 +137,7 @@ export const createOrder = async (
       validatedOptions.dimensions = dimensions as [number, number];
     }
 
-    const cartItem: OrderProduct = {
+    const cartItem: Omit<OrderProduct, "id" | "_id"> = {
       productId: item.productId,
       quantity: item.quantity,
       options: validatedOptions,

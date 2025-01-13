@@ -31,7 +31,6 @@ export class DesignerChat {
     const key = this.getMessagesKey(message.orderItemId);
     const id = crypto.randomUUID();
     const timestamp = Date.now();
-
     const chatMessage: ChatMessage = {
       ...message,
       id,
@@ -50,7 +49,8 @@ export class DesignerChat {
   static async getMessages(orderItemId: string, limit = 50) {
     const key = this.getMessagesKey(orderItemId);
     const messages = await chatRedis.lrange(key, 0, limit - 1);
-    return messages.map((msg) => JSON.parse(msg) as ChatMessage);
+    // this casting is safe because our Redis deployment automatically serializes and deserializes JSON
+    return messages as unknown as ChatMessage[];
   }
 
   static async addDesignerImage(orderItemId: string, imageUrl: string) {

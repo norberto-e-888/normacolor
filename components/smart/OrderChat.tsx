@@ -15,6 +15,7 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -35,7 +36,13 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
   }, [orderId, itemId]);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesContainerRef.current && chatEndRef.current) {
+      const container = messagesContainerRef.current;
+      const scrollHeight = container.scrollHeight;
+      const height = container.clientHeight;
+      const maxScroll = scrollHeight - height;
+      container.scrollTop = maxScroll > 0 ? maxScroll : 0;
+    }
   }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,7 +76,10 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
     <div className="mt-4 border-t pt-4">
       <h4 className="font-medium mb-3">Chat con diseñador</h4>
 
-      <div className="bg-gray-50 rounded-lg p-4 h-64 overflow-y-auto mb-4">
+      <div
+        ref={messagesContainerRef}
+        className="bg-gray-50 rounded-lg p-4 h-64 overflow-y-auto mb-4 relative"
+      >
         <div className="space-y-4">
           {messages.map((message) => (
             <div
@@ -94,7 +104,7 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
               </div>
             </div>
           ))}
-          <div ref={chatEndRef} />
+          <div ref={chatEndRef} className="h-0 w-full" />
         </div>
       </div>
 

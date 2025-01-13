@@ -47,7 +47,7 @@ export function OrderDetail({ order }: OrderDetailProps) {
               ))}
               {item.art && (
                 <div className="mt-4">
-                  <p className="text-sm font-medium mb-2">Arte:</p>
+                  <p className="text-sm font-medium mb-2">Plantilla:</p>
                   {item.art?.source === ArtSource.Freepik ? (
                     <div className="relative w-32 h-32">
                       <FreepikImage id={item.art.value} />
