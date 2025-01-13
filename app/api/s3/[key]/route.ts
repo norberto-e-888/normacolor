@@ -4,7 +4,10 @@ import { getSignedDownloadUrl } from "@/lib/server/s3";
 
 export async function GET(_: Request, { params }: { params: { key: string } }) {
   try {
-    const downloadUrl = await getSignedDownloadUrl(params.key);
+    const downloadUrl = await getSignedDownloadUrl(
+      `uploads/${params.key}/preview.png`
+    );
+
     return NextResponse.json({ url: downloadUrl });
   } catch (error) {
     console.error("Error generating signed URL:", error);

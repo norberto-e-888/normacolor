@@ -5,6 +5,7 @@ import { formatCents } from "@/utils";
 
 import { FreepikImage } from "./FreepikImage";
 import { OrderChat } from "./OrderChat";
+import { S3Image } from "./S3Image";
 
 interface OrderDetailProps {
   order: Order<true>;
@@ -50,15 +51,13 @@ export function OrderDetail({ order }: OrderDetailProps) {
                   <p className="text-sm font-medium mb-2">
                     {item.art.source === "freepik" ? "Plantilla" : "Diseño"}:
                   </p>
-                  {item.art?.source === ArtSource.Freepik ? (
-                    <div className="relative w-32 h-32">
+                  <div className="relative w-32 h-32">
+                    {item.art?.source === ArtSource.Freepik ? (
                       <FreepikImage id={item.art.value} />
-                    </div>
-                  ) : (
-                    <div className="text-sm text-muted-foreground">
-                      Arte personalizado
-                    </div>
-                  )}
+                    ) : (
+                      <S3Image s3Key={item.art.value} />
+                    )}
+                  </div>
                 </div>
               )}
               <OrderChat orderId={order.id} itemId={item.id} />
