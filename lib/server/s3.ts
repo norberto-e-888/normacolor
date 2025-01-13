@@ -15,20 +15,20 @@ export const s3 = new S3Client({
   },
 });
 
-export async function getSignedUploadUrl(key: string, expiresIn = 3600) {
+export async function getSignedUploadUrl(s3Key: string, expiresIn = 3600) {
   const command = new PutObjectCommand({
     Bucket: config.AWS_BUCKET_NAME,
-    Key: key,
+    Key: s3Key,
     ContentType: "image/vnd.adobe.photoshop",
   });
 
   return getSignedUrl(s3, command, { expiresIn });
 }
 
-export async function getSignedDownloadUrl(key: string, expiresIn = 3600) {
+export async function getSignedDownloadUrl(s3Key: string, expiresIn = 3600) {
   const command = new GetObjectCommand({
     Bucket: config.AWS_BUCKET_NAME,
-    Key: key,
+    Key: s3Key,
   });
 
   return getSignedUrl(s3, command, { expiresIn });
