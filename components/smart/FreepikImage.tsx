@@ -18,8 +18,18 @@ export function FreepikImage({ id }: { id: string }) {
         if (!response.ok) {
           throw new Error("Failed to fetch image URL");
         }
-        const data = await response.json();
-        setImageUrl(data.url);
+
+        // Check content type to handle both JSON and direct image responses
+        const contentType = response.headers.get("content-type");
+        if (contentType?.includes("application/json")) {
+          const data = await response.json();
+          setImageUrl(data.url);
+        } else {
+          // If it's not JSON, assume it's a direct image URL
+          const blob = await response.blob();
+          const url = URL.createObjectURL(blob);
+          setImageUrl(url);
+        }
       } catch (err) {
         console.error(err, "Failed to load Freepik image");
         setError(err instanceof Error ? err.message : "Failed to load image");

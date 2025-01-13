@@ -12,6 +12,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
     const cachedUrl = await redis.get<string>(cacheKey);
 
     if (cachedUrl) {
+      console.log("Cache hit for key:", cacheKey);
       return NextResponse.json({ url: cachedUrl });
     }
 
@@ -29,19 +30,36 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Freepik API error:", errorText);
-      return new NextResponse("Failed to fetch from Freepik", { status: 502 });
+      console.error("Freepik API error:", {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText,
+        id: params.id,
+      });
+
+      throw new Error("Failed to fetch from Freepik");
     }
 
     const data = await response.json();
+    console.log("Freepik API response for ID:", params.id, {
+      hasData: !!data.data,
+      hasPreview: !!data.data?.preview,
+      previewUrl: data.data?.preview?.url,
+    });
+
+    if (!data.data?.preview?.url) {
+      throw new Error("No preview URL in Freepik response");
+    }
+
     const previewUrl = data.data.preview.url;
 
-    console.log({ previewUrl });
-
-    if (!previewUrl) {
-      return new NextResponse("No preview URL in Freepik response", {
-        status: 502,
-      });
+    // Verify the URL is valid
+    try {
+      new URL(previewUrl);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_: unknown) {
+      console.error("Invalid preview URL:", previewUrl);
+      throw new Error("Invalid preview URL");
     }
 
     // Cache the preview URL
@@ -51,8 +69,10 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
   } catch (error) {
     console.error("Error processing Freepik image:", {
       error,
-      params,
+      id: params.id,
+      errorMessage: error instanceof Error ? error.message : String(error),
     });
-    return new NextResponse("Internal Server Error", { status: 500 });
+
+    throw new Error("Internal server error");
   }
 }
