@@ -14,7 +14,7 @@ export function S3Image({ s3Key }: { s3Key: string }) {
   useEffect(() => {
     const fetchImageUrl = async () => {
       try {
-        // Extract just the key part if it's a full s3:// URL
+        // Extract folder path and replace original.psd with preview.png
         const key = s3Key.startsWith("s3://")
           ? s3Key.replace(
               "s3://" + process.env.NEXT_PUBLIC_AWS_BUCKET_NAME + "/",
@@ -22,7 +22,11 @@ export function S3Image({ s3Key }: { s3Key: string }) {
             )
           : s3Key;
 
-        const response = await fetch(`/api/s3/${encodeURIComponent(key)}`);
+        const previewKey = key.replace("/original.psd", "/preview.png");
+
+        const response = await fetch(
+          `/api/s3/${encodeURIComponent(previewKey)}`
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch image URL");
         }

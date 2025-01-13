@@ -1,4 +1,4 @@
-import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import fs from "fs/promises";
 import { NextResponse } from "next/server";

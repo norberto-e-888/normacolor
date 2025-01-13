@@ -3,19 +3,15 @@ import { v4 as uuid } from "uuid";
 
 import { getSignedUploadUrl } from "@/lib/server/s3";
 
-export async function POST(request: Request) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function POST(_: Request) {
   try {
-    const { contentType } = await request.json();
-    if (!contentType) {
-      return new NextResponse("Content type is required", { status: 400 });
-    }
-
-    const key = `uploads/${uuid()}.psd`;
-    const uploadUrl = await getSignedUploadUrl(key);
+    const folderKey = `uploads/${uuid()}`;
+    const uploadUrl = await getSignedUploadUrl(`${folderKey}/original.psd`);
 
     return NextResponse.json({
       uploadUrl,
-      key,
+      folderKey,
     });
   } catch (error) {
     console.error("Error generating signed URL:", error);

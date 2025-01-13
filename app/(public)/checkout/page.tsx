@@ -171,29 +171,42 @@ export default function CheckoutPage() {
 
     setIsUploading(true);
     try {
-      // Get signed URL for upload
+      // Get signed URL and folder key for upload
       const response = await fetch("/api/s3/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ contentType: "application/octet-stream" }),
       });
 
       if (!response.ok) throw new Error("Failed to get upload URL");
-      const { uploadUrl, key } = await response.json();
+      const { uploadUrl, folderKey } = await response.json();
 
-      // Upload file
+      // Upload PSD to S3
       await fetch(uploadUrl, {
         method: "PUT",
         body: file,
         headers: {
           "Content-Type": "application/octet-stream",
+          "x-amz-acl": "private",
         },
       });
+
+      // Process PSD and create preview
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folderKey", folderKey);
+
+      const processResponse = await fetch("/api/s3/process", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!processResponse.ok) throw new Error("Failed to process PSD");
+      const { psdKey } = await processResponse.json();
 
       // Update cart item with S3 key
       updateItemArt(selectedItemId, {
         source: ArtSource.Custom,
-        value: key,
+        value: `s3://${process.env.NEXT_PUBLIC_AWS_BUCKET_NAME}/${psdKey}`,
       });
 
       setSelectedItemId(null);
