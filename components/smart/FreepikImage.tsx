@@ -14,7 +14,7 @@ export function FreepikImage({ id }: { id: string }) {
   useEffect(() => {
     const fetchImageUrl = async () => {
       try {
-        const response = await fetch(`/api/freepik/${id}`);
+        const response = await fetch(`/api/s3/freepik/${id}`);
         if (!response.ok) {
           throw new Error("Failed to fetch image URL");
         }

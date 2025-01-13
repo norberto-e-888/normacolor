@@ -63,6 +63,7 @@ export default function CheckoutPage() {
     }
 
     try {
+      // Create a simplified cart object with only the necessary data
       const cart = items.map(({ productId, quantity, options, art }) => ({
         productId,
         quantity,
@@ -70,27 +71,7 @@ export default function CheckoutPage() {
         art: art!,
       }));
 
-      const { uploadUrls, order } = await createOrder(cart, totalPrice());
-
-      if (uploadUrls.length > 0) {
-        await Promise.all(
-          uploadUrls.map(async ({ url, itemId }) => {
-            const item = items.find((i) => i.productId === itemId);
-            if (!item?.art || item.art.source !== ArtSource.Custom) return;
-
-            const response = await fetch(item.art.value);
-            const blob = await response.blob();
-            await fetch(url, {
-              method: "PUT",
-              body: blob,
-              headers: {
-                "Content-Type": "application/octet-stream",
-              },
-            });
-          })
-        );
-      }
-
+      const { order } = await createOrder(cart, totalPrice());
       router.push(`/pagar/${order.id}`);
     } catch (error) {
       console.error("Error creating order:", error);

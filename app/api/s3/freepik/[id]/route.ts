@@ -89,7 +89,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
     await Promise.all([fs.unlink(tempPsdPath), fs.unlink(tempPngPath)]);
 
     // Upload to S3
-    const s3Key = `freepik/${params.id}/${uuid()}.png`;
+    const s3Key = `freepik/${params.id}.png`;
     await uploadToS3(s3Key, pngBuffer);
 
     // Cache the S3 key

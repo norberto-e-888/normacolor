@@ -1,11 +1,7 @@
 "use server";
 
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import mongoose from "mongoose";
-import { v4 as uuid } from "uuid";
 
-import { config } from "@/config";
 import {
   ArtSource,
   Order,
@@ -16,14 +12,6 @@ import {
 import { getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
 import { calculatePrice } from "@/utils/calculate-price";
-
-const s3 = new S3Client({
-  region: "us-east-1",
-  credentials: {
-    accessKeyId: config.AWS_ACCESS_KEY,
-    secretAccessKey: config.AWS_SECRET_KEY,
-  },
-});
 
 type CreateOrderItem = Omit<
   OrderProduct,
@@ -37,7 +25,6 @@ export const createOrder = async (
   total: number
 ): Promise<{
   order: Order;
-  uploadUrls: UploadUrl[];
 }> => {
   await connectToMongo();
 
@@ -61,28 +48,7 @@ export const createOrder = async (
     {}
   );
 
-  // Generate presigned URLs for custom art uploads
-  const uploadUrls = await Promise.all(
-    cart.map(async (item) => {
-      if (item.art.source !== ArtSource.Custom) return null;
-
-      const key = `orders/${uuid()}.psd`;
-      const command = new PutObjectCommand({
-        Bucket: config.AWS_BUCKET_NAME,
-        Key: key,
-      });
-
-      const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
-
-      return {
-        itemId: item.productId,
-        url,
-        key,
-      };
-    })
-  );
-
-  // Update cart items with product snapshots and S3 URLs for custom arts
+  // Update cart items with product snapshots and format art paths
   const updatedCart = cart.map((item) => {
     const product = productMap[item.productId];
     if (!product) {
@@ -156,15 +122,22 @@ export const createOrder = async (
 
     if (item.art) {
       if (item.art.source === ArtSource.Custom) {
-        const upload = uploadUrls.find((u) => u?.itemId === item.productId);
-        if (upload) {
-          cartItem.art = {
-            source: item.art.source,
-            value: `s3://${config.AWS_BUCKET_NAME}/${upload.key}`,
-          };
+        // Extract folder UUID from the S3 path
+        const matches = item.art.value.match(/uploads\/([^/]+)/);
+        if (!matches) {
+          throw new Error("Invalid custom art path format");
         }
+        const folderUuid = matches[1];
+        cartItem.art = {
+          source: ArtSource.Custom,
+          value: folderUuid,
+        };
       } else {
-        cartItem.art = item.art;
+        // For Freepik, just store the ID
+        cartItem.art = {
+          source: ArtSource.Freepik,
+          value: item.art.value,
+        };
       }
     }
 
@@ -189,8 +162,5 @@ export const createOrder = async (
 
   return {
     order: order.toObject(),
-    uploadUrls: uploadUrls.filter(Boolean) as UploadUrl[],
   };
 };
-
-type UploadUrl = { itemId: string; url: string; key: string };
