@@ -1,21 +1,20 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronRight, Package } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useIntersectionObserver } from "usehooks-ts";
 
-import { FreepikImage } from "@/components/smart/FreepikImage";
+import { OrderDetail } from "@/components/smart/OrderDetail";
+import { OrderListItem } from "@/components/smart/OrderListItem";
 import { Content } from "@/components/ui";
-import { ArtSource, Order, OrderStatus } from "@/database";
-import { formatCents } from "@/utils";
+import { Order } from "@/database";
 
 export default function OrdersPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [orders, setOrders] = useState<Order<true>[]>([]);
+  const [selectedOrder, setSelectedOrder] = useState<Order<true> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
@@ -77,7 +76,7 @@ export default function OrdersPage() {
     }
   }, [isIntersecting, nextCursor, isFetchingMore]);
 
-  const handleOrderClick = async (order: Order) => {
+  const handleOrderClick = async (order: Order<true>) => {
     setSelectedOrder(order);
     router.replace(`/ordenes?selectedId=${order.id}`, { scroll: false });
   };
@@ -121,37 +120,13 @@ export default function OrdersPage() {
                         : false
                     }
                     animate={{ scale: 1, opacity: 1 }}
-                    className={`
-                      cursor-pointer p-4 rounded-lg border transition-colors
-                      ${
-                        justPaidOrderId === order.id
-                          ? "border-green-500 bg-green-50"
-                          : selectedOrder?.id === order.id
-                          ? "border-primary bg-primary/5"
-                          : "hover:border-primary/50"
-                      }
-                    `}
-                    onClick={() => handleOrderClick(order)}
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Package className="w-5 h-5 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium">
-                            Orden #{order.id.slice(-8)}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(order.createdAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">
-                          {formatCents(order.total)}
-                        </span>
-                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                      </div>
-                    </div>
+                    <OrderListItem
+                      order={order}
+                      isSelected={selectedOrder?.id === order.id}
+                      justPaid={justPaidOrderId === order.id}
+                      onClick={handleOrderClick}
+                    />
                   </motion.div>
                 ))}
               </AnimatePresence>
@@ -167,81 +142,7 @@ export default function OrdersPage() {
 
         <div className="w-full md:w-1/2 lg:w-3/5 h-full overflow-y-auto">
           {selectedOrder ? (
-            <div className="p-6 border rounded-lg">
-              <h2 className="text-xl font-bold mb-6">Detalles de la Orden</h2>
-              <div className="space-y-6">
-                <div>
-                  <h3 className="font-medium mb-2">Estado</h3>
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm ${
-                      selectedOrder.status === OrderStatus.Paid
-                        ? "bg-green-100 text-green-800"
-                        : "bg-yellow-100 text-yellow-800"
-                    }`}
-                  >
-                    {selectedOrder.status === OrderStatus.Paid
-                      ? "Pagado"
-                      : "Pendiente"}
-                  </span>
-                </div>
-
-                <div>
-                  <h3 className="font-medium mb-2">Productos</h3>
-                  <div className="space-y-4">
-                    {selectedOrder.cart.map((item) => (
-                      <div
-                        key={item.productId}
-                        className="border rounded-lg p-4"
-                      >
-                        <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-medium">
-                            {item.productSnapshot.name}
-                          </h4>
-                          <span className="text-sm">
-                            {formatCents(item.totalPrice)}
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          Cantidad: {item.quantity}
-                        </p>
-                        {Object.entries(item.options).map(([key, value]) => (
-                          <p
-                            key={key}
-                            className="text-sm text-muted-foreground"
-                          >
-                            {key}:{" "}
-                            {Array.isArray(value) ? value.join("x") : value}
-                          </p>
-                        ))}
-                        {item.art && (
-                          <div className="mt-4">
-                            <p className="text-sm font-medium mb-2">Arte:</p>
-                            {item.art?.source === ArtSource.Freepik ? (
-                              <div className="relative w-32 h-32">
-                                <FreepikImage id={item.art.value} />
-                              </div>
-                            ) : (
-                              <div className="text-sm text-muted-foreground">
-                                Arte personalizado
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="border-t pt-4">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium">Total</span>
-                    <span className="font-bold text-lg">
-                      {formatCents(selectedOrder.total)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <OrderDetail order={selectedOrder} />
           ) : (
             <div className="h-full flex items-center justify-center">
               <p className="text-lg text-muted-foreground">

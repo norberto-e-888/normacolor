@@ -32,6 +32,11 @@ export async function GET(request: Request) {
         ...doc,
         id: doc._id.toString(),
         _id: undefined,
+        cart: doc.cart.map((item) => ({
+          ...item,
+          id: item._id.toString(),
+          _id: undefined,
+        })),
       }))
     );
 
@@ -57,6 +62,11 @@ export async function GET(request: Request) {
               ...doc,
               id: doc._id.toString(),
               _id: undefined,
+              cart: doc.cart.map((item) => ({
+                ...item,
+                id: item._id.toString(),
+                _id: undefined,
+              })),
             }
           : null
       );

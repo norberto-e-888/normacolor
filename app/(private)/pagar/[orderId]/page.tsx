@@ -13,7 +13,7 @@ import { getToastUrlConfig, ToastType } from "@/utils/get-toast-url-config";
 export default function PaymentPage() {
   const { orderId } = useParams();
   const router = useRouter();
-  const [order, setOrder] = useState<Order | null>(null);
+  const [order, setOrder] = useState<Order<true> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const { clearCart } = useCart();

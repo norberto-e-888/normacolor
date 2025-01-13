@@ -5,7 +5,7 @@ import { getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
 
 export async function GET(
-  request: Request,
+  _: Request,
   { params }: { params: { orderId: string } }
 ) {
   const session = await getServerSession();
@@ -24,5 +24,17 @@ export async function GET(
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  return NextResponse.json({ order: order.toObject() });
+  const cart = order.cart.map((item) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ...(item as any).toObject(),
+    id: item._id.toString(),
+    _id: undefined,
+  }));
+
+  return NextResponse.json({
+    order: {
+      ...order.toObject(),
+      cart,
+    },
+  });
 }

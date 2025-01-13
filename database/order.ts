@@ -1,4 +1,4 @@
-import mongoose, { Model } from "mongoose";
+import mongoose, { Document, Model } from "mongoose";
 
 import {
   BaseModel,
@@ -40,7 +40,7 @@ export type OrderArt = {
 
 export type Order<FE = false> = {
   customerId: FE extends true ? string : mongoose.Types.ObjectId;
-  cart: OrderProduct[];
+  cart: FE extends true ? OrderProduct[] : Document<OrderProduct>[];
   total: number;
   status: OrderStatus;
 } & BaseModel;
@@ -242,7 +242,7 @@ orderSchema.method(
   async function validateOptions(this: Order): Promise<boolean> {
     const products = await Product.find({
       _id: {
-        $in: this.cart.map(({ productId }) => productId),
+        $in: this.cart.map((doc) => doc.toObject().productId),
       },
     });
 
@@ -256,7 +256,8 @@ orderSchema.method(
       {}
     );
 
-    for (const { productId, options: given } of this.cart) {
+    for (const itemDoc of this.cart) {
+      const { options: given, productId } = itemDoc.toObject();
       const required = optionsMap[productId];
 
       for (const [name, allowed] of Object.entries(required)) {
