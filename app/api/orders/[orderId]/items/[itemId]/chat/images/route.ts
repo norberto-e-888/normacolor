@@ -41,7 +41,7 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: { params: { orderId: string; productId: string } }
+  { params }: { params: { orderId: string; itemId: string } }
 ) {
   const session = (await getServerSession()) as ExtendedSession;
   if (!session || session.user.role !== UserRole.Admin) {
@@ -55,7 +55,7 @@ export async function POST(
     return new NextResponse("Order not found", { status: 404 });
   }
 
-  const orderItem = order.cart.find((item) => item.id === params.productId);
+  const orderItem = order.cart.find((item) => item.id === params.itemId);
   if (!orderItem) {
     return new NextResponse("Order item not found", { status: 404 });
   }

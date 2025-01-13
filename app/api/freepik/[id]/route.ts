@@ -1,8 +1,4 @@
-import {
-  GetObjectCommand,
-  PutObjectCommand,
-  S3Client,
-} from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import fs from "fs/promises";
 import { NextResponse } from "next/server";
@@ -13,19 +9,9 @@ import { v4 as uuid } from "uuid";
 
 import { config } from "@/config";
 import { redis } from "@/lib/server/redis";
+import { getSignedDownloadUrl, s3, uploadToS3 } from "@/lib/server/s3";
 
-const s3 = new S3Client({
-  region: "us-east-1",
-  credentials: {
-    accessKeyId: config.AWS_ACCESS_KEY,
-    secretAccessKey: config.AWS_SECRET_KEY,
-  },
-});
-
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(_: Request, { params }: { params: { id: string } }) {
   try {
     // Check Redis cache first
     const cacheKey = `freepik:image:${params.id}`;
@@ -104,25 +90,11 @@ export async function GET(
 
     // Upload to S3
     const s3Key = `freepik/${params.id}/${uuid()}.png`;
-    const putCommand = new PutObjectCommand({
-      Bucket: config.AWS_BUCKET_NAME,
-      Key: s3Key,
-      Body: pngBuffer,
-      ContentType: "image/png",
-    });
-
-    await s3.send(putCommand);
+    await uploadToS3(s3Key, pngBuffer);
 
     // Cache the S3 key
     await redis.set(cacheKey, s3Key);
-
-    // Generate signed URL for the uploaded object
-    const getCommand = new GetObjectCommand({
-      Bucket: config.AWS_BUCKET_NAME,
-      Key: s3Key,
-    });
-
-    const signedUrl = await getSignedUrl(s3, getCommand, { expiresIn: 3600 });
+    const signedUrl = await getSignedDownloadUrl(s3Key);
 
     return NextResponse.json({ url: signedUrl });
   } catch (error) {
