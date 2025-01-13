@@ -52,8 +52,7 @@ export type OrderProduct = {
   quantity: number;
   totalPrice: number;
   art?: OrderArt;
-  designerImageUrls: string[]; // S3 URLs for designer's work-in-progress images
-};
+} & Omit<BaseModel, "createdAt" | "updatedAt">;
 
 export type ProductSnapshot = Pick<
   Product,
@@ -82,7 +81,7 @@ const orderArtSchema = new mongoose.Schema<OrderArt>(
   { _id: false }
 );
 
-const orderProductSchema = new mongoose.Schema<OrderProduct>(
+const orderProductSchema = getSchema<OrderProduct>(
   {
     productId: {
       type: String,
@@ -195,18 +194,10 @@ const orderProductSchema = new mongoose.Schema<OrderProduct>(
       required: true,
       set: round,
     },
-    designerImageUrls: {
-      type: [String],
-      required: true,
-      default: [],
-      validate: {
-        validator: (urls: string[]) =>
-          urls.every((url) => url.startsWith("s3://")),
-        message: "Designer image URLs must be S3 URLs",
-      },
-    },
   },
-  { _id: false }
+  {
+    timestamps: false,
+  }
 );
 
 const orderSchema = getSchema<Order>({

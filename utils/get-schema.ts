@@ -2,18 +2,20 @@ import mongoose, { SchemaDefinition, SchemaOptions } from "mongoose";
 
 import { BaseModel } from "./base-model";
 
-export const getSchema = <M extends BaseModel>(
+export const getSchema = <
+  M extends BaseModel | Omit<BaseModel, "createdAt" | "updatedAt">
+>(
   definition: SchemaDefinition<M>,
   options: SchemaOptions<M> & {
     omitFromTransform?: (keyof M)[];
   } = {}
 ) => {
-  const { omitFromTransform, ...optionsRest } = options;
+  const { omitFromTransform, timestamps = true, ...optionsRest } = options;
 
   return new mongoose.Schema(definition, {
+    timestamps,
     ...optionsRest,
     id: true,
-    timestamps: true,
     toObject: {
       virtuals: true,
       getters: true,
