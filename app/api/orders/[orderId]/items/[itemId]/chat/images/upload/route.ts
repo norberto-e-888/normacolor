@@ -11,7 +11,7 @@ export async function POST(
   { params }: { params: { orderId: string; itemId: string } }
 ) {
   const session = (await getServerSession()) as ExtendedSession;
-  if (!session || session.user.role !== UserRole.Admin) {
+  if (!session) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
@@ -22,13 +22,22 @@ export async function POST(
     return new NextResponse("Order not found", { status: 404 });
   }
 
+  if (
+    session.user.role === UserRole.Client &&
+    order.customerId.toString() !== session.user.id
+  ) {
+    return new NextResponse("Unauthorized", { status: 403 });
+  }
+
   const orderItem = order.cart.find((item) => item.id === params.itemId);
   if (!orderItem) {
     return new NextResponse("Order item not found", { status: 404 });
   }
 
   // Generate a unique key for the PSD file
-  const key = `designer-uploads/${orderItem.id}/${uuid()}.psd`;
+  const key = `${
+    session.user.role === UserRole.Admin ? "designer" : "client"
+  }-uploads/${orderItem.id}/${uuid()}.psd`;
 
   try {
     const uploadUrl = await getSignedUploadUrl(key);
