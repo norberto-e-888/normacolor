@@ -39,7 +39,7 @@ export class DesignerChat {
 
     await chatRedis
       .multi()
-      .lpush(key, JSON.stringify(chatMessage))
+      .rpush(key, JSON.stringify(chatMessage)) // Changed from lpush to rpush
       .expire(key, CHAT_TTL)
       .exec();
 
@@ -49,13 +49,17 @@ export class DesignerChat {
   static async getMessages(orderItemId: string, limit = 50) {
     const key = this.getMessagesKey(orderItemId);
     const messages = await chatRedis.lrange(key, 0, limit - 1);
-    // this casting is safe because our Redis deployment automatically serializes and deserializes JSON
+    // this casting is safe because our Redis instance automatically serializes and deserializes JSON
     return messages as unknown as ChatMessage[];
   }
 
   static async addDesignerImage(orderItemId: string, imageUrl: string) {
     const key = this.getImagesKey(orderItemId);
-    await chatRedis.multi().lpush(key, imageUrl).expire(key, CHAT_TTL).exec();
+    await chatRedis
+      .multi()
+      .rpush(key, imageUrl) // Changed from lpush to rpush for consistency
+      .expire(key, CHAT_TTL)
+      .exec();
   }
 
   static async getDesignerImages(orderItemId: string) {

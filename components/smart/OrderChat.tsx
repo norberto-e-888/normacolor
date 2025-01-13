@@ -17,6 +17,8 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
   const [isLoading, setIsLoading] = useState(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const shouldFocusRef = useRef(false);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -45,6 +47,14 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
     }
   }, [messages]);
 
+  // Focus effect
+  useEffect(() => {
+    if (shouldFocusRef.current) {
+      inputRef.current?.focus();
+      shouldFocusRef.current = false;
+    }
+  }, [messages]); // Re-run when messages change
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMessage.trim() || isLoading) return;
@@ -65,6 +75,7 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
       const { message } = await response.json();
       setMessages((prev) => [...prev, message]);
       setNewMessage("");
+      shouldFocusRef.current = true; // Set flag to focus after state updates
     } catch (error) {
       console.error("Error sending message:", error);
     } finally {
@@ -110,6 +121,7 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
 
       <form onSubmit={handleSubmit} className="flex gap-2">
         <input
+          ref={inputRef}
           type="text"
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
