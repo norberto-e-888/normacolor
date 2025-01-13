@@ -29,8 +29,7 @@ export const fetchArts = async ({
 
   const params = {
     term,
-    "filters[psd][type]": "jpg",
-    "filters[license][premium]": "1",
+    "filters[content_type][psd]": "1",
   };
 
   const response = await fetch(
