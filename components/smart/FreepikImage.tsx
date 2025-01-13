@@ -3,10 +3,13 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
+import { Modal } from "@/components/ui/modal";
+
 export function FreepikImage({ id }: { id: string }) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchImageUrl = async () => {
@@ -45,15 +48,33 @@ export function FreepikImage({ id }: { id: string }) {
   }
 
   return (
-    <div className="relative w-32 h-32">
-      <Image
-        src={imageUrl}
-        alt="Art preview"
-        fill
-        className="object-contain"
-        sizes="(max-width: 768px) 128px, 128px"
-        priority
-      />
-    </div>
+    <>
+      <div
+        className="relative w-32 h-32 cursor-pointer"
+        onClick={() => setIsModalOpen(true)}
+      >
+        <Image
+          src={imageUrl}
+          alt="Art preview"
+          fill
+          className="object-contain hover:opacity-90 transition-opacity"
+          sizes="(max-width: 768px) 128px, 128px"
+          priority
+        />
+      </div>
+
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <div className="relative w-[80vw] h-[80vh]">
+          <Image
+            src={imageUrl}
+            alt="Art preview"
+            fill
+            className="object-contain"
+            sizes="80vw"
+            priority
+          />
+        </div>
+      </Modal>
+    </>
   );
 }
