@@ -8,6 +8,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 
+import { FreepikImage } from "@/components/smart/FreepikImage";
+import { S3Image } from "@/components/smart/S3Image";
 import { Content, Tooltip } from "@/components/ui";
 import { ArtSource } from "@/database";
 import { Art, fetchArts } from "@/functions/art";
@@ -39,6 +41,7 @@ export default function CheckoutPage() {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [arts, setArts] = useState<Art[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const payCtaShown = useRef(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -60,7 +63,6 @@ export default function CheckoutPage() {
     }
 
     try {
-      // Create a simplified cart object with only the necessary data
       const cart = items.map(({ productId, quantity, options, art }) => ({
         productId,
         quantity,
@@ -103,7 +105,6 @@ export default function CheckoutPage() {
   useEffect(() => {
     const fromLogin = searchParams.get("fromLogin");
     if (fromLogin === "true" && !payCtaShown.current) {
-      // Add small delay to ensure toast component is mounted
       const timer = setTimeout(() => {
         payCtaShown.current = true;
         toast.success("Ahora puedes proceder con el pago", {
@@ -168,12 +169,45 @@ export default function CheckoutPage() {
       return;
     }
 
-    updateItemArt(selectedItemId, {
-      source: ArtSource.Custom,
-      value: URL.createObjectURL(file),
-    });
+    setIsUploading(true);
+    try {
+      // Get signed URL for upload
+      const response = await fetch("/api/s3/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contentType: "application/octet-stream" }),
+      });
 
-    setSelectedItemId(null);
+      if (!response.ok) throw new Error("Failed to get upload URL");
+      const { uploadUrl, key } = await response.json();
+
+      // Upload file
+      await fetch(uploadUrl, {
+        method: "PUT",
+        body: file,
+        headers: {
+          "Content-Type": "application/octet-stream",
+        },
+      });
+
+      // Update cart item with S3 key
+      updateItemArt(selectedItemId, {
+        source: ArtSource.Custom,
+        value: key,
+      });
+
+      setSelectedItemId(null);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      toast.error("Error al subir el archivo", {
+        closeButton: true,
+      });
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
   };
 
   const handleRemoveItem = (id: string) => {
@@ -278,6 +312,13 @@ export default function CheckoutPage() {
                         >
                           Cambiar
                         </button>
+                        <div className="mt-2">
+                          {item.art.source === ArtSource.Freepik ? (
+                            <FreepikImage id={item.art.value} />
+                          ) : (
+                            <S3Image s3Key={item.art.value} />
+                          )}
+                        </div>
                       </div>
                     ) : (
                       <button
@@ -373,12 +414,18 @@ export default function CheckoutPage() {
                     accept=".psd"
                     onChange={handleFileSelect}
                     className="hidden"
+                    disabled={isUploading}
                   />
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+                    disabled={isUploading}
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50"
                   >
-                    Seleccionar archivo
+                    {isUploading ? (
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
+                    ) : (
+                      "Seleccionar archivo"
+                    )}
                   </button>
                 </div>
               )}
