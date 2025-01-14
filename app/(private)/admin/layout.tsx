@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { AdminLayout } from "@/components/smart/admin-layout"; // don't import from barrel file
+import { AdminLayout } from "@/components/smart/admin-layout";
 import { UserRole } from "@/database";
 import { ExtendedSession, getServerSession } from "@/functions/auth";
 

@@ -1,8 +1,11 @@
 "use client";
 
-import { Hexagon, ShoppingCart } from "lucide-react";
+import { Hexagon, LogOut, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
+import { Button } from "@/components/ui";
+import { signOut } from "@/functions/auth";
 
 import { CartCount } from "./cart-count";
 
@@ -42,6 +45,13 @@ function NavLink({
 }
 
 export function Navigation() {
+  const pathname = usePathname();
+
+  // Don't render navigation for admin pages
+  if (pathname.startsWith("/admin")) {
+    return null;
+  }
+
   return (
     <nav className="flex gap-8 items-center p-4 bg-primary text-primary-foreground shrink-0">
       <Link href="/login" className="flex gap-1 items-center">
@@ -54,13 +64,16 @@ export function Navigation() {
         <NavLink href="/ordenes">Ordenes</NavLink>
       </div>
 
-      <div className="ml-auto">
+      <div className="ml-auto flex items-center gap-4">
         <NavLink href="/checkout">
           <div className="relative">
             <ShoppingCart size="24px" />
             <CartCount />
           </div>
         </NavLink>
+        <Button variant="ghost" onClick={() => signOut()}>
+          <LogOut size="24px" />
+        </Button>
       </div>
     </nav>
   );
