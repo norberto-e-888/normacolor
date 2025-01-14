@@ -1,5 +1,8 @@
 "use client";
 
+import { Download } from "lucide-react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ArtSource, Order, OrderStatus } from "@/database";
+import { downloadArt } from "@/functions/art";
 import { formatCents } from "@/utils";
 
 import { FreepikImage } from "./freepik-image";
@@ -67,6 +71,23 @@ export function OrderDetail({
   onStatusChange,
 }: OrderDetailProps) {
   const canChangeStatus = isAdmin && order.status !== OrderStatus.Delivered;
+
+  const handleDownloadArt = async (artId: string) => {
+    try {
+      const { url } = await downloadArt(parseInt(artId));
+      // Create a temporary link and trigger download
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `template-${artId}.psd`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success("Descarga iniciada");
+    } catch (error) {
+      console.error("Error downloading art:", error);
+      toast.error("Error al descargar el arte");
+    }
+  };
 
   return (
     <div className="p-6 border rounded-lg space-y-6">
@@ -133,12 +154,25 @@ export function OrderDetail({
               ))}
               {item.art && (
                 <div className="mt-4">
-                  <p className="text-sm font-medium mb-2">
-                    {item.art.source === ArtSource.Freepik
-                      ? "Plantilla"
-                      : "Diseño"}
-                    :
-                  </p>
+                  <div className="flex justify-between items-start mb-2">
+                    <p className="text-sm font-medium">
+                      {item.art.source === ArtSource.Freepik
+                        ? "Plantilla"
+                        : "Diseño"}
+                      :
+                    </p>
+                    {isAdmin && item.art.source === ArtSource.Freepik && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => handleDownloadArt(item.art!.value)}
+                      >
+                        <Download className="w-4 h-4" />
+                        Descargar PSD
+                      </Button>
+                    )}
+                  </div>
                   <div className="relative w-32 h-32">
                     {item.art?.source === ArtSource.Freepik ? (
                       <FreepikImage id={item.art.value} />

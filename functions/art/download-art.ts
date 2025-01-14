@@ -1,17 +1,17 @@
 "use server";
 
-import { getSession } from "next-auth/react";
-
 import { SessionUser } from "@/auth";
 
+import { getServerSession } from "../auth";
+
 export const downloadArt = async (id: number): Promise<{ url: string }> => {
-  const session = await getSession();
+  const session = await getServerSession();
 
   if (!session) {
     throw new Error("Unauthorized");
   }
 
-  if ((session.user as SessionUser).role !== "admin") {
+  if ((session.user as SessionUser)?.role !== "admin") {
     throw new Error("Unauthorized");
   }
 
