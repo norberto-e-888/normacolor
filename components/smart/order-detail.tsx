@@ -1,12 +1,12 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
-  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui";
+} from "@/components/ui/dropdown-menu";
 import { ArtSource, Order, OrderStatus } from "@/database";
 import { formatCents } from "@/utils";
 

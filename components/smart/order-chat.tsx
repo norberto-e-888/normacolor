@@ -3,7 +3,7 @@
 import { Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import { Button } from "@/components/ui";
+import { Button } from "@/components/ui/button";
 import { ChatMessage } from "@/lib/server/designer-chat";
 
 interface OrderChatProps {

@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { SessionProvider } from "next-auth/react";
 
 import { UserRole } from "@/database";
 import { getServerSession } from "@/functions/auth";
@@ -15,5 +14,5 @@ export default async function LoginLayout({
     redirect(session.user.role === UserRole.Admin ? "/admin" : "/");
   }
 
-  return <SessionProvider>{children}</SessionProvider>;
+  return <>{children}</>;
 }

@@ -4,7 +4,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import { Tooltip } from "@/components/ui";
+import { Tooltip } from "@/components/ui/tool-tip";
 import {
   OrderProductOptions,
   Product,

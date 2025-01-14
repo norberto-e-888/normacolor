@@ -10,7 +10,8 @@ import { useDebouncedCallback } from "use-debounce";
 
 import { FreepikImage } from "@/components/smart/freepik-image";
 import { S3Image } from "@/components/smart/s3-image";
-import { Content, Tooltip } from "@/components/ui";
+import { Content } from "@/components/ui/content";
+import { Tooltip } from "@/components/ui/tool-tip";
 import { ArtSource } from "@/database";
 import { Art, fetchArts } from "@/functions/art";
 import { createOrder } from "@/functions/orders";

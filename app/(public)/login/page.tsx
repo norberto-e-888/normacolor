@@ -6,8 +6,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 
-import { OTPInput, SubmitButton } from "@/components/smart";
-import { Button, Container, Input, Separator } from "@/components/ui";
+import { OTPInput } from "@/components/smart/otp-input";
+import { SubmitButton } from "@/components/smart/submit-button";
+import { Button } from "@/components/ui/button";
+import { Content } from "@/components/ui/content";
+import { Input } from "@/components/ui/input";
 import { signInAsAdmin, signInWithMagicLink } from "@/functions/auth";
 
 export default function LoginPage() {
@@ -72,7 +75,7 @@ export default function LoginPage() {
   }, []);
 
   return (
-    <Container direction="row">
+    <Content padding={false} flex>
       <div className="hidden xl:block xl:w-1/2 relative">
         <Image
           src="/svg/login-hero.svg"
@@ -260,11 +263,15 @@ export default function LoginPage() {
 
             {!isAdminFlow && (
               <>
-                <div className="relative">
-                  <Separator className="my-8" />
-                  <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-2 text-sm text-muted-foreground">
-                    O continua con
-                  </span>
+                <div className="relative my-8">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-muted" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      O continua con
+                    </span>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
@@ -301,6 +308,6 @@ export default function LoginPage() {
           </main>
         </div>
       </div>
-    </Container>
+    </Content>
   );
 }

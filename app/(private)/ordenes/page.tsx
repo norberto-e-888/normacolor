@@ -7,7 +7,7 @@ import { useIntersectionObserver } from "usehooks-ts";
 
 import { OrderDetail } from "@/components/smart/order-detail";
 import { OrderListItem } from "@/components/smart/order-list-item";
-import { Content } from "@/components/ui";
+import { Content } from "@/components/ui/content";
 import { Order } from "@/database";
 
 export default function OrdersPage() {

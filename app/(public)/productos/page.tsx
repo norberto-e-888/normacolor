@@ -1,5 +1,5 @@
 import { ProductCard } from "@/components/smart/product-card";
-import { Content } from "@/components/ui";
+import { Content } from "@/components/ui/content";
 import { fetchProducts } from "@/functions/products";
 
 export default async function ProductsPage() {

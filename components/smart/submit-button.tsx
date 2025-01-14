@@ -2,7 +2,7 @@ import { Loader } from "lucide-react";
 import { ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 
-import { Button, ButtonProps } from "../ui";
+import { Button, ButtonProps } from "@/components/ui/button";
 
 export const SubmitButton = ({
   text,
