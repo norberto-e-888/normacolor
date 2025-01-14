@@ -2,12 +2,9 @@ import "./globals.css";
 
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { SessionProvider } from "next-auth/react";
-import { Toaster } from "sonner";
 
-import { Footer } from "@/components/smart/footer";
+import { Providers } from "@/components/providers";
 import { Navigation } from "@/components/smart/navigation";
-import { ToastProvider } from "@/hooks/use-toast";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -35,14 +32,16 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-full flex flex-col`}
       >
-        <SessionProvider>
-          <ToastProvider>
-            <Navigation />
-            <main className="flex-1 overflow-y-auto">{children}</main>
-            <Footer />
-            <Toaster richColors position="top-center" />
-          </ToastProvider>
-        </SessionProvider>
+        <Providers>
+          <Navigation />
+          <main className="flex-1 overflow-y-auto">{children}</main>
+          <footer className="p-1.5 bg-muted text-center">
+            <p className="text-sm text-muted-foreground">
+              © {new Date().getFullYear()} Normacolor Panama S.A. Todos los
+              derechos reservados.
+            </p>
+          </footer>
+        </Providers>
       </body>
     </html>
   );

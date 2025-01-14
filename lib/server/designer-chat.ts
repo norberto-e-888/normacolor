@@ -68,6 +68,20 @@ export class DesignerChat {
     return imageId;
   }
 
+  static async removeImage(orderItemId: string, imageId: string) {
+    const [designerImages] = await Promise.all([
+      chatRedis.lrange(this.getDesignerImagesKey(orderItemId), 0, -1),
+      chatRedis.lrange(this.getClientImagesKey(orderItemId), 0, -1),
+    ]);
+
+    const isDesignerImage = designerImages.includes(imageId);
+    const key = isDesignerImage
+      ? this.getDesignerImagesKey(orderItemId)
+      : this.getClientImagesKey(orderItemId);
+
+    await chatRedis.lrem(key, 0, imageId);
+  }
+
   static async getImages(orderItemId: string) {
     const [designerImages, clientImages] = await Promise.all([
       chatRedis.lrange(this.getDesignerImagesKey(orderItemId), 0, -1),

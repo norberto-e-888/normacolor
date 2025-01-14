@@ -1,4 +1,5 @@
 import {
+  DeleteObjectCommand,
   GetObjectCommand,
   PutObjectCommand,
   S3Client,
@@ -28,7 +29,6 @@ export async function getSignedUploadUrl(key: string, expiresIn = 3600) {
 
   return getSignedUrl(s3, command, {
     expiresIn,
-    // Remove signableHeaders to let SDK handle them automatically
   });
 }
 
@@ -39,6 +39,15 @@ export async function getSignedDownloadUrl(key: string, expiresIn = 3600) {
   });
 
   return getSignedUrl(s3, command, { expiresIn });
+}
+
+export async function deleteS3Object(key: string) {
+  const command = new DeleteObjectCommand({
+    Bucket: config.AWS_BUCKET_NAME,
+    Key: key,
+  });
+
+  return s3.send(command);
 }
 
 export async function uploadPSDWithPreview(
