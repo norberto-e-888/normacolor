@@ -1,4 +1,4 @@
-import { ProductCard } from "@/components/smart/ProductCard";
+import { ProductCard } from "@/components/smart/product-card";
 import { Content } from "@/components/ui";
 import { fetchProducts } from "@/functions/products";
 

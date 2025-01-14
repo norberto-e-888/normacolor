@@ -1,8 +1,7 @@
 "use server";
 
+import { Products } from "@/components/smart/products";
 import { fetchProducts } from "@/functions/products";
-
-import { Products } from "./products";
 
 export default async function AdminProductsPage({
   searchParams,

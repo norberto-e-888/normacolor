@@ -5,8 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useIntersectionObserver } from "usehooks-ts";
 
-import { OrderDetail } from "@/components/smart/OrderDetail";
-import { OrderListItem } from "@/components/smart/OrderListItem";
+import { OrderDetail } from "@/components/smart/order-detail";
+import { OrderListItem } from "@/components/smart/order-list-item";
 import { Content } from "@/components/ui";
 import { Order } from "@/database";
 

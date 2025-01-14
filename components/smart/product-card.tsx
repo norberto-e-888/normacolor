@@ -12,7 +12,7 @@ import {
   ProductOptionPaper,
   ProductOptionSide,
 } from "@/database";
-import { useCart } from "@/hooks/useCart";
+import { useCart } from "@/hooks/use-cart";
 import { formatCents } from "@/utils";
 import { calculatePrice } from "@/utils/calculate-price";
 
@@ -25,7 +25,7 @@ const formatOptionLabel = (option: string) => {
 
 const TOOLTIP_TEXT = "única opción disponible";
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product }: { product: Product<true> }) {
   const getDefaultOptions = useCallback(() => {
     const defaultOptions: OrderProductOptions = {};
 

@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Order } from "@/database";
-import { useCart } from "@/hooks/useCart";
+import { useCart } from "@/hooks/use-cart";
 import { getToastUrlConfig, ToastType } from "@/utils/get-toast-url-config";
 
 export default function PaymentPage() {

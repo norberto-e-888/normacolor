@@ -3,9 +3,9 @@
 import { ArtSource, Order, OrderStatus } from "@/database";
 import { formatCents } from "@/utils";
 
-import { FreepikImage } from "./FreepikImage";
-import { OrderChat } from "./OrderChat";
-import { S3Image } from "./S3Image";
+import { FreepikImage } from "./freepik-image";
+import { OrderChat } from "./order-chat";
+import { S3Image } from "./s3-image";
 
 interface OrderDetailProps {
   order: Order<true>;

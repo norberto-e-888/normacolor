@@ -4,7 +4,7 @@ import { Hexagon, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { CartCount } from "./CartCount";
+import { CartCount } from "./cart-count";
 
 function NavLink({
   href,

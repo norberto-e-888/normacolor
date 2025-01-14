@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { useCart } from "@/hooks/useCart";
+import { useCart } from "@/hooks/use-cart";
 
 export function CartCount() {
   const [mounted, setMounted] = useState(false);

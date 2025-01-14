@@ -8,13 +8,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 
-import { FreepikImage } from "@/components/smart/FreepikImage";
-import { S3Image } from "@/components/smart/S3Image";
+import { FreepikImage } from "@/components/smart/freepik-image";
+import { S3Image } from "@/components/smart/s3-image";
 import { Content, Tooltip } from "@/components/ui";
 import { ArtSource } from "@/database";
 import { Art, fetchArts } from "@/functions/art";
 import { createOrder } from "@/functions/orders";
-import { useCart } from "@/hooks/useCart";
+import { useCart } from "@/hooks/use-cart";
 import { formatCents } from "@/utils";
 
 const SEARCH_TERM_MAP: Record<string, string> = {
