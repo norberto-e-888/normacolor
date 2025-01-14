@@ -34,7 +34,7 @@ export default function LoginPage() {
 
     if (status === "authenticated") {
       timeout = setTimeout(() => {
-        router.replace("/");
+        router.replace("/productos");
       }, 800);
     }
 
