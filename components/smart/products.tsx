@@ -1,40 +1,16 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { useDebouncedCallback } from "use-debounce";
-
+import { Content } from "@/components/ui/content";
 import { Product } from "@/database";
 
 export function Products({ products }: { products: Product<true>[] }) {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const handleSearch = useDebouncedCallback((term: string) => {
-    const params = new URLSearchParams(searchParams);
-    if (term) {
-      params.set("query", term);
-    } else {
-      params.delete("query");
-    }
-
-    router.replace(`/admin/productos?${params.toString()}`);
-  }, 300);
-
   return (
-    <div>
-      <input
-        placeholder="Busca..."
-        onChange={(e) => {
-          e.preventDefault();
-          handleSearch(e.target.value);
-        }}
-        defaultValue={searchParams.get("query")?.toString()}
-        className="mb-3"
-      />
+    <Content>
       {products.map(({ id, name }) => (
         <div key={id}>
-          <p>Nombre: {name}</p>
+          <p>{name}</p>
         </div>
       ))}
-    </div>
+    </Content>
   );
 }

@@ -3,11 +3,9 @@
 import {
   ChevronUp,
   Ellipsis,
-  FileUp,
   LayoutGrid,
   LogOut,
   Logs,
-  MessageCircleQuestion,
   MessageSquare,
   Moon,
   Package,
@@ -31,7 +29,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { UserRole } from "@/database";
 import { signOut } from "@/functions/auth";
 
 type Icon = typeof Package; // hack
@@ -41,25 +38,14 @@ type NavItem = {
   icon: Icon;
 };
 
-const navItemsPerRole: { [key in UserRole]: NavItem[] } = {
-  [UserRole.Admin]: [
-    { href: "/admin", label: "Dashboard", icon: LayoutGrid },
-    { href: "/admin/productos", label: "Productos", icon: Package },
-    { href: "/admin/ordenes", label: "Ordenes", icon: ShoppingBag },
-    { href: "/admin/artes", label: "Artes", icon: FileUp },
-    { href: "/admin/promociones", label: "Promociones", icon: Tag },
-    { href: "/admin/clientes", label: "Clientes", icon: Users },
-    { href: "/admin/mensajes", label: "Mensajes", icon: MessageSquare },
-  ],
-  [UserRole.Client]: [
-    { href: "/", label: "Dashboard", icon: LayoutGrid },
-    { href: "/productos", label: "Productos", icon: Package },
-    { href: "/ordenes", label: "Ordenes", icon: ShoppingBag },
-    { href: "/artes", label: "Artes", icon: FileUp },
-    { href: "/promociones", label: "Promociones", icon: Tag },
-    { href: "/ayuda", label: "Ayuda", icon: MessageCircleQuestion },
-  ],
-};
+const NAV_ITEMS: NavItem[] = [
+  { href: "/admin", label: "Dashboard", icon: LayoutGrid },
+  { href: "/admin/productos", label: "Productos", icon: Package },
+  { href: "/admin/ordenes", label: "Ordenes", icon: ShoppingBag },
+  { href: "/admin/promociones", label: "Promociones", icon: Tag },
+  { href: "/admin/clientes", label: "Clientes", icon: Users },
+  { href: "/admin/mensajes", label: "Mensajes", icon: MessageSquare },
+];
 
 export type AdminLayoutProps = Readonly<{
   children: React.ReactNode;
@@ -73,7 +59,6 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
-  const navItems = navItemsPerRole[user.role];
 
   useEffect(() => {
     if (isDarkMode) {
@@ -112,7 +97,7 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
           <ScrollArea className="flex-grow">
             <MenuHeader />
             <nav className="p-4 space-y-2">
-              {navItems?.map((item) => {
+              {NAV_ITEMS?.map((item) => {
                 const Icon = item.icon;
                 return (
                   <Link

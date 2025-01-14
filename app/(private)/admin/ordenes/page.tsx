@@ -9,14 +9,14 @@ import { useIntersectionObserver } from "usehooks-ts";
 
 import { OrderDetail } from "@/components/smart/order-detail";
 import { OrderListItem } from "@/components/smart/order-list-item";
+import { Button } from "@/components/ui/button";
+import { Content } from "@/components/ui/content";
 import {
-  Button,
-  Content,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui";
+} from "@/components/ui/dropdown-menu";
 import { Order, OrderStatus } from "@/database";
 import { updateOrderStatus } from "@/functions/orders/update-order-status";
 

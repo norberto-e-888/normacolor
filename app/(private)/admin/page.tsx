@@ -1,7 +1,9 @@
+import { Content } from "@/components/ui/content";
+
 export default async function AdminDashboardPage() {
   return (
-    <div>
-      <h1>DASHBOARD</h1>
-    </div>
+    <Content>
+      <h1>Dashboard</h1>
+    </Content>
   );
 }
