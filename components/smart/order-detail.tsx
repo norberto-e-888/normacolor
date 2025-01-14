@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ArtSource, Order, OrderStatus } from "@/database";
+import { ArtSource, Order, OrderArt, OrderStatus } from "@/database";
 import { downloadArt } from "@/functions/art";
 import { formatCents } from "@/utils";
 
@@ -72,16 +72,36 @@ export function OrderDetail({
 }: OrderDetailProps) {
   const canChangeStatus = isAdmin && order.status !== OrderStatus.Delivered;
 
-  const handleDownloadArt = async (artId: string) => {
+  const handleDownloadArt = async (
+    orderId: string,
+    itemId: string,
+    art: OrderArt
+  ) => {
     try {
-      const { url } = await downloadArt(parseInt(artId));
+      let url: string;
+
+      if (art.source === ArtSource.Freepik) {
+        const response = await downloadArt(parseInt(art.value));
+        url = response.url;
+      } else {
+        const response = await fetch(
+          `/api/orders/${orderId}/items/${itemId}/art`
+        );
+        if (!response.ok) throw new Error("Failed to get download URL");
+        const data = await response.json();
+        url = data.url;
+      }
+
       // Create a temporary link and trigger download
       const link = document.createElement("a");
       link.href = url;
-      link.download = `template-${artId}.psd`;
+      link.download = `${
+        art.source === ArtSource.Freepik ? "template" : "design"
+      }-${itemId}.psd`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
       toast.success("Descarga iniciada");
     } catch (error) {
       console.error("Error downloading art:", error);
@@ -161,12 +181,14 @@ export function OrderDetail({
                         : "Diseño"}
                       :
                     </p>
-                    {isAdmin && item.art.source === ArtSource.Freepik && (
+                    {isAdmin && (
                       <Button
                         variant="outline"
                         size="sm"
                         className="gap-2"
-                        onClick={() => handleDownloadArt(item.art!.value)}
+                        onClick={() =>
+                          handleDownloadArt(order.id, item.id, item.art!)
+                        }
                       >
                         <Download className="w-4 h-4" />
                         Descargar PSD
