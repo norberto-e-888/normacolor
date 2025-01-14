@@ -183,12 +183,12 @@ export default function CheckoutPage() {
       });
 
       if (!processResponse.ok) throw new Error("Failed to process PSD");
-      const { psdKey } = await processResponse.json();
+      const { pngKey } = await processResponse.json();
 
       // Update cart item with S3 key
       updateItemArt(selectedItemId, {
         source: ArtSource.Custom,
-        value: `s3://${process.env.NEXT_PUBLIC_AWS_BUCKET_NAME}/${psdKey}`,
+        value: `s3://${process.env.NEXT_PUBLIC_AWS_BUCKET_NAME}/${pngKey}`,
       });
 
       setSelectedItemId(null);

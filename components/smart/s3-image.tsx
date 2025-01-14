@@ -22,15 +22,12 @@ export function S3Image({ s3Key }: { s3Key: string }) {
             )
           : s3Key;
 
-        const previewKey = key.replace("/original.psd", "/preview.png");
-
-        const response = await fetch(
-          `/api/s3/${encodeURIComponent(previewKey)}`
-        );
+        const response = await fetch(`/api/s3/${encodeURIComponent(key)}`);
         if (!response.ok) {
           throw new Error("Failed to fetch image URL");
         }
         const data = await response.json();
+        console.log(data.url);
         setImageUrl(data.url);
       } catch (err) {
         console.error(err, "Failed to load S3 image");
