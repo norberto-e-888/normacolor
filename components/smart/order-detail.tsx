@@ -177,7 +177,9 @@ export function OrderDetail({
                     {item.art?.source === ArtSource.Freepik ? (
                       <FreepikImage id={item.art.value} />
                     ) : (
-                      <S3Image s3Key={item.art.value} />
+                      <S3Image
+                        s3Key={`uploads/${item.art.value}/preview.png`}
+                      />
                     )}
                   </div>
                 </div>
