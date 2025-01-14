@@ -1,5 +1,12 @@
 "use client";
 
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui";
 import { ArtSource, Order, OrderStatus } from "@/database";
 import { formatCents } from "@/utils";
 
@@ -7,26 +14,104 @@ import { FreepikImage } from "./freepik-image";
 import { OrderChat } from "./order-chat";
 import { S3Image } from "./s3-image";
 
+const statusOptions = [
+  { label: "En progreso", value: OrderStatus.InProgress },
+  { label: "Listo para recoger", value: OrderStatus.ReadyToPickUp },
+  { label: "En ruta", value: OrderStatus.EnRoute },
+  { label: "Entregado", value: OrderStatus.Delivered },
+];
+
+const getStatusLabel = (status: OrderStatus) => {
+  switch (status) {
+    case OrderStatus.Paid:
+      return "Pagado";
+    case OrderStatus.InProgress:
+      return "En progreso";
+    case OrderStatus.ReadyToPickUp:
+      return "Listo para recoger";
+    case OrderStatus.EnRoute:
+      return "En ruta";
+    case OrderStatus.Delivered:
+      return "Entregado";
+    default:
+      return status;
+  }
+};
+
+const getStatusColor = (status: OrderStatus) => {
+  switch (status) {
+    case OrderStatus.Paid:
+      return "bg-yellow-100 text-yellow-800";
+    case OrderStatus.InProgress:
+      return "bg-blue-100 text-blue-800";
+    case OrderStatus.ReadyToPickUp:
+      return "bg-purple-100 text-purple-800";
+    case OrderStatus.EnRoute:
+      return "bg-orange-100 text-orange-800";
+    case OrderStatus.Delivered:
+      return "bg-green-100 text-green-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
+};
+
 interface OrderDetailProps {
   order: Order<true>;
+  isAdmin?: boolean;
+  onStatusChange?: (order: Order<true>, status: OrderStatus) => Promise<void>;
 }
 
-export function OrderDetail({ order }: OrderDetailProps) {
+export function OrderDetail({
+  order,
+  isAdmin,
+  onStatusChange,
+}: OrderDetailProps) {
+  const canChangeStatus = isAdmin && order.status !== OrderStatus.Delivered;
+
   return (
     <div className="p-6 border rounded-lg space-y-6">
-      <h2 className="text-xl font-bold mb-6">Detalles de la Orden</h2>
+      <div className="flex justify-between items-start">
+        <h2 className="text-xl font-bold">Detalles de la Orden</h2>
+        {isAdmin && (
+          <div className="text-sm text-muted-foreground">
+            Cliente: {order.customerId}
+          </div>
+        )}
+      </div>
 
-      <div>
-        <h3 className="font-medium mb-2">Estado</h3>
-        <span
-          className={`px-3 py-1 rounded-full text-sm ${
-            order.status === OrderStatus.Paid
-              ? "bg-green-100 text-green-800"
-              : "bg-yellow-100 text-yellow-800"
-          }`}
-        >
-          {order.status === OrderStatus.Paid ? "Pagado" : "Pendiente"}
-        </span>
+      <div className="flex items-center justify-between">
+        <h3 className="font-medium">Estado</h3>
+        {canChangeStatus ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className={`${getStatusColor(order.status)} border-none`}
+              >
+                {getStatusLabel(order.status)}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {statusOptions.map((option) => (
+                <DropdownMenuItem
+                  key={option.value}
+                  onClick={() => onStatusChange?.(order, option.value)}
+                  disabled={option.value === order.status}
+                >
+                  {option.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <span
+            className={`px-3 py-1 rounded-full text-sm ${getStatusColor(
+              order.status
+            )}`}
+          >
+            {getStatusLabel(order.status)}
+          </span>
+        )}
       </div>
 
       <div>
@@ -49,7 +134,10 @@ export function OrderDetail({ order }: OrderDetailProps) {
               {item.art && (
                 <div className="mt-4">
                   <p className="text-sm font-medium mb-2">
-                    {item.art.source === "freepik" ? "Plantilla" : "Diseño"}:
+                    {item.art.source === ArtSource.Freepik
+                      ? "Plantilla"
+                      : "Diseño"}
+                    :
                   </p>
                   <div className="relative w-32 h-32">
                     {item.art?.source === ArtSource.Freepik ? (
