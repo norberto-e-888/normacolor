@@ -1,10 +1,13 @@
 "use client";
 
-import { Send } from "lucide-react";
+import { Download, Paperclip, Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { ChatMessage } from "@/lib/server/designer-chat";
+
+import { S3Image } from "./s3-image";
 
 interface OrderChatProps {
   orderId: string;
@@ -15,9 +18,13 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [designerImages, setDesignerImages] = useState<string[]>([]);
+  const [clientImages, setClientImages] = useState<string[]>([]);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const shouldFocusRef = useRef(false);
 
   useEffect(() => {
@@ -34,7 +41,22 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
       }
     };
 
+    const fetchImages = async () => {
+      try {
+        const response = await fetch(
+          `/api/orders/${orderId}/items/${itemId}/chat/images`
+        );
+        if (!response.ok) throw new Error("Failed to fetch images");
+        const data = await response.json();
+        setDesignerImages(data.designerImages || []);
+        setClientImages(data.clientImages || []);
+      } catch (error) {
+        console.error("Error fetching images:", error);
+      }
+    };
+
     fetchMessages();
+    fetchImages();
   }, [orderId, itemId]);
 
   useEffect(() => {
@@ -47,13 +69,12 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
     }
   }, [messages]);
 
-  // Focus effect
   useEffect(() => {
     if (shouldFocusRef.current) {
       inputRef.current?.focus();
       shouldFocusRef.current = false;
     }
-  }, [messages]); // Re-run when messages change
+  }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,7 +96,7 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
       const { message } = await response.json();
       setMessages((prev) => [...prev, message]);
       setNewMessage("");
-      shouldFocusRef.current = true; // Set flag to focus after state updates
+      shouldFocusRef.current = true;
     } catch (error) {
       console.error("Error sending message:", error);
     } finally {
@@ -83,9 +104,118 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
     }
   };
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.[0]) return;
+
+    const file = e.target.files[0];
+    if (!file.name.toLowerCase().endsWith(".psd")) {
+      toast.error("Por favor selecciona un archivo PSD", {
+        closeButton: true,
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch(
+        `/api/orders/${orderId}/items/${itemId}/chat/images`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to upload file");
+
+      // Refresh images
+      const imagesResponse = await fetch(
+        `/api/orders/${orderId}/items/${itemId}/chat/images`
+      );
+      if (!imagesResponse.ok) throw new Error("Failed to fetch updated images");
+      const {
+        designerImages: newDesignerImages,
+        clientImages: newClientImages,
+      } = await imagesResponse.json();
+      setDesignerImages(newDesignerImages || []);
+      setClientImages(newClientImages || []);
+
+      toast.success("Archivo subido exitosamente");
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      toast.error("Error al subir el archivo");
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleDownload = async (imageId: string) => {
+    try {
+      const response = await fetch(
+        `/api/orders/${orderId}/items/${itemId}/chat/images/${imageId}`
+      );
+      if (!response.ok) throw new Error("Failed to get download URL");
+      const { url } = await response.json();
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `design-${imageId}.psd`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success("Descarga iniciada");
+    } catch (error) {
+      console.error("Error downloading file:", error);
+      toast.error("Error al descargar el archivo");
+    }
+  };
+
+  const ImageCarousel = ({
+    images,
+    title,
+  }: {
+    images: string[];
+    title: string;
+  }) => {
+    if (images.length === 0) return null;
+
+    return (
+      <div className="mb-4">
+        <h5 className="text-sm font-medium mb-2">{title}</h5>
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          {images.map((imageId) => (
+            <div
+              key={imageId}
+              className="relative w-20 h-20 flex-shrink-0 border rounded-lg overflow-hidden group"
+            >
+              <S3Image s3Key={`chat/${itemId}/${imageId}/preview.png`} />(
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDownload(imageId);
+                }}
+                className="absolute bottom-1 right-1 p-1 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <Download className="w-4 h-4" />
+              </button>
+              )
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="mt-4 border-t pt-4">
-      <h4 className="font-medium mb-3">Chat con diseñador</h4>
+      <ImageCarousel images={designerImages} title="Diseños propuestos" />
+      <ImageCarousel images={clientImages} title="Tus diseños" />
 
       <div
         ref={messagesContainerRef}
@@ -129,6 +259,22 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
           className="flex-1 rounded-md border px-3 py-2 text-sm"
           disabled={isLoading}
         />
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".psd"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          disabled={isUploading}
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <Paperclip className="w-4 h-4" />
+        </Button>
         <Button type="submit" disabled={isLoading || !newMessage.trim()}>
           <Send className="w-4 h-4" />
         </Button>

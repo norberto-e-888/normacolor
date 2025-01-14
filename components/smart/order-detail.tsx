@@ -178,7 +178,7 @@ export function OrderDetail({
                     <p className="text-sm font-medium">
                       {item.art.source === ArtSource.Freepik
                         ? "Plantilla"
-                        : "Diseño"}
+                        : "Diseño original"}
                       :
                     </p>
                     {isAdmin && (

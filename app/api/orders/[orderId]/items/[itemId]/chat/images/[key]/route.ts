@@ -35,8 +35,11 @@ export async function GET(
   }
 
   try {
-    const downloadUrl = await getSignedDownloadUrl(params.key);
-    return NextResponse.json({ url: downloadUrl });
+    const url = await getSignedDownloadUrl(
+      `chat/${orderItem.id}/${params.key}/original.psd`
+    );
+
+    return NextResponse.json({ url });
   } catch (error) {
     console.error("Error generating signed URL:", error);
     return new NextResponse("Failed to generate download URL", { status: 500 });

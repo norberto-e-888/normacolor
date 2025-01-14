@@ -1,4 +1,5 @@
 import { Redis } from "@upstash/redis";
+import { v4 as uuid } from "uuid";
 
 // Separate Redis client for chat functionality
 export const chatRedis = new Redis({
@@ -23,8 +24,12 @@ export class DesignerChat {
     return `${CHAT_KEY_PREFIX}:${orderItemId}/messages`;
   }
 
-  static getImagesKey(orderItemId: string) {
+  static getDesignerImagesKey(orderItemId: string) {
     return `${CHAT_KEY_PREFIX}:${orderItemId}/designer_images`;
+  }
+
+  static getClientImagesKey(orderItemId: string) {
+    return `${CHAT_KEY_PREFIX}:${orderItemId}/client_images`;
   }
 
   static async addMessage(message: Omit<ChatMessage, "id" | "timestamp">) {
@@ -39,7 +44,7 @@ export class DesignerChat {
 
     await chatRedis
       .multi()
-      .rpush(key, JSON.stringify(chatMessage)) // Changed from lpush to rpush
+      .rpush(key, JSON.stringify(chatMessage))
       .expire(key, CHAT_TTL)
       .exec();
 
@@ -49,27 +54,36 @@ export class DesignerChat {
   static async getMessages(orderItemId: string, limit = 50) {
     const key = this.getMessagesKey(orderItemId);
     const messages = await chatRedis.lrange(key, 0, limit - 1);
-    // this casting is safe because our Redis instance automatically serializes and deserializes JSON
     return messages as unknown as ChatMessage[];
   }
 
-  static async addDesignerImage(orderItemId: string, imageUrl: string) {
-    const key = this.getImagesKey(orderItemId);
-    await chatRedis
-      .multi()
-      .rpush(key, imageUrl) // Changed from lpush to rpush for consistency
-      .expire(key, CHAT_TTL)
-      .exec();
+  static async addImage(orderItemId: string, isDesigner: boolean) {
+    const imageId = uuid();
+    const key = isDesigner
+      ? this.getDesignerImagesKey(orderItemId)
+      : this.getClientImagesKey(orderItemId);
+
+    await chatRedis.multi().rpush(key, imageId).expire(key, CHAT_TTL).exec();
+
+    return imageId;
   }
 
-  static async getDesignerImages(orderItemId: string) {
-    const key = this.getImagesKey(orderItemId);
-    return chatRedis.lrange(key, 0, -1);
+  static async getImages(orderItemId: string) {
+    const [designerImages, clientImages] = await Promise.all([
+      chatRedis.lrange(this.getDesignerImagesKey(orderItemId), 0, -1),
+      chatRedis.lrange(this.getClientImagesKey(orderItemId), 0, -1),
+    ]);
+
+    return {
+      designerImages,
+      clientImages,
+    };
   }
 
   static async deleteChat(orderItemId: string) {
     const messagesKey = this.getMessagesKey(orderItemId);
-    const imagesKey = this.getImagesKey(orderItemId);
-    await chatRedis.del(messagesKey, imagesKey);
+    const designerImagesKey = this.getDesignerImagesKey(orderItemId);
+    const clientImagesKey = this.getClientImagesKey(orderItemId);
+    await chatRedis.del(messagesKey, designerImagesKey, clientImagesKey);
   }
 }
