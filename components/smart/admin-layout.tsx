@@ -22,16 +22,15 @@ import { useEffect, useState } from "react";
 import { useMediaQuery } from "usehooks-ts";
 
 import { SessionUser } from "@/auth";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
-  Avatar,
-  AvatarFallback,
-  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  ScrollArea,
-} from "@/components/ui";
+} from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { UserRole } from "@/database";
 import { signOut } from "@/functions/auth";
 
