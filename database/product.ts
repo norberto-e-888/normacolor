@@ -42,13 +42,13 @@ export enum ProductOptionPaper {
   Bond20lb = "bond20lb",
 }
 
-export type Product = {
+export type Product<FE extends boolean = false> = {
   name: string;
   images: string[];
   options: ProductOptions;
   pricing: ProductPricing;
   isPublic: boolean;
-} & BaseModel;
+} & BaseModel<FE>;
 
 export type ProductOptions = {
   sides?: ProductOptionSide[];

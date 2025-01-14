@@ -1,6 +1,5 @@
 "use server";
 
-import { getUploadUrls } from "@/functions/art";
 import { fetchProducts } from "@/functions/products";
 
 import { Products } from "./products";
@@ -23,8 +22,6 @@ export default async function AdminProductsPage({
   const { data } = await fetchProducts({
     searchTerm,
   });
-
-  await getUploadUrls();
 
   return <div>{data && <Products products={data.products} />}</div>;
 }

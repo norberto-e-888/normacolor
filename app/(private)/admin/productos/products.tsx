@@ -5,7 +5,7 @@ import { useDebouncedCallback } from "use-debounce";
 
 import { Product } from "@/database";
 
-export function Products({ products }: { products: Product[] }) {
+export function Products({ products }: { products: Product<true>[] }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const handleSearch = useDebouncedCallback((term: string) => {
