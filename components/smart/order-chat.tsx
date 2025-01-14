@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Download, Paperclip, Send, Trash2 } from "lucide-react";
+import { Download, Loader, Paperclip, Send, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -23,6 +23,7 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -158,6 +159,7 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
   };
 
   const handleDelete = async (imageId: string) => {
+    setDeletingImageId(imageId);
     try {
       const response = await fetch(
         `/api/orders/${orderId}/items/${itemId}/chat/images/${imageId}`,
@@ -173,6 +175,8 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
     } catch (error) {
       console.error("Error deleting image:", error);
       toast.error("Error al eliminar la imagen");
+    } finally {
+      setDeletingImageId(null);
     }
   };
 
@@ -208,18 +212,23 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
                   <Download className="w-4 h-4" />
                 </button>
                 {((isDesignerImages &&
-                  (session?.user as SessionUser).role === UserRole.Admin) ||
+                  (session?.user as SessionUser)?.role === UserRole.Admin) ||
                   (!isDesignerImages &&
-                    (session?.user as SessionUser).role !==
+                    (session?.user as SessionUser)?.role !==
                       UserRole.Admin)) && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDelete(imageId);
                     }}
-                    className="p-1 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity text-red-500"
+                    disabled={deletingImageId === imageId}
+                    className="p-1 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity text-red-500 disabled:opacity-50"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    {deletingImageId === imageId ? (
+                      <Loader className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
                   </button>
                 )}
               </div>
@@ -232,8 +241,6 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
 
   return (
     <div className="mt-4 border-t pt-4">
-      <h4 className="font-medium mb-3">Chat con diseñador</h4>
-
       <ImageCarousel
         images={imagesData?.designerImages || []}
         title="Diseños propuestos"
@@ -301,10 +308,18 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
           disabled={isUploading}
           onClick={() => fileInputRef.current?.click()}
         >
-          <Paperclip className="w-4 h-4" />
+          {isUploading ? (
+            <Loader className="w-4 h-4 animate-spin" />
+          ) : (
+            <Paperclip className="w-4 h-4" />
+          )}
         </Button>
         <Button type="submit" disabled={isLoading || !newMessage.trim()}>
-          <Send className="w-4 h-4" />
+          {isLoading ? (
+            <Loader className="w-4 h-4 animate-spin" />
+          ) : (
+            <Send className="w-4 h-4" />
+          )}
         </Button>
       </form>
     </div>
