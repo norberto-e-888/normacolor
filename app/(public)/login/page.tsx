@@ -30,18 +30,10 @@ export default function LoginPage() {
   const callbackUrl = params.get("callbackUrl") || "/";
 
   useEffect(() => {
-    let timeout: ReturnType<typeof setTimeout>;
-
-    if (status === "authenticated" && !params.get("loggedOut")) {
-      timeout = setTimeout(() => {
-        router.replace("/productos");
-      }, 800);
+    if (status === "authenticated") {
+      router.replace("/productos");
     }
-
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, [status, router, params]);
+  }, [router, status]);
 
   useEffect(() => {
     const provider = params.get("provider");

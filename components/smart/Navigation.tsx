@@ -52,9 +52,10 @@ function NavLink({
 
 export function Navigation() {
   const pathname = usePathname();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [showModal, setShowModal] = useState(false);
   const { totalItems, clearCart } = useCart();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Don't render navigation for admin pages
   if (pathname.startsWith("/admin")) {
@@ -62,10 +63,19 @@ export function Navigation() {
   }
 
   const handleSignOut = async (shouldClearCart: boolean) => {
-    if (shouldClearCart) {
-      clearCart();
+    if (isLoggingOut) return;
+
+    setIsLoggingOut(true);
+    try {
+      if (shouldClearCart) {
+        clearCart();
+      }
+
+      await signOut();
+    } catch (error) {
+      console.error("Error during logout:", error);
+      setIsLoggingOut(false);
     }
-    await signOut();
   };
 
   const handleSignOutClick = () => {
@@ -117,11 +127,11 @@ export function Navigation() {
               <CartCount />
             </div>
           </NavLink>
-          {session && (
+          {status === "authenticated" && (
             <Button
-              variant="ghost"
-              className="text-primary-foreground hover:bg-primary-foreground/10"
+              variant="secondary"
               onClick={handleSignOutClick}
+              disabled={isLoggingOut}
             >
               <LogOut size="24px" />
             </Button>
@@ -145,6 +155,7 @@ export function Navigation() {
                 setShowModal(false);
                 handleSignOut(false);
               }}
+              disabled={isLoggingOut}
             >
               Mantener carrito
             </Button>
@@ -154,6 +165,7 @@ export function Navigation() {
                 setShowModal(false);
                 handleSignOut(true);
               }}
+              disabled={isLoggingOut}
             >
               Limpiar carrito
             </Button>
