@@ -82,3 +82,9 @@ export async function GET(request: Request) {
     selectedOrder,
   });
 }
+
+export type OrdersAdminResponse = {
+  orders: Order<true>[];
+  nextCursor: string | null;
+  selectedOrder: Order<true> | null;
+};

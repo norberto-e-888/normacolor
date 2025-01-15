@@ -1,12 +1,14 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { Filter, SortAsc, SortDesc } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { toast } from "sonner";
 import { useIntersectionObserver } from "usehooks-ts";
 
+import { OrdersAdminResponse } from "@/app/api/orders/admin/route";
 import { OrderDetail } from "@/components/smart/order-detail";
 import { OrderListItem } from "@/components/smart/order-list-item";
 import { Button } from "@/components/ui/button";
@@ -37,11 +39,6 @@ const sortOptions = [
 export default function AdminOrdersPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [orders, setOrders] = useState<Order<true>[]>([]);
-  const [selectedOrder, setSelectedOrder] = useState<Order<true> | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [isFetchingMore, setIsFetchingMore] = useState(false);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const { isIntersecting } =
     useIntersectionObserver(loadMoreRef as never) ?? {};
@@ -50,64 +47,40 @@ export default function AdminOrdersPage() {
   const status = searchParams.get("status") || "";
   const sortBy = searchParams.get("sortBy") || "createdAt";
   const sortOrder = searchParams.get("sortOrder") || "desc";
+  const cursor = searchParams.get("cursor");
 
-  const fetchOrders = useCallback(
-    async (cursor?: string) => {
-      try {
+  // Separate query for orders list
+  const { data: ordersData, isFetching: isLoadingOrders } =
+    useQuery<OrdersAdminResponse>({
+      queryKey: ["admin-orders", status, sortBy, sortOrder, cursor],
+      queryFn: async () => {
         const params = new URLSearchParams();
         if (cursor) params.set("cursor", cursor);
-        if (selectedId) params.set("selectedId", selectedId);
         if (status) params.set("status", status);
         params.set("sortBy", sortBy);
         params.set("sortOrder", sortOrder);
 
         const response = await fetch(`/api/orders/admin?${params.toString()}`);
         if (!response.ok) throw new Error("Failed to fetch orders");
+        return response.json();
+      },
+    });
 
-        const data = await response.json();
-        return data;
-      } catch (error) {
-        console.error("Error fetching orders:", error);
-        return null;
-      }
+  // Separate query for selected order
+  const { data: selectedOrderData } = useQuery({
+    queryKey: ["admin-order", selectedId],
+    queryFn: async () => {
+      if (!selectedId) return null;
+      const response = await fetch(
+        `/api/orders/admin?selectedId=${selectedId}`
+      );
+      if (!response.ok) throw new Error("Failed to fetch selected order");
+      return response.json();
     },
-    [selectedId, sortBy, sortOrder, status]
-  );
-
-  useEffect(() => {
-    const init = async () => {
-      setIsLoading(true);
-      const data = await fetchOrders();
-
-      if (data) {
-        setOrders(data.orders);
-        setNextCursor(data.nextCursor);
-        setSelectedOrder(data.selectedOrder);
-      }
-      setIsLoading(false);
-    };
-
-    init();
-  }, [selectedId, status, sortBy, sortOrder, fetchOrders]);
-
-  useEffect(() => {
-    if (isIntersecting && nextCursor && !isFetchingMore) {
-      const loadMore = async () => {
-        setIsFetchingMore(true);
-        const data = await fetchOrders(nextCursor);
-        if (data) {
-          setOrders((prev) => [...prev, ...data.orders]);
-          setNextCursor(data.nextCursor);
-        }
-        setIsFetchingMore(false);
-      };
-
-      loadMore();
-    }
-  }, [isIntersecting, nextCursor, isFetchingMore, fetchOrders]);
+    enabled: !!selectedId,
+  });
 
   const handleOrderClick = async (order: Order<true>) => {
-    setSelectedOrder(order);
     const params = new URLSearchParams(searchParams.toString());
     params.set("selectedId", order.id);
     router.replace(`/admin/ordenes?${params.toString()}`, { scroll: false });
@@ -119,14 +92,6 @@ export default function AdminOrdersPage() {
   ) => {
     try {
       await updateOrderStatus(order.id, newStatus);
-      setOrders((prevOrders) =>
-        prevOrders.map((o) =>
-          o.id === order.id ? { ...o, status: newStatus } : o
-        )
-      );
-      if (selectedOrder?.id === order.id) {
-        setSelectedOrder({ ...selectedOrder, status: newStatus });
-      }
       toast.success("Estado actualizado correctamente");
     } catch (error) {
       console.error("Error updating order status:", error);
@@ -141,6 +106,7 @@ export default function AdminOrdersPage() {
     } else {
       params.delete("status");
     }
+    params.delete("cursor"); // Reset cursor when changing filters
     router.replace(`/admin/ordenes?${params.toString()}`, { scroll: false });
   };
 
@@ -155,11 +121,19 @@ export default function AdminOrdersPage() {
       params.set("sortBy", field);
       params.set("sortOrder", "desc");
     }
-
+    params.delete("cursor"); // Reset cursor when changing sort
     router.replace(`/admin/ordenes?${params.toString()}`, { scroll: false });
   };
 
-  if (isLoading) {
+  const handleLoadMore = () => {
+    if (ordersData?.nextCursor) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("cursor", ordersData.nextCursor);
+      router.replace(`/admin/ordenes?${params.toString()}`, { scroll: false });
+    }
+  };
+
+  if (isLoadingOrders && !ordersData) {
     return (
       <Content>
         <div className="flex justify-center items-center min-h-[50vh]">
@@ -215,7 +189,7 @@ export default function AdminOrdersPage() {
           <div className="flex-1 overflow-y-auto">
             <div className="space-y-2">
               <AnimatePresence>
-                {orders.map((order) => (
+                {ordersData?.orders.map((order) => (
                   <motion.div
                     key={order.id}
                     initial={{ scale: 0.95, opacity: 0 }}
@@ -223,16 +197,26 @@ export default function AdminOrdersPage() {
                   >
                     <OrderListItem
                       order={order}
-                      isSelected={selectedOrder?.id === order.id}
+                      isSelected={selectedId === order.id}
                       onClick={handleOrderClick}
                     />
                   </motion.div>
                 ))}
               </AnimatePresence>
               <div ref={loadMoreRef} className="h-4" />
-              {isFetchingMore && (
+              {isIntersecting && ordersData?.nextCursor && (
                 <div className="flex justify-center p-4">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+                  <Button
+                    variant="outline"
+                    onClick={handleLoadMore}
+                    disabled={isLoadingOrders}
+                  >
+                    {isLoadingOrders ? (
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+                    ) : (
+                      "Cargar más"
+                    )}
+                  </Button>
                 </div>
               )}
             </div>
@@ -240,9 +224,9 @@ export default function AdminOrdersPage() {
         </div>
 
         <div className="w-full md:w-1/2 lg:w-3/5 h-full overflow-y-auto">
-          {selectedOrder ? (
+          {selectedOrderData?.selectedOrder ? (
             <OrderDetail
-              order={selectedOrder}
+              order={selectedOrderData.selectedOrder}
               isAdmin
               onStatusChange={handleStatusChange}
             />

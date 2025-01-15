@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 
 import { Providers } from "@/components/providers";
+import { Footer } from "@/components/smart/footer";
 import { Navigation } from "@/components/smart/navigation";
 
 const geistSans = localFont({
@@ -35,12 +36,7 @@ export default function RootLayout({
         <Providers>
           <Navigation />
           <main className="flex-1 overflow-y-auto">{children}</main>
-          <footer className="p-1.5 bg-muted text-center">
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} Normacolor Panama S.A. Todos los
-              derechos reservados.
-            </p>
-          </footer>
+          <Footer />
         </Providers>
       </body>
     </html>
