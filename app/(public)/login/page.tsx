@@ -32,7 +32,7 @@ export default function LoginPage() {
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>;
 
-    if (status === "authenticated") {
+    if (status === "authenticated" && !params.get("loggedOut")) {
       timeout = setTimeout(() => {
         router.replace("/productos");
       }, 800);
@@ -41,7 +41,7 @@ export default function LoginPage() {
     return () => {
       clearTimeout(timeout);
     };
-  }, [status, router]);
+  }, [status, router, params]);
 
   useEffect(() => {
     const provider = params.get("provider");
