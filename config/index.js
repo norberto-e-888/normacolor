@@ -20,11 +20,11 @@ const Config = z.object({
   OPEN_AI_API_KEY: z.string(),
   PAYPAL_CLIENT_ID: z.string(),
   PAYPAL_CLIENT_SECRET: z.string(),
-  PAYPAL_MODE: z.string().enum(["sandbox", "live"]),
+  PAYPAL_MODE: z.enum(["sandbox", "live"]),
   PUSHER_API_KEY: z.string(),
   PUSHER_API_SECRET: z.string(),
   PUSHER_APP_ID: z.string(),
-  PUSHER_CLUSTER: z.string().enum(["us2"]),
+  PUSHER_CLUSTER: z.enum(["us2"]),
   UPSTASH_REDIS_REST_URL: z.string(),
   UPSTASH_REDIS_REST_TOKEN: z.string(),
 });
