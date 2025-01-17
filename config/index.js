@@ -9,6 +9,7 @@ const Config = z.object({
   AUTH_SECRET: z.string(),
   AUTH_RESEND_KEY: z.string(),
   AUTH_SENDGRID_KEY: z.string(),
+  AUTH_RESEND_FROM_EMAIL: z.string(),
   AWS_ACCESS_KEY: z.string(),
   AWS_SECRET_KEY: z.string(),
   AWS_BUCKET_NAME: z.string(),
@@ -17,6 +18,15 @@ const Config = z.object({
   NGROK_TOKEN: z.string().optional(),
   NGROK_TUNNEL: z.string().optional(),
   OPEN_AI_API_KEY: z.string(),
+  PAYPAL_CLIENT_ID: z.string(),
+  PAYPAL_CLIENT_SECRET: z.string(),
+  PAYPAL_MODE: z.string().enum(["sandbox", "live"]),
+  PUSHER_API_KEY: z.string(),
+  PUSHER_API_SECRET: z.string(),
+  PUSHER_APP_ID: z.string(),
+  PUSHER_CLUSTER: z.string().enum(["us2"]),
+  UPSTASH_REDIS_REST_URL: z.string(),
+  UPSTASH_REDIS_REST_TOKEN: z.string(),
 });
 
 const config = Config.parse(process.env);

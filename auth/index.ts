@@ -15,7 +15,7 @@ const strongPasswordRegex =
 const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Resend({
-      from: "onboarding@resend.dev",
+      from: process.env.AUTH_RESEND_FROM_EMAIL!,
       sendVerificationRequest: async ({ identifier: to, provider, url }) => {
         await connectToMongo();
 
