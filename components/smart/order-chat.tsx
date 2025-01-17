@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Download, Loader, Paperclip, Send, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { SessionUser } from "@/auth";
@@ -18,17 +18,126 @@ interface OrderChatProps {
   itemId: string;
 }
 
+const ChatInput = memo(function ChatInput({
+  isLoading,
+  onSubmit,
+}: {
+  isLoading: boolean;
+  onSubmit: (message: string) => void;
+}) {
+  const [newMessage, setNewMessage] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!isLoading) {
+      inputRef.current?.focus();
+    }
+  }, [isLoading]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMessage.trim() || isLoading) return;
+    onSubmit(newMessage.trim());
+    setNewMessage("");
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-1 gap-2">
+      <input
+        ref={inputRef}
+        type="text"
+        value={newMessage}
+        onChange={(e) => setNewMessage(e.target.value)}
+        placeholder="Escribe un mensaje..."
+        className="flex-1 rounded-md border px-3 py-2 text-sm"
+        disabled={isLoading}
+      />
+      <Button type="submit" disabled={isLoading || !newMessage.trim()}>
+        {isLoading ? (
+          <Loader className="w-4 h-4 animate-spin" />
+        ) : (
+          <Send className="w-4 h-4" />
+        )}
+      </Button>
+    </form>
+  );
+});
+
+const ImageCarousel = memo(function ImageCarousel({
+  images,
+  title,
+  isDesignerImages,
+  itemId,
+  onDownload,
+  onDelete,
+  deletingImageId,
+  isAdmin,
+}: {
+  images: string[];
+  title: string;
+  isDesignerImages: boolean;
+  itemId: string;
+  onDownload: (imageId: string) => Promise<void>;
+  onDelete: (imageId: string) => Promise<void>;
+  deletingImageId: string | null;
+  isAdmin: boolean;
+}) {
+  if (!images?.length) return null;
+
+  return (
+    <div className="mb-4">
+      <h5 className="text-sm font-medium mb-2">{title}</h5>
+      <div className="flex gap-2 overflow-x-auto pb-2">
+        {images.map((imageId) => (
+          <div
+            key={imageId}
+            className="relative w-20 h-20 flex-shrink-0 border rounded-lg overflow-hidden group"
+          >
+            <S3Image s3Key={`chat/${itemId}/${imageId}/preview.png`} />
+            <div className="absolute bottom-1 right-1 flex gap-1">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDownload(imageId);
+                }}
+                className="p-1 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                <Download className="w-4 h-4" />
+              </button>
+              {((isDesignerImages && isAdmin) ||
+                (!isDesignerImages && !isAdmin)) && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(imageId);
+                  }}
+                  disabled={deletingImageId === imageId}
+                  className="p-1 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity text-red-500 disabled:opacity-50"
+                >
+                  {deletingImageId === imageId ? (
+                    <Loader className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-4 h-4" />
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+});
+
 export function OrderChat({ orderId, itemId }: OrderChatProps) {
   const { data: session } = useSession();
-  const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const shouldFocusRef = useRef(false);
+  const isAdmin = (session?.user as SessionUser)?.role === UserRole.Admin;
 
   const { data: messagesData, refetch: refetchMessages } = useQuery({
     queryKey: ["chat-messages", orderId, itemId],
@@ -62,16 +171,8 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
     }
   }, [messagesData?.messages]);
 
-  useEffect(() => {
-    if (shouldFocusRef.current) {
-      inputRef.current?.focus();
-      shouldFocusRef.current = false;
-    }
-  }, [messagesData?.messages]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMessage.trim() || isLoading) return;
+  const handleSubmit = async (message: string) => {
+    if (isLoading) return;
 
     setIsLoading(true);
     try {
@@ -80,14 +181,11 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content: newMessage }),
+          body: JSON.stringify({ content: message }),
         }
       );
 
       if (!response.ok) throw new Error("Failed to send message");
-
-      setNewMessage("");
-      shouldFocusRef.current = true;
       await refetchMessages();
     } catch (error) {
       console.error("Error sending message:", error);
@@ -180,76 +278,27 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
     }
   };
 
-  const ImageCarousel = ({
-    images,
-    title,
-    isDesignerImages,
-  }: {
-    images: string[];
-    title: string;
-    isDesignerImages: boolean;
-  }) => {
-    if (!images?.length) return null;
-
-    return (
-      <div className="mb-4">
-        <h5 className="text-sm font-medium mb-2">{title}</h5>
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          {images.map((imageId) => (
-            <div
-              key={imageId}
-              className="relative w-20 h-20 flex-shrink-0 border rounded-lg overflow-hidden group"
-            >
-              <S3Image s3Key={`chat/${itemId}/${imageId}/preview.png`} />
-              <div className="absolute bottom-1 right-1 flex gap-1">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDownload(imageId);
-                  }}
-                  className="p-1 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <Download className="w-4 h-4" />
-                </button>
-                {((isDesignerImages &&
-                  (session?.user as SessionUser)?.role === UserRole.Admin) ||
-                  (!isDesignerImages &&
-                    (session?.user as SessionUser)?.role !==
-                      UserRole.Admin)) && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(imageId);
-                    }}
-                    disabled={deletingImageId === imageId}
-                    className="p-1 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity text-red-500 disabled:opacity-50"
-                  >
-                    {deletingImageId === imageId ? (
-                      <Loader className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-4 h-4" />
-                    )}
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="mt-4 border-t pt-4">
       <ImageCarousel
         images={imagesData?.designerImages || []}
         title="Diseños propuestos"
         isDesignerImages={true}
+        itemId={itemId}
+        onDownload={handleDownload}
+        onDelete={handleDelete}
+        deletingImageId={deletingImageId}
+        isAdmin={isAdmin}
       />
       <ImageCarousel
         images={imagesData?.clientImages || []}
         title="Tus diseños"
         isDesignerImages={false}
+        itemId={itemId}
+        onDownload={handleDownload}
+        onDelete={handleDelete}
+        deletingImageId={deletingImageId}
+        isAdmin={isAdmin}
       />
 
       <div
@@ -284,16 +333,8 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <input
-          ref={inputRef}
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Escribe un mensaje..."
-          className="flex-1 rounded-md border px-3 py-2 text-sm"
-          disabled={isLoading}
-        />
+      <div className="flex w-full gap-2">
+        <ChatInput isLoading={isLoading} onSubmit={handleSubmit} />
         <input
           ref={fileInputRef}
           type="file"
@@ -314,14 +355,7 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
             <Paperclip className="w-4 h-4" />
           )}
         </Button>
-        <Button type="submit" disabled={isLoading || !newMessage.trim()}>
-          {isLoading ? (
-            <Loader className="w-4 h-4 animate-spin" />
-          ) : (
-            <Send className="w-4 h-4" />
-          )}
-        </Button>
-      </form>
+      </div>
     </div>
   );
 }
