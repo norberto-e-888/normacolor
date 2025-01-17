@@ -14,6 +14,7 @@ import { signOut } from "@/functions/auth";
 import { useCart } from "@/hooks/use-cart";
 
 import { CartCount } from "./cart-count";
+import { NotificationDropdown } from "./notifications/notification-dropdown";
 
 function NavLink({
   href,
@@ -121,6 +122,7 @@ export function Navigation() {
         </div>
 
         <div className="ml-auto flex items-center gap-4">
+          {status === "authenticated" && <NotificationDropdown />}
           <NavLink href="/checkout">
             <div className="relative">
               <ShoppingCart size="24px" />

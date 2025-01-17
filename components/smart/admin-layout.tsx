@@ -31,6 +31,8 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { signOut } from "@/functions/auth";
 
+import { NotificationDropdown } from "./notifications/notification-dropdown";
+
 type Icon = typeof Package; // hack
 type NavItem = {
   href: string;
@@ -116,7 +118,8 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
               })}
             </nav>
           </ScrollArea>
-          <div className="bg-neutral-50 dark:bg-neutral-950 border-t-2 border-neutral-950 dark:border-neutral-50">
+          <div className="bg-neutral-50 dark:bg-neutral-950 border-t-2 border-neutral-950 dark:border-neutral-50 flex flex-col items-end">
+            <NotificationDropdown />
             <DropdownMenu>
               <DropdownMenuTrigger asChild className="p-6">
                 <Button className="flex items-center justify-between w-full rounded-none bg-neutral-50 hover:bg-neutral-50 dark:bg-neutral-950 dark:hover:bg-neutral-950">
