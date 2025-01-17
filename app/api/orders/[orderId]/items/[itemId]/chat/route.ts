@@ -104,7 +104,7 @@ export async function POST(
   > = {
     type: NotificationType.DesignChatMessage,
     title: "Nuevo mensaje de diseño",
-    message: `Tienes un nuevo mensaje sobre el diseño de ${orderItemData.productSnapshot.name}`,
+    message: `Tienes un nuevo mensaje sobre el diseño de "${orderItemData.productSnapshot.name}"`,
     deepLink,
     metadata: {
       orderId: order.id,

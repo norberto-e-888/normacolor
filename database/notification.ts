@@ -4,6 +4,7 @@ import { BaseModel, ensureRefIntegrity, getSchema, ModelName } from "@/utils";
 
 export enum NotificationType {
   DesignChatMessage = "design_chat_message",
+  OrderReady = "order_ready",
 }
 
 export type Notification = {
