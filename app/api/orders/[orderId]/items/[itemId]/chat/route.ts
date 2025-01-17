@@ -1,18 +1,25 @@
 import { NextResponse } from "next/server";
 
 import { PusherEventName } from "@/constants/pusher";
-import { Order, UserRole } from "@/database";
-import { ExtendedSession, getServerSession } from "@/functions/auth";
+import {
+  Notification,
+  NotificationType,
+  Order,
+  OrderProduct,
+  User,
+  UserRole,
+} from "@/database";
+import { getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
 import { DesignerChat } from "@/lib/server/designer-chat";
 import { createPusherServer } from "@/lib/server/pusher";
-import { getPusherChannelName } from "@/utils";
+import { BaseModel, getPusherChannelName } from "@/utils";
 
 export async function GET(
   _: Request,
   { params }: { params: { orderId: string; itemId: string } }
 ) {
-  const session = (await getServerSession()) as ExtendedSession;
+  const session = await getServerSession();
   if (!session) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
@@ -46,7 +53,7 @@ export async function POST(
   request: Request,
   { params }: { params: { orderId: string; itemId: string } }
 ) {
-  const session = (await getServerSession()) as ExtendedSession;
+  const session = await getServerSession();
   if (!session) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
@@ -77,12 +84,47 @@ export async function POST(
     return new NextResponse("Message must have content", { status: 400 });
   }
 
+  const orderItemData = orderItem.toObject() as OrderProduct;
   const message = await DesignerChat.addMessage({
-    orderItemId: orderItem.id,
+    orderItemId: orderItemData.id,
     senderId: session.user.id,
     senderRole: session.user.role === UserRole.Admin ? "designer" : "client",
     content: content.trim(),
   });
+
+  const baseNotificationData: Omit<
+    Notification,
+    "userId" | "isRead" | keyof BaseModel
+  > = {
+    type: NotificationType.DesignChatMessage,
+    title: "Nuevo mensaje de diseño",
+    message: `Tienes un nuevo mensaje sobre el diseño de ${orderItemData.productSnapshot.name}`,
+    deepLink: {
+      path: `/admin/ordenes?selectedId=${order.id}`,
+      elementId: orderItem.id,
+    },
+    metadata: {
+      orderId: order.id,
+      itemId: orderItem.id,
+      productName: orderItemData.productSnapshot.name,
+    },
+  };
+
+  // Create notification for the recipient
+  if (session.user.role === UserRole.Admin) {
+    await Notification.create({
+      userId: order.customerId.toString(),
+      ...baseNotificationData,
+    });
+  } else {
+    const admins = await User.find({ role: UserRole.Admin });
+    for (const admin of admins) {
+      await Notification.create({
+        userId: admin.id,
+        ...baseNotificationData,
+      });
+    }
+  }
 
   const channelName = getPusherChannelName.orderItemChat(
     order.id,
