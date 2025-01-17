@@ -4,7 +4,7 @@ import { Order, UserRole } from "@/database";
 import { ExtendedSession, getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
 import { DesignerChat } from "@/lib/server/designer-chat";
-import { pusherServer } from "@/lib/server/pusher";
+import { createPusherServer } from "@/lib/server/pusher";
 
 export async function GET(
   _: Request,
@@ -82,11 +82,9 @@ export async function POST(
     content: content.trim(),
   });
 
-  await pusherServer.trigger(
-    `private-chat-${orderItem.id}`,
-    "new-message",
-    message
-  );
-
+  const channelName = `private-chat-${orderItem.id}`;
+  console.log(`Sending message to channel ${channelName}:`, message);
+  const pusherServer = createPusherServer();
+  await pusherServer.trigger(channelName, "new-message", message);
   return NextResponse.json({ message });
 }
