@@ -61,11 +61,7 @@ export function NotificationList({ onClose }: { onClose: () => void }) {
   const handleNotificationClick = (notification: Notification) => {
     markAsRead();
     onClose();
-    router.push(
-      notification.deepLink.elementId
-        ? `${notification.deepLink.path}#${notification.deepLink.elementId}`
-        : notification.deepLink.path
-    );
+    router.push(notification.deepLink);
   };
 
   if (isLoading) {

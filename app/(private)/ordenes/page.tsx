@@ -24,7 +24,6 @@ export default function OrdersPage() {
 
   const justPaidOrderId = searchParams.get("justPaidOrderId");
   const selectedId = searchParams.get("selectedId");
-
   const fetchOrders = async (cursor?: string, selectedId?: string) => {
     try {
       const params = new URLSearchParams();

@@ -21,6 +21,26 @@ body {
   }
 }
 
+@keyframes highlightPulse {
+  0% {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.8),
+      0 0 0 3px rgba(59, 130, 246, 0.2), 0 0 0 3px rgba(147, 197, 253, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 1),
+      0 0 20px 10px rgba(59, 130, 246, 0.2),
+      0 0 40px 20px rgba(147, 197, 253, 0.1);
+  }
+  100% {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0),
+      0 0 20px 20px rgba(59, 130, 246, 0), 0 0 40px 40px rgba(147, 197, 253, 0);
+  }
+}
+
+.highlight-pulse {
+  animation: highlightPulse 2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

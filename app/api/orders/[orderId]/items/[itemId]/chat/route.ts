@@ -92,6 +92,11 @@ export async function POST(
     content: content.trim(),
   });
 
+  const deepLink =
+    session.user.role === UserRole.Admin
+      ? `/ordenes?selectedId=${order.id}&selectedItemId=${orderItem.id}`
+      : `/admin/ordenes?selectedId=${order.id}&selectedItemId=${orderItem.id}`;
+
   const baseNotificationData: Omit<
     Notification,
     "userId" | "isRead" | keyof BaseModel
@@ -99,10 +104,7 @@ export async function POST(
     type: NotificationType.DesignChatMessage,
     title: "Nuevo mensaje de diseño",
     message: `Tienes un nuevo mensaje sobre el diseño de ${orderItemData.productSnapshot.name}`,
-    deepLink: {
-      path: `/admin/ordenes?selectedId=${order.id}`,
-      elementId: orderItem.id,
-    },
+    deepLink,
     metadata: {
       orderId: order.id,
       itemId: orderItem.id,

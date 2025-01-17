@@ -1,6 +1,8 @@
 "use client";
 
 import { Download } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -70,8 +72,11 @@ export function OrderDetail({
   isAdmin,
   onStatusChange,
 }: OrderDetailProps) {
+  const searchParams = useSearchParams();
+  const selectedItemId = searchParams.get("selectedItemId");
+  console.log({ selectedItemId });
+  const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const canChangeStatus = isAdmin && order.status !== OrderStatus.Delivered;
-
   const handleDownloadArt = async (
     orderId: string,
     itemId: string,
@@ -108,6 +113,28 @@ export function OrderDetail({
       toast.error("Error al descargar el arte");
     }
   };
+
+  useEffect(() => {
+    if (selectedItemId && itemRefs.current[selectedItemId]) {
+      console.log({ selectedItemId, ref: itemRefs.current[selectedItemId] });
+      // Scroll to the item
+      itemRefs.current[selectedItemId]?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
+      // Add highlight animation
+      const element = itemRefs.current[selectedItemId];
+      element?.classList.add("highlight-pulse");
+
+      // Remove the animation class after it completes
+      const timer = setTimeout(() => {
+        element?.classList.remove("highlight-pulse");
+      }, 2000); // Match this with the CSS animation duration
+
+      return () => clearTimeout(timer);
+    }
+  }, [selectedItemId]);
 
   return (
     <div className="p-6 border rounded-lg space-y-6">
@@ -159,7 +186,15 @@ export function OrderDetail({
         <h3 className="font-medium mb-2">Productos</h3>
         <div className="space-y-4">
           {order.cart.map((item) => (
-            <div key={item.id} className="border rounded-lg p-4">
+            <div
+              key={item.id}
+              ref={(el) => {
+                itemRefs.current[item.id] = el;
+              }}
+              className={`border rounded-lg p-4 transition-all ${
+                selectedItemId === item.id ? "highlight-pulse" : ""
+              }`}
+            >
               <div className="flex justify-between items-start mb-2">
                 <h4 className="font-medium">{item.productSnapshot.name}</h4>
                 <span className="text-sm">{formatCents(item.totalPrice)}</span>

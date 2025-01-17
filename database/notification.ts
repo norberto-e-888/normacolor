@@ -6,17 +6,12 @@ export enum NotificationType {
   DesignChatMessage = "design_chat_message",
 }
 
-export type NotificationDeepLink = {
-  path: string;
-  elementId?: string;
-};
-
 export type Notification = {
   userId: mongoose.Types.ObjectId;
   type: NotificationType;
   title: string;
   message: string;
-  deepLink: NotificationDeepLink;
+  deepLink: string;
   isRead: boolean;
   metadata?: Record<string, unknown>;
 } & BaseModel;
@@ -41,19 +36,7 @@ const notificationSchema = getSchema<Notification>({
     required: true,
   },
   deepLink: {
-    type: new mongoose.Schema<NotificationDeepLink>(
-      {
-        path: {
-          type: String,
-          required: true,
-        },
-        elementId: {
-          type: String,
-          required: false,
-        },
-      },
-      { _id: false }
-    ),
+    type: String,
     required: true,
   },
   isRead: {

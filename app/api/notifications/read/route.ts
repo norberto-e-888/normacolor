@@ -10,11 +10,13 @@ export async function POST() {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  const notificationIds = await Notification.find({
+  const notifications = await Notification.find({
     userId: session.user.id,
     isRead: false,
   });
 
+  const notificationIds = notifications.map((notification) => notification.id);
+  console.log("Reading notifications", { notificationIds });
   if (!Array.isArray(notificationIds)) {
     return new NextResponse("Invalid notification IDs", { status: 400 });
   }
