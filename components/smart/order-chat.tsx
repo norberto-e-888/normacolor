@@ -38,6 +38,7 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
       const response = await fetch(
         `/api/orders/${orderId}/items/${itemId}/chat`
       );
+
       if (!response.ok) throw new Error("Failed to fetch messages");
       return response.json();
     },
@@ -73,9 +74,7 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
 
   // Subscribe to Pusher channel
   useEffect(() => {
-    const channelName = `private-chat-${itemId}`;
-    console.log(`Subscribing to channel: ${channelName}`);
-    const channel = pusherClient.subscribe(channelName);
+    const channel = pusherClient.subscribe(`private-chat-${itemId}`);
 
     channel.bind("new-message", (message: ChatMessage) => {
       queryClient.setQueryData<{ messages: ChatMessage[] }>(
@@ -87,7 +86,7 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
     });
 
     return () => {
-      pusherClient.unsubscribe(channelName);
+      pusherClient.unsubscribe(`private-chat-${itemId}`);
     };
   }, [itemId, orderId, queryClient]);
 
@@ -261,6 +260,15 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
     );
   };
 
+  const isCurrentUser = (senderRole: string) => {
+    return (
+      (senderRole === "designer" &&
+        (session?.user as SessionUser)?.role === UserRole.Admin) ||
+      (senderRole === "client" &&
+        (session?.user as SessionUser)?.role !== UserRole.Admin)
+    );
+  };
+
   return (
     <div className="mt-4 border-t pt-4">
       <ImageCarousel
@@ -279,29 +287,36 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
         className="bg-gray-50 rounded-lg p-4 h-64 overflow-y-auto mb-4 relative"
       >
         <div className="space-y-4">
-          {messagesData?.messages.map((message: ChatMessage) => (
-            <div
-              key={message.id}
-              className={`flex ${
-                message.senderRole === "client"
-                  ? "justify-end"
-                  : "justify-start"
-              }`}
-            >
+          {messagesData?.messages.map((message: ChatMessage) => {
+            const isOwnMessage = isCurrentUser(message.senderRole);
+            return (
               <div
-                className={`max-w-[80%] rounded-lg px-4 py-2 ${
-                  message.senderRole === "client"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary"
+                key={message.id}
+                className={`flex ${
+                  isOwnMessage ? "justify-end" : "justify-start"
                 }`}
               >
-                <p className="text-sm">{message.content}</p>
-                <span className="text-xs opacity-70">
-                  {new Date(message.timestamp).toLocaleTimeString()}
-                </span>
+                <div
+                  className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                    isOwnMessage
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary"
+                  }`}
+                >
+                  <p className="text-sm">{message.content}</p>
+                  <span
+                    className={`text-xs ${
+                      isOwnMessage
+                        ? "text-primary-foreground/70"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {new Date(message.timestamp).toLocaleTimeString()}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
           <div ref={chatEndRef} className="h-0 w-full" />
         </div>
       </div>
