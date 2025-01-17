@@ -77,9 +77,9 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
   }, [isMediumScreen]);
 
   const MenuHeader = () => (
-    <header className="md:hidden flex items-center justify-between px-4 py-2 h-14 w-full bg-neutral-50 dark:bg-neutral-950 border-neutral-950 dark:border-neutral-50">
+    <header className="xl:hidden flex items-center justify-between px-4 py-2 h-14 w-full bg-neutral-50 dark:bg-neutral-950 border-neutral-950 dark:border-neutral-50">
       <Button
-        className="block md:hidden items-center p-0"
+        className="block xl:hidden items-center p-0"
         variant="ghost"
         onClick={toggleMobileMenu}
       >
@@ -93,7 +93,7 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
       <aside
         className={`fixed inset-y-0 left-0 z-5 border-r-2 bg-neutral-50 dark:bg-neutral-950 border-neutral-950 dark:border-neutral-50 ${
           isMobileMenuOpen ? "translate-x-0 w-full " : "-translate-x-full"
-        } md:relative md:translate-x-0 md:w-80`}
+        } xl:relative xl:translate-x-0 xl:w-80`}
       >
         <div className="flex flex-col justify-between h-full">
           <ScrollArea className="flex-grow">
