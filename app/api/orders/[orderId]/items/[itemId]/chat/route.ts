@@ -117,7 +117,7 @@ export async function POST(
   const pusherServer = createPusherServer();
   if (session.user.role === UserRole.Admin) {
     const userId = order.customerId.toString();
-    await Notification.create({
+    const notification = await Notification.create({
       userId,
       ...baseNotificationData,
     });
@@ -135,6 +135,7 @@ export async function POST(
           ...baseNotificationData,
           userId,
           isRead: false,
+          id: notification.id,
         },
       },
     ]);
@@ -149,7 +150,7 @@ export async function POST(
     ];
 
     for (const admin of admins) {
-      await Notification.create({
+      const notification = await Notification.create({
         userId: admin.id,
         ...baseNotificationData,
       });
@@ -161,6 +162,7 @@ export async function POST(
           ...baseNotificationData,
           userId: admin.id,
           isRead: false,
+          id: notification.id,
         },
       });
     }

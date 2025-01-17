@@ -20,6 +20,7 @@ export async function GET(request: Request) {
 
   const query = {
     userId: session.user.id,
+    isRead: false,
     ...(cursor ? { createdAt: { $lt: new Date(cursor) } } : {}),
     ...(type ? { type } : {}),
   };
