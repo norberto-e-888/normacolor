@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Download, Loader, Paperclip, Send, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { memo, useEffect, useRef, useState } from "react";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { SessionUser } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { UserRole } from "@/database";
+import { pusherClient } from "@/lib/client/pusher";
 import { ChatMessage } from "@/lib/server/designer-chat";
 
 import { S3Image } from "./s3-image";
@@ -131,6 +132,7 @@ const ImageCarousel = memo(function ImageCarousel({
 
 export function OrderChat({ orderId, itemId }: OrderChatProps) {
   const { data: session } = useSession();
+  const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
@@ -138,13 +140,13 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isAdmin = (session?.user as SessionUser)?.role === UserRole.Admin;
-
   const { data: messagesData, refetch: refetchMessages } = useQuery({
     queryKey: ["chat-messages", orderId, itemId],
     queryFn: async () => {
       const response = await fetch(
         `/api/orders/${orderId}/items/${itemId}/chat`
       );
+
       if (!response.ok) throw new Error("Failed to fetch messages");
       return response.json();
     },
@@ -156,10 +158,29 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
       const response = await fetch(
         `/api/orders/${orderId}/items/${itemId}/chat/images`
       );
+
       if (!response.ok) throw new Error("Failed to fetch images");
       return response.json();
     },
   });
+
+  useEffect(() => {
+    const channel = pusherClient.subscribe(`private-chat-${itemId}`);
+
+    channel.bind("new-message", (message: ChatMessage) => {
+      queryClient.setQueryData<{ messages: ChatMessage[] }>(
+        ["chat-messages", orderId, itemId],
+        (old) => ({
+          messages: [...(old?.messages || []), message],
+        })
+      );
+    });
+
+    return () => {
+      channel.unbind_all();
+      channel.unsubscribe();
+    };
+  }, [itemId, orderId, queryClient]);
 
   useEffect(() => {
     if (messagesContainerRef.current && chatEndRef.current) {

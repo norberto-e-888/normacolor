@@ -4,6 +4,7 @@ import { Order, UserRole } from "@/database";
 import { ExtendedSession, getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
 import { DesignerChat } from "@/lib/server/designer-chat";
+import { pusherServer } from "@/lib/server/pusher";
 
 export async function GET(
   _: Request,
@@ -80,6 +81,12 @@ export async function POST(
     senderRole: session.user.role === UserRole.Admin ? "designer" : "client",
     content: content.trim(),
   });
+
+  await pusherServer.trigger(
+    `private-chat-${orderItem.id}`,
+    "new-message",
+    message
+  );
 
   return NextResponse.json({ message });
 }
