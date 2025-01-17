@@ -5,5 +5,6 @@ export * from "./get-schema";
 export * from "./model-name";
 export * from "./page-props";
 export * from "./point";
+export * from "./pusher";
 export * from "./setters";
 export * from "./validators";

@@ -8,9 +8,11 @@ import { toast } from "sonner";
 
 import { SessionUser } from "@/auth";
 import { Button } from "@/components/ui/button";
+import { PusherEventName } from "@/constants/pusher";
 import { UserRole } from "@/database";
 import { pusherClient } from "@/lib/client/pusher";
 import { ChatMessage } from "@/lib/server/designer-chat";
+import { getPusherChannelName } from "@/utils";
 
 import { S3Image } from "./s3-image";
 
@@ -50,6 +52,7 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
       const response = await fetch(
         `/api/orders/${orderId}/items/${itemId}/chat/images`
       );
+
       if (!response.ok) throw new Error("Failed to fetch images");
       return response.json();
     },
@@ -74,19 +77,28 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
 
   // Subscribe to Pusher channel
   useEffect(() => {
-    const channel = pusherClient.subscribe(`private-chat-${itemId}`);
+    const channelName = getPusherChannelName.orderItemChat(orderId, itemId);
+    const channel = pusherClient.subscribe(channelName);
 
-    channel.bind("new-message", (message: ChatMessage) => {
+    channel.bind(PusherEventName.NewMessage, (message: ChatMessage) => {
       queryClient.setQueryData<{ messages: ChatMessage[] }>(
         ["chat-messages", orderId, itemId],
-        (old) => ({
-          messages: [...(old?.messages || []), message],
-        })
+        (old) => {
+          if (old?.messages.some((m) => m.id === message.id)) {
+            return {
+              ...old,
+            };
+          }
+
+          return {
+            messages: [...(old?.messages || []), message],
+          };
+        }
       );
     });
 
     return () => {
-      pusherClient.unsubscribe(`private-chat-${itemId}`);
+      pusherClient.unsubscribe(channelName);
     };
   }, [itemId, orderId, queryClient]);
 
