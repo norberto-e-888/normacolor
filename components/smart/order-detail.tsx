@@ -74,7 +74,6 @@ export function OrderDetail({
 }: OrderDetailProps) {
   const searchParams = useSearchParams();
   const selectedItemId = searchParams.get("selectedItemId");
-  console.log({ selectedItemId });
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const canChangeStatus = isAdmin && order.status !== OrderStatus.Delivered;
   const handleDownloadArt = async (

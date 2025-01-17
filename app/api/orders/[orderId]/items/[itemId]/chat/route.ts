@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import Pusher from "pusher";
 
 import { PusherEventName } from "@/constants/pusher";
 import {
@@ -113,28 +114,59 @@ export async function POST(
   };
 
   // Create notification for the recipient
+  const pusherServer = createPusherServer();
   if (session.user.role === UserRole.Admin) {
+    const userId = order.customerId.toString();
     await Notification.create({
-      userId: order.customerId.toString(),
+      userId,
       ...baseNotificationData,
     });
+
+    await pusherServer.triggerBatch([
+      {
+        channel: getPusherChannelName.orderItemChat(order.id, orderItem.id),
+        name: PusherEventName.NewMessage,
+        data: message,
+      },
+      {
+        channel: getPusherChannelName.notifications(userId),
+        name: PusherEventName.NewNotification,
+        data: {
+          ...baseNotificationData,
+          userId,
+          isRead: false,
+        },
+      },
+    ]);
   } else {
     const admins = await User.find({ role: UserRole.Admin });
+    const batchPusherEvents: Pusher.BatchEvent[] = [
+      {
+        channel: getPusherChannelName.orderItemChat(order.id, orderItem.id),
+        name: PusherEventName.NewMessage,
+        data: message,
+      },
+    ];
+
     for (const admin of admins) {
       await Notification.create({
         userId: admin.id,
         ...baseNotificationData,
       });
+
+      batchPusherEvents.push({
+        channel: getPusherChannelName.notifications(admin.id),
+        name: PusherEventName.NewNotification,
+        data: {
+          ...baseNotificationData,
+          userId: admin.id,
+          isRead: false,
+        },
+      });
     }
+
+    await pusherServer.triggerBatch(batchPusherEvents);
   }
 
-  const channelName = getPusherChannelName.orderItemChat(
-    order.id,
-    orderItem.id
-  );
-
-  console.log(`Sending message to channel ${channelName}:`, message);
-  const pusherServer = createPusherServer();
-  await pusherServer.trigger(channelName, PusherEventName.NewMessage, message);
   return NextResponse.json({ message });
 }

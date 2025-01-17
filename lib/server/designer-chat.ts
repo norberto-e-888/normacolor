@@ -51,7 +51,7 @@ export class DesignerChat {
     return chatMessage;
   }
 
-  static async getMessages(orderItemId: string, limit = 50) {
+  static async getMessages(orderItemId: string, limit = 500) {
     const key = this.getMessagesKey(orderItemId);
     const messages = await chatRedis.lrange(key, 0, limit - 1);
     return messages as unknown as ChatMessage[];

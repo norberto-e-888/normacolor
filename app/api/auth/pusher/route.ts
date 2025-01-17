@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { PusherChannelType } from "@/constants/pusher";
 import { Order } from "@/database";
 import { getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
@@ -26,38 +27,54 @@ export async function POST(request: Request) {
       return new NextResponse("Bad Request", { status: 400 });
     }
 
-    // Only authorize private-order-chat channels
-    if (!channelName.toString().startsWith("private-order-chat_")) {
-      console.log("Pusher auth: Invalid channel prefix");
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
+    const channelStr = channelName.toString();
 
-    // Extract orderId and itemId from channel name
-    const [orderId, itemId] = channelName
-      .toString()
-      .replace("private-order-chat_", "")
-      .split("-");
+    // Handle different channel types
+    if (channelStr.startsWith(PusherChannelType.OrderChat)) {
+      // Extract orderId and itemId from channel name
+      const [orderId, itemId] = channelStr
+        .replace(`${PusherChannelType.OrderChat}_`, "")
+        .split("-");
 
-    if (!orderId || !itemId) {
-      console.log("Pusher auth: Invalid channel format");
-      return new NextResponse("Bad Request", { status: 400 });
-    }
+      if (!orderId || !itemId) {
+        console.log("Pusher auth: Invalid channel format");
+        return new NextResponse("Bad Request", { status: 400 });
+      }
 
-    // If user is not admin, verify order ownership
-    if (session.user.role !== "admin") {
-      await connectToMongo();
-      const order = await Order.findById(orderId);
-      if (!order || order.customerId.toString() !== session.user.id) {
-        console.log("Pusher auth: Order ownership verification failed");
+      // If user is not admin, verify order ownership
+      if (session.user.role !== "admin") {
+        await connectToMongo();
+        const order = await Order.findById(orderId);
+        if (!order || order.customerId.toString() !== session.user.id) {
+          console.log("Pusher auth: Order ownership verification failed");
+          return new NextResponse("Unauthorized", { status: 401 });
+        }
+      }
+    } else if (channelStr.startsWith(PusherChannelType.Notifications)) {
+      // Extract userId from channel name
+      const userId = channelStr.replace(
+        `${PusherChannelType.Notifications}_`,
+        ""
+      );
+
+      // Verify the user is only subscribing to their own notifications channel
+      if (userId !== session.user.id) {
+        console.log(
+          "Pusher auth: Notification channel ownership verification failed"
+        );
+
         return new NextResponse("Unauthorized", { status: 401 });
       }
+    } else {
+      console.log("Pusher auth: Invalid channel type");
+      return new NextResponse("Bad Request", { status: 400 });
     }
 
     // Create a new Pusher server instance for this request
     const pusherServer = createPusherServer();
     const authResponse = pusherServer.authorizeChannel(
       socketId.toString(),
-      channelName.toString()
+      channelStr
     );
 
     console.log("Pusher auth response:", authResponse);
