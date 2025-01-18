@@ -8,8 +8,8 @@ import { Content } from "@/components/ui/content";
 import { Modal } from "@/components/ui/modal";
 import { Product } from "@/database";
 import { useProducts } from "@/hooks/use-products";
-import { ProductDetail } from "@/components/smart/product-detail";
 import { ProductsTable } from "@/components/smart/products-table";
+import { ProductDetail } from "@/components/smart/product-detail";
 
 export default function AdminProductsPage() {
   const [selectedProduct, setSelectedProduct] = useState<Product<true> | null>(
@@ -20,7 +20,7 @@ export default function AdminProductsPage() {
 
   if (isLoading) {
     return (
-      <Content title="Productos">
+      <Content>
         <div className="flex justify-center items-center min-h-[50vh]">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
         </div>
@@ -30,30 +30,29 @@ export default function AdminProductsPage() {
 
   return (
     <Content title="Productos">
-      <div className="flex justify-end mb-6">
-        <Button onClick={() => setIsCreateModalOpen(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Nuevo Producto
-        </Button>
-      </div>
-
-      <div className="flex gap-6 flex-1 min-h-0">
-        {/* Products Table */}
-        <div className="w-full lg:w-2/3 overflow-auto border rounded-lg">
-          <ProductsTable
-            products={data || []}
-            selectedProductId={selectedProduct?.id}
-            onProductSelect={(product) => {
-              console.log("HERE", product);
-              setSelectedProduct(product);
-            }}
-            onProductUpdate={refetch}
-          />
+      <div className="flex flex-col h-full">
+        <div className="flex items-center justify-end mb-6">
+          <Button onClick={() => setIsCreateModalOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Nuevo Producto
+          </Button>
         </div>
 
-        {/* Detail Panel */}
-        <div className="hidden lg:block w-1/3 overflow-auto">
-          <ProductDetail product={selectedProduct} onUpdate={refetch} />
+        <div className="flex gap-6 flex-1 min-h-0">
+          {/* Products Table */}
+          <div className="w-full lg:w-2/3 overflow-auto border rounded-lg">
+            <ProductsTable
+              products={data || []}
+              selectedProductId={selectedProduct?.id}
+              onProductSelect={setSelectedProduct}
+              onProductUpdate={refetch}
+            />
+          </div>
+
+          {/* Detail Panel */}
+          <div className="hidden lg:block w-1/3 overflow-auto">
+            <ProductDetail product={selectedProduct} onUpdate={refetch} />
+          </div>
         </div>
       </div>
 

@@ -4,9 +4,7 @@ type ContentProps = Readonly<{
   children: React.ReactNode;
   center?: boolean;
   className?: string;
-  fullHeight?: boolean;
   padding?: boolean;
-  flex?: boolean;
   title?: string;
 }>;
 
@@ -14,23 +12,22 @@ export const Content = ({
   children,
   center = false,
   className,
-  fullHeight = true,
   padding = true,
-  flex = false,
   title,
 }: ContentProps) => (
   <div
     className={cn(
-      "w-full",
-      center && "flex justify-center",
-      fullHeight && "h-full",
+      "w-full h-[calc(100vh-4rem)] overflow-hidden",
       padding && "p-4",
-      flex && "flex",
-      "flex flex-col",
+      center && "flex justify-center",
       className
     )}
   >
-    {title && <h1 className="text-2xl font-bold mb-6">{title}</h1>}
+    {title && (
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">{title}</h1>
+      </div>
+    )}
     {children}
   </div>
 );
