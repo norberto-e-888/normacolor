@@ -14,6 +14,49 @@ const updateProductSchema = z
   .object({
     name: z.string().min(3).optional(),
     isPublic: z.boolean().optional(),
+    options: z
+      .object({
+        sides: z
+          .array(
+            z.enum([
+              ProductOptionSide.One,
+              ProductOptionSide.Both,
+              ProductOptionSide.Diptic,
+              ProductOptionSide.Triptic,
+            ])
+          )
+          .optional(),
+        finish: z
+          .array(
+            z.enum([
+              ProductOptionFinish.PlastifiedGloss,
+              ProductOptionFinish.PlastifiedMatte,
+              ProductOptionFinish.UVVarnishGloss,
+              ProductOptionFinish.UVVarnishMatte,
+              ProductOptionFinish.None,
+            ])
+          )
+          .optional(),
+        paper: z
+          .array(
+            z.enum([
+              ProductOptionPaper.HundredLbMatte,
+              ProductOptionPaper.HundredLbSatin,
+              ProductOptionPaper.HundredThirtyLbMatte,
+              ProductOptionPaper.HundredThirtyLbSatin,
+              ProductOptionPaper.ThreeHundredGMatte,
+              ProductOptionPaper.ThreeHundredGSatin,
+              ProductOptionPaper.HundredFiftyGMatte,
+              ProductOptionPaper.HundredFiftyGSatin,
+              ProductOptionPaper.Chemical,
+              ProductOptionPaper.Bond,
+              ProductOptionPaper.Bond20lb,
+            ])
+          )
+          .optional(),
+        dimensions: z.array(z.tuple([z.number(), z.number()])).optional(),
+      })
+      .optional(),
     pricing: z
       .object({
         baseUnitPrice: z.number().min(1),
