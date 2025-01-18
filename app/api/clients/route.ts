@@ -33,27 +33,9 @@ export async function GET(request: Request) {
     pipeline.unshift({
       $search: {
         index: "users_name_email",
-        compound: {
-          should: [
-            {
-              autocomplete: {
-                query: searchTerm,
-                path: "email",
-                fuzzy: {
-                  maxEdits: 1,
-                },
-              },
-            },
-            {
-              autocomplete: {
-                query: searchTerm,
-                path: "name",
-                fuzzy: {
-                  maxEdits: 1,
-                },
-              },
-            },
-          ],
+        text: {
+          query: searchTerm,
+          path: ["email", "name"],
         },
       },
     });

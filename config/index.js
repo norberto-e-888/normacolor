@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const { z } = require("zod");
 
-const Config = z.object({
+let Config = z.object({
   AUTH_SECRET: z.string(),
   AUTH_RESEND_KEY: z.string(),
   AUTH_RESEND_FROM_EMAIL: z.string(),
@@ -12,6 +12,7 @@ const Config = z.object({
   MONGODB_ATLAS_USER: z.string(),
   MONGODB_ATLAS_PASSWORD: z.string(),
   MONGODB_URI: z.string(),
+  MONGODB_USE_ATLAS: z.enum(["true", "false"]),
   NGROK_TOKEN: z.string().optional(),
   NGROK_TUNNEL: z.string().optional(),
   NODE_ENV: z.enum(["development", "production", "staging", "test"]),
@@ -27,11 +28,13 @@ const Config = z.object({
   UPSTASH_REDIS_REST_TOKEN: z.string(),
 });
 
-const config = Config.parse(process.env);
+if (process.env.NODE_ENV === "development") {
+  Config = Config.omit({
+    MONGODB_ATLAS_USER: true,
+    MONGODB_ATLAS_PASSWORD: true,
+  });
+}
 
-config.MONGODB_URI = config.MONGODB_URI.replace(
-  "<user>",
-  config.MONGODB_ATLAS_USER
-).replace("<password>", config.MONGODB_ATLAS_PASSWORD);
+const config = Config.parse(process.env);
 
 module.exports.config = config;

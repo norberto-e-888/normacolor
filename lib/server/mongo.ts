@@ -1,15 +1,39 @@
 "use server";
 
 // This approach is taken from https://github.com/vercel/next.js/tree/canary/examples/with-mongodb
-import { MongoClient, ServerApiVersion } from "mongodb";
+import { MongoClient, MongoClientOptions, ServerApiVersion } from "mongodb";
 import mongoose from "mongoose";
+
+const isAtlas = process.env.MONGODB_USE_ATLAS === "true";
 
 if (!process.env.MONGODB_URI) {
   throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
 }
 
-const uri = process.env.MONGODB_URI;
-const options = {
+if (
+  isAtlas &&
+  (!process.env.MONGODB_ATLAS_USER || !process.env.MONGODB_ATLAS_PASSWORD)
+) {
+  throw new Error(
+    'Invalid/Missing environment variable: "MONGODB_ATLAS_USER" or "MONGODB_ATLAS_PASSWORD"'
+  );
+}
+
+let uri = process.env.MONGODB_URI;
+
+if (isAtlas) {
+  uri = uri
+    .replace(
+      "<user>",
+      encodeURIComponent(process.env.MONGODB_ATLAS_USER as string)
+    )
+    .replace(
+      "<password>",
+      encodeURIComponent(process.env.MONGODB_ATLAS_PASSWORD as string)
+    );
+}
+
+const options: MongoClientOptions = {
   serverApi: {
     version: ServerApiVersion.v1,
     strict: true,
@@ -44,7 +68,7 @@ export const connectToMongo = async () => {
     return mongoose.connection;
   }
 
-  return (await mongoose.connect(process.env.MONGODB_URI as string)).connection;
+  return mongoose.connect(uri);
 };
 
 export const getMongoClient = async () => mongoClient;

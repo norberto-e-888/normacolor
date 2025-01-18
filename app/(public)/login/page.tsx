@@ -9,7 +9,6 @@ import { useEffect, useRef, useState } from "react";
 import { OTPInput } from "@/components/smart/otp-input";
 import { SubmitButton } from "@/components/smart/submit-button";
 import { Button } from "@/components/ui/button";
-import { Content } from "@/components/ui/content";
 import { Input } from "@/components/ui/input";
 import { signInAsAdmin, signInWithMagicLink } from "@/functions/auth";
 
@@ -67,241 +66,225 @@ export default function LoginPage() {
   }, []);
 
   return (
-    <Content padding={false} flex>
-      <div className="hidden xl:block xl:w-1/2 relative">
-        <Image
-          src="/svg/login-hero.svg"
-          alt="Hero image"
-          fill
-          priority
-          className="object-cover"
-        />
-      </div>
+    <div className="h-[calc(100vh-6rem)] flex items-center justify-center p-8 bg-background">
+      <div className="w-full max-w-md space-y-8">
+        <div className="flex justify-center">
+          <Hexagon size="96px" />
+        </div>
 
-      <div className="w-full xl:w-1/2 flex items-center justify-center p-8 bg-background">
-        <div className="w-full max-w-md space-y-8">
-          <div className="flex justify-center">
-            <Hexagon size="96px" />
-          </div>
-
-          {emailToVerify && !isAdminFlow && (
-            <div className="flex">
-              <MailCheck size="24px" className="animate-pulse mr-0.5" />
-              <p className="text-sm text-muted-foreground text-center italic mt-0.5">
-                te hemos enviado un correo a{" "}
-                <span className="font-semibold">{emailToVerify}</span> con un
-                link para que ingreses al app
-              </p>
-            </div>
-          )}
-
-          {emailToVerify && isAdminFlow && (
-            <div className="flex">
-              <KeyRound size="24px" className="animate-pulse mr-0.5" />
-              <p className="text-sm text-muted-foreground text-center italic">
-                {isAdminSettingPassword
-                  ? "crea tu contraseña e ingresa el código que enviamos a"
-                  : "ingresa tu contraseña y el código que enviamos a"}{" "}
-                <span className="font-semibold">{emailToVerify}</span>
-              </p>
-            </div>
-          )}
-
-          {!emailToVerify && !isAdminFlow && (
-            <p className="text-sm text-muted-foreground text-center italic">
-              ingresa solo con tu correo, sin preocuparte por una nueva
-              contraseña
+        {emailToVerify && !isAdminFlow && (
+          <div className="flex">
+            <MailCheck size="24px" className="animate-pulse mr-0.5" />
+            <p className="text-sm text-muted-foreground text-center italic mt-0.5">
+              te hemos enviado un correo a{" "}
+              <span className="font-semibold">{emailToVerify}</span> con un link
+              para que ingreses al app
             </p>
-          )}
+          </div>
+        )}
 
-          <main>
-            {isAdminFlow && (
-              <form
-                ref={formRef}
-                className="flex flex-col gap-4 items-end justify-center"
-                action={async (formData) => {
-                  const password = formData.get("password") as string;
-                  const passwordConfirm = formData.get(
-                    "password-confirm"
-                  ) as string;
+        {emailToVerify && isAdminFlow && (
+          <div className="flex">
+            <KeyRound size="24px" className="animate-pulse mr-0.5" />
+            <p className="text-sm text-muted-foreground text-center italic">
+              {isAdminSettingPassword
+                ? "crea tu contraseña e ingresa el código que enviamos a"
+                : "ingresa tu contraseña y el código que enviamos a"}{" "}
+              <span className="font-semibold">{emailToVerify}</span>
+            </p>
+          </div>
+        )}
 
-                  if (isAdminSettingPassword && password !== passwordConfirm) {
-                    return;
+        {!emailToVerify && !isAdminFlow && (
+          <p className="text-sm text-muted-foreground text-center italic">
+            ingresa solo con tu correo, sin preocuparte por una nueva contraseña
+          </p>
+        )}
+
+        <main>
+          {isAdminFlow && (
+            <form
+              ref={formRef}
+              className="flex flex-col gap-4 items-end justify-center"
+              action={async (formData) => {
+                const password = formData.get("password") as string;
+                const passwordConfirm = formData.get(
+                  "password-confirm"
+                ) as string;
+
+                if (isAdminSettingPassword && password !== passwordConfirm) {
+                  return;
+                }
+
+                if (emailToVerify) {
+                  await signInAsAdmin({
+                    email: emailToVerify,
+                    password,
+                    code,
+                  });
+                } else {
+                  router.replace("/login");
+                }
+              }}
+            >
+              <div className="flex flex-col items-center w-full">
+                <label className="block text-lg font-bold mb-2">Código</label>
+                <OTPInput defaultOTP={code} onChange={setCode} />
+              </div>
+
+              <div className="flex flex-col w-full mt-4">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-bold mb-1"
+                >
+                  Contraseña
+                </label>
+                <Input
+                  ref={passwordRef}
+                  required
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete={
+                    isAdminSettingPassword ? "off" : "current-password"
                   }
-
-                  if (emailToVerify) {
-                    await signInAsAdmin({
-                      email: emailToVerify,
-                      password,
-                      code,
-                    });
-                  } else {
-                    router.replace("/login");
-                  }
-                }}
-              >
-                <div className="flex flex-col items-center w-full">
-                  <label className="block text-lg font-bold mb-2">Código</label>
-                  <OTPInput defaultOTP={code} onChange={setCode} />
-                </div>
-
-                <div className="flex flex-col w-full mt-4">
-                  <label
-                    htmlFor="password"
-                    className="block text-sm font-bold mb-1"
-                  >
-                    Contraseña
-                  </label>
-                  <Input
-                    ref={passwordRef}
-                    required
-                    id="password"
-                    name="password"
-                    type="password"
-                    autoComplete={
-                      isAdminSettingPassword ? "off" : "current-password"
-                    }
-                    value={password}
-                    onChange={(e) => {
-                      e.preventDefault();
-                      setPassword(e.target.value.trim());
-                    }}
-                  />
-                </div>
-
-                {isAdminSettingPassword && (
-                  <div className="flex flex-col w-full mt-4">
-                    <label
-                      htmlFor="email"
-                      className="block text-sm font-bold mb-1"
-                    >
-                      Confirma tu contraseña
-                    </label>
-                    <Input
-                      required
-                      id="password-confirm"
-                      name="password-confirm"
-                      type="password"
-                      autoComplete="off"
-                      value={passwordConfirm}
-                      onChange={(e) => {
-                        e.preventDefault();
-                        setPasswordConfirm(e.target.value.trim());
-                      }}
-                    />
-                  </div>
-                )}
-
-                <SubmitButton
-                  disabled={
-                    status === "loading" ||
-                    status === "authenticated" ||
-                    code.length !== 6 ||
-                    password.length < 10 ||
-                    (isAdminSettingPassword && password !== passwordConfirm)
-                  }
-                  text={
-                    status === "authenticated" ? (
-                      <Loader size="20px" className="animate-spin" />
-                    ) : (
-                      "Ingresar"
-                    )
-                  }
-                  className="w-full"
+                  value={password}
+                  onChange={(e) => {
+                    e.preventDefault();
+                    setPassword(e.target.value.trim());
+                  }}
                 />
-              </form>
-            )}
+              </div>
 
-            {!isAdminFlow && (
-              <form
-                ref={formRef}
-                className="flex gap-4 items-end justify-center"
-                action={async (formData) => {
-                  const email = formData.get("email") as string;
-
-                  localStorage.setItem("sign-in.email", email);
-
-                  await signInWithMagicLink(email, callbackUrl);
-                }}
-              >
-                <div className="flex flex-col w-4/5">
+              {isAdminSettingPassword && (
+                <div className="flex flex-col w-full mt-4">
                   <label
                     htmlFor="email"
                     className="block text-sm font-bold mb-1"
                   >
-                    Correo
+                    Confirma tu contraseña
                   </label>
                   <Input
                     required
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="yo@ejemplo.com"
-                    autoComplete="email"
+                    id="password-confirm"
+                    name="password-confirm"
+                    type="password"
+                    autoComplete="off"
+                    value={passwordConfirm}
+                    onChange={(e) => {
+                      e.preventDefault();
+                      setPasswordConfirm(e.target.value.trim());
+                    }}
                   />
                 </div>
+              )}
 
-                <SubmitButton
-                  disabled={status === "loading" || status === "authenticated"}
-                  text={
-                    status === "authenticated" ? (
-                      <Loader size="20px" className="animate-spin" />
-                    ) : (
-                      <Send size="20px" />
-                    )
-                  }
-                  className="w-1/5"
+              <SubmitButton
+                disabled={
+                  status === "loading" ||
+                  status === "authenticated" ||
+                  code.length !== 6 ||
+                  password.length < 10 ||
+                  (isAdminSettingPassword && password !== passwordConfirm)
+                }
+                text={
+                  status === "authenticated" ? (
+                    <Loader size="20px" className="animate-spin" />
+                  ) : (
+                    "Ingresar"
+                  )
+                }
+                className="w-full"
+              />
+            </form>
+          )}
+
+          {!isAdminFlow && (
+            <form
+              ref={formRef}
+              className="flex gap-4 items-end justify-center"
+              action={async (formData) => {
+                const email = formData.get("email") as string;
+
+                localStorage.setItem("sign-in.email", email);
+
+                await signInWithMagicLink(email, callbackUrl);
+              }}
+            >
+              <div className="flex flex-col w-4/5">
+                <label htmlFor="email" className="block text-sm font-bold mb-1">
+                  Correo
+                </label>
+                <Input
+                  required
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="yo@ejemplo.com"
+                  autoComplete="email"
                 />
-              </form>
-            )}
+              </div>
 
-            {!isAdminFlow && (
-              <>
-                <div className="relative my-8">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-muted" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
-                      O continua con
-                    </span>
-                  </div>
-                </div>
+              <SubmitButton
+                disabled={status === "loading" || status === "authenticated"}
+                text={
+                  status === "authenticated" ? (
+                    <Loader size="20px" className="animate-spin" />
+                  ) : (
+                    <Send size="20px" />
+                  )
+                }
+                className="w-1/5"
+              />
+            </form>
+          )}
 
-                <div className="grid grid-cols-3 gap-4">
-                  <Button variant="outline">
-                    <Image
-                      src="/svg/google.svg"
-                      alt="Google Sign In"
-                      width="24"
-                      height="24"
-                      priority
-                    />
-                  </Button>
-                  <Button variant="outline">
-                    <Image
-                      src="/svg/facebook.svg"
-                      alt="Facebook Sign In"
-                      width="24"
-                      height="24"
-                      priority
-                    />
-                  </Button>
-                  <Button variant="outline">
-                    <Image
-                      src="/svg/twitter.svg"
-                      alt="Twitter Sign In"
-                      width="24"
-                      height="24"
-                      priority
-                    />
-                  </Button>
+          {!isAdminFlow && (
+            <>
+              <div className="relative my-8">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-muted" />
                 </div>
-              </>
-            )}
-          </main>
-        </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    O continua con
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4">
+                <Button variant="outline">
+                  <Image
+                    src="/svg/google.svg"
+                    alt="Google Sign In"
+                    width="24"
+                    height="24"
+                    priority
+                  />
+                </Button>
+                <Button variant="outline">
+                  <Image
+                    src="/svg/facebook.svg"
+                    alt="Facebook Sign In"
+                    width="24"
+                    height="24"
+                    priority
+                  />
+                </Button>
+                <Button variant="outline">
+                  <Image
+                    src="/svg/twitter.svg"
+                    alt="Twitter Sign In"
+                    width="24"
+                    height="24"
+                    priority
+                  />
+                </Button>
+              </div>
+            </>
+          )}
+        </main>
       </div>
-    </Content>
+    </div>
   );
 }
