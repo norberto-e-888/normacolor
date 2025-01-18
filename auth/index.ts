@@ -74,6 +74,8 @@ const { handlers, signIn, signOut, auth } = NextAuth({
           throw new Error("Credenciales invalidas.");
         }
 
+        await connectToMongo();
+
         const user = await User.findOne({
           email,
         });

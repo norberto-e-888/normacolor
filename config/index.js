@@ -9,10 +9,7 @@ let Config = z.object({
   AWS_SECRET_KEY: z.string(),
   AWS_BUCKET_NAME: z.string(),
   FREEPIK_API_KEY: z.string(),
-  MONGODB_ATLAS_USER: z.string(),
-  MONGODB_ATLAS_PASSWORD: z.string(),
   MONGODB_URI: z.string(),
-  MONGODB_USE_ATLAS: z.enum(["true", "false"]),
   NGROK_TOKEN: z.string().optional(),
   NGROK_TUNNEL: z.string().optional(),
   NODE_ENV: z.enum(["development", "production", "staging", "test"]),
@@ -27,13 +24,6 @@ let Config = z.object({
   UPSTASH_REDIS_REST_URL: z.string(),
   UPSTASH_REDIS_REST_TOKEN: z.string(),
 });
-
-if (process.env.NODE_ENV === "development") {
-  Config = Config.omit({
-    MONGODB_ATLAS_USER: true,
-    MONGODB_ATLAS_PASSWORD: true,
-  });
-}
 
 const config = Config.parse(process.env);
 
