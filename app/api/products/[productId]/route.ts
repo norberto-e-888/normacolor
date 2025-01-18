@@ -104,3 +104,26 @@ export async function PATCH(
 
   return NextResponse.json({ product: product.toObject() });
 }
+
+export async function DELETE(
+  _: Request,
+  { params }: { params: { productId: string } }
+) {
+  const session = await getServerSession();
+  if (
+    !session ||
+    session.user.role !== "admin" ||
+    session.user.email !== process.env.ROOT_USER_EMAIL
+  ) {
+    return new NextResponse("Unauthorized", { status: 401 });
+  }
+
+  await connectToMongo();
+  const product = await Product.findByIdAndDelete(params.productId);
+
+  if (!product) {
+    return new NextResponse("Product not found", { status: 404 });
+  }
+
+  return NextResponse.json({ success: true });
+}

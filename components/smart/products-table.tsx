@@ -1,7 +1,8 @@
 "use client";
 
-import { Edit2, Image as ImageIcon, MoreVertical } from "lucide-react";
+import { Edit2, Image as ImageIcon, MoreVertical, Trash2 } from "lucide-react";
 import Image from "next/image";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -26,6 +27,28 @@ export function ProductsTable({
   onProductSelect,
   onProductUpdate,
 }: ProductsTableProps) {
+  const handleDelete = async (product: Product<true>) => {
+    if (!confirm(`¿Estás seguro de que deseas eliminar ${product.name}?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/products/${product.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete product");
+      }
+
+      toast.success("Producto eliminado exitosamente");
+      onProductUpdate();
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      toast.error("Error al eliminar el producto");
+    }
+  };
+
   return (
     <div className="w-full">
       <table className="w-full">
@@ -46,10 +69,7 @@ export function ProductsTable({
               className={`border-b hover:bg-muted/50 cursor-pointer transition-colors ${
                 selectedProductId === product.id ? "bg-primary/5" : ""
               }`}
-              onClick={(e) => {
-                e.preventDefault();
-                onProductSelect(product);
-              }}
+              onClick={() => onProductSelect(product)}
             >
               <td className="p-4">
                 {product.images[0] ? (
@@ -101,11 +121,21 @@ export function ProductsTable({
                     <DropdownMenuItem
                       onClick={(e) => {
                         e.stopPropagation();
-                        onProductUpdate();
+                        onProductSelect(product);
                       }}
                     >
                       <Edit2 className="mr-2 h-4 w-4" />
                       Editar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(product);
+                      }}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Eliminar
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
