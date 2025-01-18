@@ -96,7 +96,6 @@ export const productOptionsSchema = new mongoose.Schema<ProductOptions>(
       required: true,
       default: [],
       validate: [
-        isExactLength(2),
         {
           validator: (dimensions: [[number, number]]) =>
             dimensions.every(
@@ -124,6 +123,7 @@ export const productPricingSchema = new mongoose.Schema<ProductPricing>(
       isInteger: true,
       min: 1,
       set: round,
+      default: 1,
     },
     minimumPurchase: {
       type: Number,
@@ -131,25 +131,30 @@ export const productPricingSchema = new mongoose.Schema<ProductPricing>(
       isInteger: true,
       min: 1,
       set: round,
+      default: 10000,
     },
     optionMultipliers: {
       type: new mongoose.Schema(
         {
           sides: {
             type: Object,
-            required: false,
+            required: true,
+            default: {},
           },
           finish: {
             type: Object,
-            required: false,
+            required: true,
+            default: {},
           },
           paper: {
             type: Object,
-            required: false,
+            required: true,
+            default: {},
           },
           dimensions: {
             type: Object,
-            required: false,
+            required: true,
+            default: {},
           },
         },
         { _id: false }
@@ -158,7 +163,7 @@ export const productPricingSchema = new mongoose.Schema<ProductPricing>(
       default: {},
     },
     quantityDiscountMultipliers: {
-      type: [Number],
+      type: [[Number]],
       required: true,
       default: [],
       validate: [
@@ -203,20 +208,10 @@ export const productSchema = getSchema<Product>({
   options: {
     type: productOptionsSchema,
     required: true,
-    default: {
-      sides: [],
-      finish: [],
-      paper: [],
-      dimensions: [],
-    } as ProductOptions,
   },
   pricing: {
     type: productPricingSchema,
     required: true,
-    default: {
-      baseUnitPrice: 1,
-      minimumPurchase: 10000,
-    } as ProductPricing,
   },
   isPublic: {
     type: Boolean,

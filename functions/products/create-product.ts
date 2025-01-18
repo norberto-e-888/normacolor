@@ -45,6 +45,23 @@ export const createProduct = isAdmin(async (data: CreateProductData) => {
 
   const product = await Product.create({
     name: data.name,
+    pricing: {
+      baseUnitPrice: 1,
+      minimumPurchase: 10000,
+      optionMultipliers: {
+        sides: {},
+        finish: {},
+        paper: {},
+        dimensions: {},
+      },
+      quantityDiscountMultipliers: [],
+    },
+    options: {
+      sides: [],
+      finish: [],
+      paper: [],
+      dimensions: [],
+    },
   });
 
   return {
