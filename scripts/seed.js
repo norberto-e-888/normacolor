@@ -105,7 +105,7 @@ const seed = async () => {
       options: {
         sides: ["one"],
         finish: [],
-        paper: ["bond20lb"],
+        paper: ["bond20lb", "300gmatte"],
         dimensions: [[8.5, 11]],
       },
       pricing: {
@@ -114,7 +114,9 @@ const seed = async () => {
         optionMultipliers: {
           sides: {},
           finish: {},
-          paper: {},
+          paper: {
+            "300gmatte": 1.3,
+          },
           dimensions: {},
         },
         quantityDiscountMultipliers: [
