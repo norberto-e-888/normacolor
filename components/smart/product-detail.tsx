@@ -358,7 +358,7 @@ export function ProductDetail({ product, onUpdate }: ProductDetailProps) {
                     <div key={index} className="flex items-center gap-2">
                       <Input
                         type="number"
-                        step="0.1"
+                        step="0.01"
                         min="0"
                         value={(dimension as [number, number])[0] || 0}
                         onChange={(e) =>
@@ -369,7 +369,7 @@ export function ProductDetail({ product, onUpdate }: ProductDetailProps) {
                       <span>x</span>
                       <Input
                         type="number"
-                        step="0.1"
+                        step="0.01"
                         min="0"
                         value={(dimension as [number, number])[1] || 0}
                         onChange={(e) =>
@@ -449,7 +449,7 @@ export function ProductDetail({ product, onUpdate }: ProductDetailProps) {
                         <span className="text-sm w-24 capitalize">{side}</span>
                         <Input
                           type="number"
-                          step="0.1"
+                          step="0.01"
                           min="0"
                           value={
                             formData.pricing?.optionMultipliers?.sides?.[
@@ -483,7 +483,7 @@ export function ProductDetail({ product, onUpdate }: ProductDetailProps) {
                         </span>
                         <Input
                           type="number"
-                          step="0.1"
+                          step="0.01"
                           min="0"
                           value={
                             formData.pricing?.optionMultipliers?.finish?.[
@@ -515,7 +515,7 @@ export function ProductDetail({ product, onUpdate }: ProductDetailProps) {
                         <span className="text-sm w-24 capitalize">{paper}</span>
                         <Input
                           type="number"
-                          step="0.1"
+                          step="0.01"
                           min="0"
                           value={
                             formData.pricing?.optionMultipliers?.paper?.[
@@ -554,7 +554,7 @@ export function ProductDetail({ product, onUpdate }: ProductDetailProps) {
                             </span>
                             <Input
                               type="number"
-                              step="0.1"
+                              step="0.01"
                               min="0"
                               value={
                                 formData.pricing?.optionMultipliers
@@ -613,7 +613,7 @@ export function ProductDetail({ product, onUpdate }: ProductDetailProps) {
                       />
                       <Input
                         type="number"
-                        step="0.1"
+                        step="0.01"
                         min="0"
                         max="1"
                         value={(discount as [number, number])[1] || 0}

@@ -299,7 +299,7 @@ const seed = async () => {
           sides: { one: 1 },
           finish: {},
           paper: { bond: 1, chemical: 1.2 },
-          dimensions: { [[8.5, 11]]: 1.6 },
+          dimensions: { [JSON.stringify([8.5, 11])]: 1.6 },
         },
         quantityDiscountMultipliers: [
           [100, 0.85],
