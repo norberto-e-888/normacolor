@@ -30,13 +30,13 @@ export async function GET(request: Request) {
 
   // Add search stage if search term is provided
   if (searchTerm?.trim()) {
-    pipeline.unshift({
-      $search: {
-        index: "users_name_email",
-        text: {
-          query: searchTerm,
-          path: ["email", "name"],
-        },
+    const term = searchTerm.trim().toLowerCase();
+    pipeline.push({
+      $match: {
+        $or: [
+          { email: { $regex: term, $options: "i" } },
+          { name: { $regex: term, $options: "i" } },
+        ],
       },
     });
   }

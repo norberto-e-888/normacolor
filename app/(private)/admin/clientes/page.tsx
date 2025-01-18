@@ -2,7 +2,6 @@
 
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
 import { useRef, useState } from "react";
 import { useIntersectionObserver } from "usehooks-ts";
 import { useDebouncedCallback } from "use-debounce";
@@ -15,22 +14,13 @@ import { Input } from "@/components/ui/input";
 import { User } from "@/database";
 
 export default function AdminClientsPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const selectedId = searchParams.get("selectedId");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const { isIntersecting } = useIntersectionObserver(loadMoreRef as never);
-  const debouncedSearch = useDebouncedCallback((value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value) {
-      params.set("searchTerm", value);
-    } else {
-      params.delete("searchTerm");
-    }
 
-    params.delete("cursor"); // Reset pagination when searching
-    router.replace(`/admin/clientes?${params.toString()}`, { scroll: false });
+  const debouncedSearch = useDebouncedCallback((value: string) => {
+    setSearchTerm(value);
   }, 300);
 
   const {
@@ -41,10 +31,11 @@ export default function AdminClientsPage() {
     isFetchingNextPage,
     refetch,
   } = useInfiniteQuery<ClientsResponse>({
-    queryKey: ["admin-clients", searchParams.get("searchTerm")],
+    queryKey: ["admin-clients", searchTerm],
     queryFn: async ({ pageParam }) => {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams();
       if (pageParam) params.set("cursor", pageParam as string);
+      if (searchTerm) params.set("searchTerm", searchTerm);
       const response = await fetch(`/api/clients?${params.toString()}`);
       if (!response.ok) throw new Error("Failed to fetch clients");
       const data: ClientsResponse = await response.json();
@@ -73,20 +64,8 @@ export default function AdminClientsPage() {
   }
 
   const handleClientSelect = (client: User) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("selectedId", client.id);
-    router.replace(`/admin/clientes?${params.toString()}`, { scroll: false });
+    setSelectedId(client.id);
   };
-
-  if (isLoading) {
-    return (
-      <Content>
-        <div className="flex justify-center items-center min-h-[50vh]">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-        </div>
-      </Content>
-    );
-  }
 
   const clients = data?.pages.flatMap((page) => page.clients) ?? [];
 
@@ -99,28 +78,24 @@ export default function AdminClientsPage() {
             <Input
               type="text"
               placeholder="Buscar por email o nombre..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                debouncedSearch(e.target.value);
-              }}
+              onChange={(e) => debouncedSearch(e.target.value)}
               className="pl-10"
             />
           </div>
 
-          <div className="flex-1 overflow-y-auto border rounded-lg">
+          <div className="flex-1 overflow-y-auto border rounded-lg relative">
             <ClientsTable
               clients={clients}
               selectedClientId={selectedId || undefined}
               onClientSelect={handleClientSelect}
               onClientUpdate={refetch}
             />
-            <div ref={loadMoreRef} className="h-4" />
-            {isFetchingNextPage && (
-              <div className="flex justify-center p-4">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+            {(isLoading || isFetchingNextPage) && (
+              <div className="absolute inset-0 flex items-center justify-center bg-background/50">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
               </div>
             )}
+            <div ref={loadMoreRef} className="h-4" />
           </div>
         </div>
 
