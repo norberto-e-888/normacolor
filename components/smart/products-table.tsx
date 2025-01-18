@@ -17,12 +17,14 @@ interface ProductsTableProps {
   products: Product<true>[];
   selectedProductId?: string;
   onProductSelect: (product: Product<true>) => void;
+  onProductUpdate: () => void;
 }
 
 export function ProductsTable({
   products,
   selectedProductId,
   onProductSelect,
+  onProductUpdate,
 }: ProductsTableProps) {
   return (
     <div className="w-full">
@@ -44,7 +46,10 @@ export function ProductsTable({
               className={`border-b hover:bg-muted/50 cursor-pointer transition-colors ${
                 selectedProductId === product.id ? "bg-primary/5" : ""
               }`}
-              onClick={() => onProductSelect(product)}
+              onClick={(e) => {
+                e.preventDefault();
+                onProductSelect(product);
+              }}
             >
               <td className="p-4">
                 {product.images[0] ? (
@@ -88,12 +93,17 @@ export function ProductsTable({
                       className="h-8 w-8 p-0"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <span className="sr-only">Open menu</span>
+                      <span className="sr-only">Abrir menú</span>
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onProductUpdate();
+                      }}
+                    >
                       <Edit2 className="mr-2 h-4 w-4" />
                       Editar
                     </DropdownMenuItem>

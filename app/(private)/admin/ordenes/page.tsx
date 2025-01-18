@@ -144,7 +144,7 @@ export default function AdminOrdersPage() {
   }
 
   return (
-    <Content>
+    <Content title="Órdenes">
       <div className="flex flex-col md:flex-row h-[calc(100vh-8rem)] gap-4">
         <div className="w-full md:w-1/2 lg:w-2/5 overflow-hidden flex flex-col">
           <div className="flex gap-2 mb-4">

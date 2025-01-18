@@ -7,6 +7,7 @@ type ContentProps = Readonly<{
   fullHeight?: boolean;
   padding?: boolean;
   flex?: boolean;
+  title?: string;
 }>;
 
 export const Content = ({
@@ -16,6 +17,7 @@ export const Content = ({
   fullHeight = true,
   padding = true,
   flex = false,
+  title,
 }: ContentProps) => (
   <div
     className={cn(
@@ -24,9 +26,11 @@ export const Content = ({
       fullHeight && "h-full",
       padding && "p-4",
       flex && "flex",
+      "flex flex-col",
       className
     )}
   >
+    {title && <h1 className="text-2xl font-bold mb-6">{title}</h1>}
     {children}
   </div>
 );
