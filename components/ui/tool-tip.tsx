@@ -16,8 +16,8 @@ export function Tooltip({
   className?: string;
 }) {
   const positionClasses = {
-    top: "bottom-full left-1/2 -translate-x-1/2 -translate-y-2",
-    bottom: "top-full left-1/2 -translate-x-1/2 translate-y-2",
+    top: "bottom-full left-1/2 -translate-y-2",
+    bottom: "top-full left-1/2 translate-y-2",
     left: "right-full top-1/2 -translate-y-1/2 -translate-x-2",
     right: "left-full top-1/2 -translate-y-1/2 translate-x-2",
   };
