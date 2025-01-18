@@ -17,17 +17,28 @@ export const Content = ({
 }: ContentProps) => (
   <div
     className={cn(
-      "w-full h-[calc(100vh-4rem)] overflow-hidden",
+      // Base styles
+      "w-full h-[calc(100vh-4rem)] flex flex-col",
       padding && "p-4",
-      center && "flex justify-center",
       className
     )}
   >
+    {/* Title section */}
     {title && (
-      <div className="mb-6">
+      <div className="mb-6 flex-none">
         <h1 className="text-2xl font-bold">{title}</h1>
       </div>
     )}
-    {children}
+
+    {/* Main content area */}
+    <div
+      className={cn(
+        "flex-1 min-h-0", // Critical for proper scrolling
+        center && "flex justify-center",
+        "overflow-auto" // Enable scrolling by default
+      )}
+    >
+      {children}
+    </div>
   </div>
 );

@@ -18,8 +18,8 @@ export default async function ProductsPage() {
   }
 
   return (
-    <Content center>
-      <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
+    <Content>
+      <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 mx-auto space-y-6">
         <p className="text-center text-muted-foreground">
           Explora nuestra selección de productos de impresión de alta calidad.
         </p>
