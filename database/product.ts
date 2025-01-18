@@ -203,12 +203,20 @@ export const productSchema = getSchema<Product>({
   options: {
     type: productOptionsSchema,
     required: true,
-    default: {},
+    default: {
+      sides: [],
+      finish: [],
+      paper: [],
+      dimensions: [],
+    } as ProductOptions,
   },
   pricing: {
     type: productPricingSchema,
     required: true,
-    default: {},
+    default: {
+      baseUnitPrice: 1,
+      minimumPurchase: 10000,
+    } as ProductPricing,
   },
   isPublic: {
     type: Boolean,
