@@ -46,7 +46,6 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/ordenes", label: "Ordenes", icon: ShoppingBag },
   { href: "/admin/promociones", label: "Promociones", icon: Tag },
   { href: "/admin/clientes", label: "Clientes", icon: Users },
-  { href: "/admin/mensajes", label: "Mensajes", icon: MessageSquare },
 ];
 
 export type AdminLayoutProps = Readonly<{
