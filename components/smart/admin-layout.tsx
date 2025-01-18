@@ -6,12 +6,10 @@ import {
   LayoutGrid,
   LogOut,
   Logs,
-  MessageSquare,
   Moon,
   Package,
   ShoppingBag,
   Sun,
-  Tag,
   Users,
 } from "lucide-react";
 import Link from "next/link";
@@ -31,7 +29,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { signOut } from "@/functions/auth";
 
-import { NotificationDropdown } from "./notifications/notification-dropdown";
+import { NotificationDropdown } from "./notification-dropdown";
 
 type Icon = typeof Package; // hack
 type NavItem = {
@@ -45,7 +43,6 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/clientes", label: "Clientes", icon: Users },
   { href: "/admin/ordenes", label: "Órdenes", icon: ShoppingBag },
   { href: "/admin/productos", label: "Productos", icon: Package },
-  { href: "/admin/promociones", label: "Promociones", icon: Tag },
 ];
 
 export type AdminLayoutProps = Readonly<{

@@ -14,7 +14,7 @@ import { signOut } from "@/functions/auth";
 import { useCart } from "@/hooks/use-cart";
 
 import { CartCount } from "./cart-count";
-import { NotificationDropdown } from "./notifications/notification-dropdown";
+import { NotificationDropdown } from "./notification-dropdown";
 
 function NavLink({
   href,
