@@ -32,7 +32,7 @@ const seed = async () => {
           sides: { one: 1, both: 1.8 },
           finish: { plastifiedgloss: 1.5 },
           paper: { "300gmatte": 1 },
-          dimensions: { [[3.5, 2]]: 1 },
+          dimensions: {},
         },
         quantityDiscountMultipliers: [
           [1000, 0.8],
@@ -59,7 +59,7 @@ const seed = async () => {
           sides: { one: 1, both: 1.7 },
           finish: {},
           paper: { "300gmatte": 1, "300gsatin": 1.1 },
-          dimensions: { [[4, 6]]: 1 },
+          dimensions: {},
         },
         quantityDiscountMultipliers: [
           [500, 0.8],
@@ -89,7 +89,7 @@ const seed = async () => {
             uvvarnishgloss: 1.1,
           },
           paper: { "300gmatte": 1 },
-          dimensions: { [[9, 12]]: 1 },
+          dimensions: {},
         },
         quantityDiscountMultipliers: [
           [100, 0.85],
@@ -115,7 +115,7 @@ const seed = async () => {
           sides: { one: 1 },
           finish: {},
           paper: { bond20lb: 1 },
-          dimensions: { [[8.5, 11]]: 1 },
+          dimensions: {},
         },
         quantityDiscountMultipliers: [
           [1000, 0.8],
@@ -152,9 +152,8 @@ const seed = async () => {
             "100lbsatin": 1.1,
           },
           dimensions: {
-            [[3.5, 8.5]]: 1,
-            [[5.5, 8.5]]: 1.2,
-            [[8.5, 11]]: 1.8,
+            [JSON.stringify([5.5, 8.5])]: 1.2,
+            [JSON.stringify([8.5, 11])]: 1.8,
           },
         },
         quantityDiscountMultipliers: [
@@ -184,7 +183,7 @@ const seed = async () => {
           sides: { one: 1 },
           finish: {},
           paper: { "100lbmatte": 1, "100lbsatin": 1.1 },
-          dimensions: { [[12, 18]]: 1 },
+          dimensions: {},
         },
         quantityDiscountMultipliers: [
           [100, 0.8],
@@ -211,7 +210,7 @@ const seed = async () => {
           sides: { one: 1, both: 1.89 },
           finish: { plastifiedgloss: 1, plastifiedmatte: 1.12 },
           paper: {},
-          dimensions: { [[12, 18]]: 1 },
+          dimensions: {},
         },
         quantityDiscountMultipliers: [
           [100, 0.85],
@@ -238,7 +237,7 @@ const seed = async () => {
           sides: { one: 1, both: 2 },
           finish: { uvvarnishgloss: 1, uvvarnishmatte: 1.34 },
           paper: {},
-          dimensions: { [[12, 18]]: 1 },
+          dimensions: {},
         },
         quantityDiscountMultipliers: [
           [100, 0.85],
@@ -270,7 +269,7 @@ const seed = async () => {
             "130lbmatte": 1.2,
             "130lbsatin": 1.3,
           },
-          dimensions: { [[11, 8.5]]: 1 },
+          dimensions: {},
         },
         quantityDiscountMultipliers: [
           [1000, 0.65],
@@ -300,7 +299,7 @@ const seed = async () => {
           sides: { one: 1 },
           finish: {},
           paper: { bond: 1, chemical: 1.2 },
-          dimensions: { [[5.5, 8.5]]: 1, [[8.5, 11]]: 1.6 },
+          dimensions: { [[8.5, 11]]: 1.6 },
         },
         quantityDiscountMultipliers: [
           [100, 0.85],
