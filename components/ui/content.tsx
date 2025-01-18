@@ -1,7 +1,7 @@
 import { cn } from "@/lib/client";
 
 type ContentProps = Readonly<{
-  children: React.ReactNode;
+  children?: React.ReactNode;
   center?: boolean;
   className?: string;
   padding?: boolean;
