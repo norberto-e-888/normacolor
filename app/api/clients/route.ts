@@ -15,25 +15,69 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const cursor = searchParams.get("cursor");
   const selectedId = searchParams.get("selectedId");
+  const searchTerm = searchParams.get("searchTerm");
 
   await connectToMongo();
 
-  const query = {
-    role: UserRole.Client,
-    ...(cursor ? { createdAt: { $lt: new Date(cursor) } } : {}),
-  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pipeline: any[] = [
+    {
+      $match: {
+        role: UserRole.Client,
+      },
+    },
+  ];
 
-  const clients = await User.find(query)
-    .sort({ createdAt: -1 })
-    .limit(PAGE_SIZE + 1)
-    .lean()
-    .then((docs) =>
-      docs.map((doc) => ({
-        ...doc,
-        id: doc._id.toString(),
-        _id: undefined,
-      }))
-    );
+  // Add search stage if search term is provided
+  if (searchTerm?.trim()) {
+    pipeline.unshift({
+      $search: {
+        index: "users_name_email",
+        compound: {
+          should: [
+            {
+              autocomplete: {
+                query: searchTerm,
+                path: "email",
+                fuzzy: {
+                  maxEdits: 1,
+                },
+              },
+            },
+            {
+              autocomplete: {
+                query: searchTerm,
+                path: "name",
+                fuzzy: {
+                  maxEdits: 1,
+                },
+              },
+            },
+          ],
+        },
+      },
+    });
+  }
+
+  // Add cursor-based pagination
+  if (cursor) {
+    pipeline.push({
+      $match: {
+        createdAt: { $lt: new Date(cursor) },
+      },
+    });
+  }
+
+  // Add sorting and limit
+  pipeline.push({ $sort: { createdAt: -1 } }, { $limit: PAGE_SIZE + 1 });
+
+  const clients = await User.aggregate(pipeline).then((docs) =>
+    docs.map((doc) => ({
+      ...doc,
+      id: doc._id.toString(),
+      _id: undefined,
+    }))
+  );
 
   const hasMore = clients.length > PAGE_SIZE;
   if (hasMore) {

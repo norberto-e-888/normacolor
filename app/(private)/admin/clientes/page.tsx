@@ -1,22 +1,38 @@
 "use client";
 
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { Search } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useIntersectionObserver } from "usehooks-ts";
+import { useDebouncedCallback } from "use-debounce";
 
 import { ClientsResponse } from "@/app/api/clients/route";
 import { ClientDetail } from "@/components/smart/client-detail";
 import { ClientsTable } from "@/components/smart/clients-table";
 import { Content } from "@/components/ui/content";
+import { Input } from "@/components/ui/input";
 import { User } from "@/database";
 
 export default function AdminClientsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const selectedId = searchParams.get("selectedId");
+  const [searchTerm, setSearchTerm] = useState("");
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const { isIntersecting } = useIntersectionObserver(loadMoreRef as never);
+  const debouncedSearch = useDebouncedCallback((value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (value) {
+      params.set("searchTerm", value);
+    } else {
+      params.delete("searchTerm");
+    }
+
+    params.delete("cursor"); // Reset pagination when searching
+    router.replace(`/admin/clientes?${params.toString()}`, { scroll: false });
+  }, 300);
+
   const {
     data,
     isLoading,
@@ -25,9 +41,9 @@ export default function AdminClientsPage() {
     isFetchingNextPage,
     refetch,
   } = useInfiniteQuery<ClientsResponse>({
-    queryKey: ["admin-clients"],
+    queryKey: ["admin-clients", searchParams.get("searchTerm")],
     queryFn: async ({ pageParam }) => {
-      const params = new URLSearchParams();
+      const params = new URLSearchParams(searchParams.toString());
       if (pageParam) params.set("cursor", pageParam as string);
       const response = await fetch(`/api/clients?${params.toString()}`);
       if (!response.ok) throw new Error("Failed to fetch clients");
@@ -78,6 +94,20 @@ export default function AdminClientsPage() {
     <Content title="Clientes">
       <div className="flex flex-col md:flex-row h-[calc(100vh-8rem)] gap-4">
         <div className="w-full md:w-1/2 lg:w-2/3 overflow-hidden flex flex-col">
+          <div className="mb-4 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Buscar por email o nombre..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                debouncedSearch(e.target.value);
+              }}
+              className="pl-10"
+            />
+          </div>
+
           <div className="flex-1 overflow-y-auto border rounded-lg">
             <ClientsTable
               clients={clients}

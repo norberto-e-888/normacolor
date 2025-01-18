@@ -2,18 +2,15 @@
 const { z } = require("zod");
 
 const Config = z.object({
-  ADOBE_CLIENT_ID: z.string(),
-  ADOBE_CLIENT_SECRET: z.string(),
-  ADOBE_ACCESS_TOKEN: z.string(),
-  ANTHROPIC_API_KEY: z.string(),
   AUTH_SECRET: z.string(),
   AUTH_RESEND_KEY: z.string(),
-  AUTH_SENDGRID_KEY: z.string(),
   AUTH_RESEND_FROM_EMAIL: z.string(),
   AWS_ACCESS_KEY: z.string(),
   AWS_SECRET_KEY: z.string(),
   AWS_BUCKET_NAME: z.string(),
   FREEPIK_API_KEY: z.string(),
+  MONGODB_ATLAS_USER: z.string(),
+  MONGODB_ATLAS_PASSWORD: z.string(),
   MONGODB_URI: z.string(),
   NGROK_TOKEN: z.string().optional(),
   NGROK_TUNNEL: z.string().optional(),
@@ -31,5 +28,10 @@ const Config = z.object({
 });
 
 const config = Config.parse(process.env);
+
+config.MONGODB_URI = config.MONGODB_URI.replace(
+  "<user>",
+  config.MONGODB_ATLAS_USER
+).replace("<password>", config.MONGODB_ATLAS_PASSWORD);
 
 module.exports.config = config;
