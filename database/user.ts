@@ -27,6 +27,9 @@ export interface User extends BaseModel {
   providers: UserProvider[];
   name?: string;
   image?: string;
+  totalSpentCents: number;
+  totalLoyaltyPoints: number;
+  unspentLoyaltyPoints: number;
 }
 
 const userSchema = getSchema<User>(
@@ -60,6 +63,24 @@ const userSchema = getSchema<User>(
     },
     image: {
       type: String,
+    },
+    totalSpentCents: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: 0,
+    },
+    totalLoyaltyPoints: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: 0,
+    },
+    unspentLoyaltyPoints: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: 0,
     },
   },
   {

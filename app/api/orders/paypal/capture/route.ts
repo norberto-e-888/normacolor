@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { Order, OrderStatus } from "@/database";
+import { Order, OrderStatus, User } from "@/database";
 import { getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
 
@@ -41,6 +41,17 @@ export async function POST(request: Request) {
   if (data.status === "COMPLETED") {
     await Order.findByIdAndUpdate(orderId, {
       status: OrderStatus.Paid,
+    });
+
+    // Update user's loyalty points
+    // 1 point per cent spent
+    const pointsEarned = order.total;
+    await User.findByIdAndUpdate(session.user.id, {
+      $inc: {
+        totalSpentCents: order.total,
+        totalLoyaltyPoints: pointsEarned,
+        unspentLoyaltyPoints: pointsEarned,
+      },
     });
   }
 
