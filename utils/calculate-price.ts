@@ -17,7 +17,9 @@ export const calculatePrice = (
     if (optionMultiplier) {
       const multiplier =
         optionMultiplier[
-          JSON.stringify(value) as keyof typeof optionMultiplier
+          (Array.isArray(value)
+            ? JSON.stringify(value)
+            : value) as keyof typeof optionMultiplier
         ];
 
       if (multiplier) {

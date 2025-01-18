@@ -29,9 +29,9 @@ const seed = async () => {
         minimumPurchase: 5000,
         baseUnitPrice: 10,
         optionMultipliers: {
-          sides: { one: 1, both: 1.8 },
-          finish: { plastifiedgloss: 1.5 },
-          paper: { "300gmatte": 1 },
+          sides: { both: 1.8 },
+          finish: {},
+          paper: {},
           dimensions: {},
         },
         quantityDiscountMultipliers: [
@@ -56,9 +56,9 @@ const seed = async () => {
         minimumPurchase: 10000,
         baseUnitPrice: 20,
         optionMultipliers: {
-          sides: { one: 1, both: 1.7 },
+          sides: { both: 1.7 },
           finish: {},
-          paper: { "300gmatte": 1, "300gsatin": 1.1 },
+          paper: { "300gsatin": 1.1 },
           dimensions: {},
         },
         quantityDiscountMultipliers: [
@@ -82,13 +82,13 @@ const seed = async () => {
         minimumPurchase: 10000,
         baseUnitPrice: 190,
         optionMultipliers: {
-          sides: { one: 1 },
+          sides: {},
           finish: {
             plastifiedgloss: 1.3,
             plastifiedmatte: 1.3,
-            uvvarnishgloss: 1.1,
+            uvvarnishgloss: 1,
           },
-          paper: { "300gmatte": 1 },
+          paper: {},
           dimensions: {},
         },
         quantityDiscountMultipliers: [
@@ -112,9 +112,9 @@ const seed = async () => {
         minimumPurchase: 10000,
         baseUnitPrice: 80,
         optionMultipliers: {
-          sides: { one: 1 },
+          sides: {},
           finish: {},
-          paper: { bond20lb: 1 },
+          paper: {},
           dimensions: {},
         },
         quantityDiscountMultipliers: [
@@ -143,12 +143,11 @@ const seed = async () => {
         minimumPurchase: 10000,
         baseUnitPrice: 25,
         optionMultipliers: {
-          sides: { one: 1, both: 1.8 },
+          sides: { both: 1.8 },
           finish: {},
           paper: {
             "150gmatte": 1.2,
             "130lbmatte": 1.1,
-            "100lbmatte": 1,
             "100lbsatin": 1.1,
           },
           dimensions: {
@@ -180,9 +179,9 @@ const seed = async () => {
         minimumPurchase: 10000,
         baseUnitPrice: 90,
         optionMultipliers: {
-          sides: { one: 1 },
+          sides: {},
           finish: {},
-          paper: { "100lbmatte": 1, "100lbsatin": 1.1 },
+          paper: { "100lbsatin": 1.1 },
           dimensions: {},
         },
         quantityDiscountMultipliers: [
@@ -207,8 +206,8 @@ const seed = async () => {
         minimumPurchase: 25000,
         baseUnitPrice: 45,
         optionMultipliers: {
-          sides: { one: 1, both: 1.89 },
-          finish: { plastifiedgloss: 1, plastifiedmatte: 1.12 },
+          sides: { both: 1.89 },
+          finish: { plastifiedmatte: 1.12 },
           paper: {},
           dimensions: {},
         },
@@ -234,8 +233,8 @@ const seed = async () => {
         minimumPurchase: 25000,
         baseUnitPrice: 15,
         optionMultipliers: {
-          sides: { one: 1, both: 2 },
-          finish: { uvvarnishgloss: 1, uvvarnishmatte: 1.34 },
+          sides: { both: 2 },
+          finish: { uvvarnishmatte: 1.35 },
           paper: {},
           dimensions: {},
         },
@@ -261,10 +260,9 @@ const seed = async () => {
         minimumPurchase: 10000,
         baseUnitPrice: 75,
         optionMultipliers: {
-          sides: { diptic: 1, triptic: 1.5 },
+          sides: { triptic: 1.5 },
           finish: {},
           paper: {
-            "100lbmatte": 1,
             "100lbsatin": 1.1,
             "130lbmatte": 1.2,
             "130lbsatin": 1.3,
@@ -296,9 +294,9 @@ const seed = async () => {
         minimumPurchase: 10000,
         baseUnitPrice: 25,
         optionMultipliers: {
-          sides: { one: 1 },
+          sides: {},
           finish: {},
-          paper: { bond: 1, chemical: 1.2 },
+          paper: { chemical: 1.2 },
           dimensions: { [JSON.stringify([8.5, 11])]: 1.6 },
         },
         quantityDiscountMultipliers: [
