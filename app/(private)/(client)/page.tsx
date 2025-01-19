@@ -134,7 +134,7 @@ export default function ClientDashboardPage() {
                   href={`/ordenes?selectedId=${stats.latestOrder.id}`}
                   className="text-primary hover:underline"
                 >
-                  View Details
+                  Ver
                   <ArrowRight className="inline-block ml-1 w-4 h-4" />
                 </Link>
               </div>
