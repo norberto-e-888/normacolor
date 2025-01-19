@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { PusherChannelType } from "@/constants/pusher";
-import { Order } from "@/database";
+import { Order, UserRole } from "@/database";
 import { getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
 import { createPusherServer } from "@/lib/server/pusher";
@@ -58,11 +58,17 @@ export async function POST(request: Request) {
       );
 
       // Verify the user is only subscribing to their own notifications channel
+      console.log({ userId, sessionUserId: session.user.id });
       if (userId !== session.user.id) {
         console.log(
           "Pusher auth: Notification channel ownership verification failed"
         );
 
+        return new NextResponse("Unauthorized", { status: 401 });
+      }
+    } else if (channelStr.startsWith(PusherChannelType.AdminStats)) {
+      if (session.user.role !== UserRole.Admin) {
+        console.log("Pusher auth: Unauthorized - not an admin");
         return new NextResponse("Unauthorized", { status: 401 });
       }
     } else {

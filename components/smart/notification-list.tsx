@@ -85,8 +85,10 @@ export function NotificationList({ onClose }: { onClose: () => void }) {
       const previousNotifications = queryClient.getQueryData(["notifications"]);
       const previousCount = queryClient.getQueryData(["notifications-count"]);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       queryClient.setQueryData(["notifications"], (old: any) => ({
         ...old,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         pages: old.pages.map((page: any) => ({
           ...page,
           notifications: page.notifications.map(
@@ -102,6 +104,7 @@ export function NotificationList({ onClose }: { onClose: () => void }) {
 
       return { previousNotifications, previousCount };
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (_, __, context: any) => {
       queryClient.setQueryData(
         ["notifications"],

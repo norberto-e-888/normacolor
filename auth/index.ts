@@ -4,8 +4,11 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Resend from "next-auth/providers/resend";
 
+import { PusherEventName } from "@/constants/pusher";
 import { OTP, User, UserRole } from "@/database";
 import { connectToMongo, getMongoClient } from "@/lib/server";
+import { createPusherServer } from "@/lib/server/pusher";
+import { getPusherChannelName } from "@/utils";
 
 import { sendAdminEmail, sendClientEmail } from "./utils";
 
@@ -175,6 +178,14 @@ const { handlers, signIn, signOut, auth } = NextAuth({
         email: user.email,
         providers: [account.provider],
       });
+
+      const totalUsers = await User.countDocuments({ role: UserRole.Client });
+      const pusherServer = createPusherServer();
+      await pusherServer.trigger(
+        getPusherChannelName.adminStats("users"),
+        PusherEventName.UserCountUpdated,
+        totalUsers
+      );
 
       return true;
     },
