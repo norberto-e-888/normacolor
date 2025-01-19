@@ -3,6 +3,7 @@
 import {
   ChevronUp,
   Ellipsis,
+  Gift,
   LayoutGrid,
   LogOut,
   Logs,
@@ -43,8 +44,8 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/clientes", label: "Clientes", icon: Users },
   { href: "/admin/ordenes", label: "Órdenes", icon: ShoppingBag },
   { href: "/admin/productos", label: "Productos", icon: Package },
+  { href: "/admin/promociones", label: "Promociones", icon: Gift },
 ];
-
 export type AdminLayoutProps = Readonly<{
   children: React.ReactNode;
   user: SessionUser;

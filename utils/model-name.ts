@@ -5,4 +5,5 @@ export enum ModelName {
   User = "User",
   OTP = "OTP",
   Notification = "Notification",
+  Promotion = "Promotion",
 }
