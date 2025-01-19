@@ -115,7 +115,6 @@ export function OrderDetail({
 
   useEffect(() => {
     if (selectedItemId && itemRefs.current[selectedItemId]) {
-      console.log({ selectedItemId, ref: itemRefs.current[selectedItemId] });
       // Scroll to the item
       itemRefs.current[selectedItemId]?.scrollIntoView({
         behavior: "smooth",
