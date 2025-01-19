@@ -239,7 +239,7 @@ export const basePromotionSchema = z.object({
   startDate: z.date().optional(),
   endDate: z.date().optional(),
   pointsCost: z.number().min(0),
-  maxRedemptions: z.number().min(1).optional(),
+  maxRedemptions: z.number().min(1).max(2_000).default(100),
   conditions: z.array(
     z.object({
       type: z.nativeEnum(PromotionConditionType),

@@ -6,6 +6,7 @@ import { es } from "date-fns/locale";
 import { CalendarIcon, Loader2, Plus, Trash2 } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -236,6 +237,7 @@ export function PromotionFormModal({
   }, [form.watch("type")]);
 
   const onSubmit = async (data: FormData) => {
+    console.log({ data });
     try {
       const response = await fetch("/api/promotions", {
         method: promotion ? "PATCH" : "POST",
@@ -243,14 +245,29 @@ export function PromotionFormModal({
         body: JSON.stringify(promotion ? { ...data, id: promotion.id } : data),
       });
 
+      const result = await response.json();
+
       if (!response.ok) {
-        throw new Error("Failed to save promotion");
+        if (result.details) {
+          Object.entries(result.details).forEach(([key, value]) => {
+            form.setError(key as never, {
+              type: "server",
+              message: Array.isArray(value) ? value[0] : value,
+            });
+          });
+          return;
+        }
+        throw new Error(result.error || "Failed to save promotion");
       }
 
+      toast.success(promotion ? "Promoción actualizada" : "Promoción creada");
       onSuccess();
       onClose();
     } catch (error) {
       console.error("Error saving promotion:", error);
+      toast.error(
+        error instanceof Error ? error.message : "Error al guardar la promoción"
+      );
     }
   };
 
@@ -471,9 +488,16 @@ export function PromotionFormModal({
                     <FormLabel>Costo en puntos</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        type="text"
+                        value={formatNumber(field.value)}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, "");
+                          field.onChange(value ? parseInt(value, 10) : 0);
+                        }}
+                        onBlur={(e) => {
+                          const value = e.target.value.replace(/\D/g, "");
+                          field.onChange(value ? parseInt(value, 10) : 0);
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -489,13 +513,16 @@ export function PromotionFormModal({
                     <FormLabel>Máximo de canjes</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
-                        {...field}
-                        onChange={(e) =>
-                          field.onChange(
-                            e.target.value ? Number(e.target.value) : undefined
-                          )
-                        }
+                        type="text"
+                        value={formatNumber(field.value)}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, "");
+                          field.onChange(value ? parseInt(value, 10) : 0);
+                        }}
+                        onBlur={(e) => {
+                          const value = e.target.value.replace(/\D/g, "");
+                          field.onChange(value ? parseInt(value, 10) : 0);
+                        }}
                         placeholder="Sin límite"
                       />
                     </FormControl>
@@ -731,4 +758,8 @@ export function PromotionFormModal({
       </div>
     </Modal>
   );
+}
+
+function formatNumber(value: number) {
+  return new Intl.NumberFormat("en-EN").format(value);
 }
