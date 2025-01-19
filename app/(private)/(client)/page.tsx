@@ -14,6 +14,7 @@ import { formatCents } from "@/utils";
 type Stats = {
   user: User;
   spending: { date: string; value: number }[];
+  lpSpent: { date: string; value: number }[];
   popularProduct: Product | null;
   latestOrder: Order | null;
 };
@@ -73,11 +74,8 @@ export default function ClientDashboardPage() {
             valueFormatter={formatCents}
           />
           <TimeSeriesChart
-            title="Historial de Puntos NC"
-            data={stats.spending.map((item) => ({
-              date: item.date,
-              value: item.value,
-            }))}
+            title="Uso de Puntos NC"
+            data={stats.lpSpent}
             valueFormatter={(value) => value.toString()}
           />
         </div>
@@ -106,7 +104,7 @@ export default function ClientDashboardPage() {
                       stats.popularProduct.id
                     ] === 1
                       ? "vez"
-                      : "veces"}
+                      : "veces"}{" "}
                   </p>
                 </div>
               </div>

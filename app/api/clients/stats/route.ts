@@ -21,29 +21,53 @@ export async function GET() {
 
   // Get monthly spending and LP for the last 6 months
   const sixMonthsAgo = startOfMonth(subMonths(new Date(), 5));
-  const spendingAggregation = await Order.aggregate([
-    {
-      $match: {
-        customerId: user._id,
-        createdAt: { $gte: sixMonthsAgo },
-      },
-    },
-    {
-      $group: {
-        _id: {
-          year: { $year: "$createdAt" },
-          month: { $month: "$createdAt" },
+  const [spendingAggregation, lpSpentAggregation] = await Promise.all([
+    Order.aggregate([
+      {
+        $match: {
+          customerId: user._id,
+          createdAt: { $gte: sixMonthsAgo },
         },
-        total: { $sum: "$total" },
       },
-    },
-    {
-      $sort: { "_id.year": 1, "_id.month": 1 },
-    },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+          },
+          total: { $sum: "$total" },
+        },
+      },
+      {
+        $sort: { "_id.year": 1, "_id.month": 1 },
+      },
+    ]),
+    Order.aggregate([
+      {
+        $match: {
+          customerId: user._id,
+          createdAt: { $gte: sixMonthsAgo },
+          loyaltyPointsSpent: { $gt: 0 },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+          },
+          total: { $sum: "$loyaltyPointsSpent" },
+        },
+      },
+      {
+        $sort: { "_id.year": 1, "_id.month": 1 },
+      },
+    ]),
   ]);
 
   // Transform aggregation results into time series data
   const spending = [];
+  const lpSpent = [];
   let currentDate = sixMonthsAgo;
 
   for (let i = 0; i < 6; i++) {
@@ -54,9 +78,18 @@ export async function GET() {
       (data) => data._id.year === year && data._id.month === month
     );
 
+    const lpData = lpSpentAggregation.find(
+      (data) => data._id.year === year && data._id.month === month
+    );
+
     spending.push({
       date: endOfMonth(currentDate).toISOString(),
       value: spendingData?.total || 0,
+    });
+
+    lpSpent.push({
+      date: endOfMonth(currentDate).toISOString(),
+      value: lpData?.total || 0,
     });
 
     currentDate = startOfMonth(subMonths(currentDate, -1));
@@ -85,6 +118,7 @@ export async function GET() {
       _id: undefined,
     },
     spending,
+    lpSpent,
     popularProduct: popularProduct
       ? {
           ...popularProduct,
