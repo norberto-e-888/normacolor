@@ -44,22 +44,22 @@ export default function ClientDashboardPage() {
         {/* Stats Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatCardClient
-            title="Total Spent"
+            title="Compra Total"
             value={formatCents(stats.user.totalSpentCents)}
             icon={ShoppingBag}
           />
           <StatCardClient
-            title="Loyalty Points"
+            title="Balance de Puntos NC"
             value={stats.user.unspentLoyaltyPoints}
             icon={TrendingUp}
           />
           <StatCardClient
-            title="Total Orders"
+            title="Órdenes Totales"
             value={stats.user.aggregations.totalOrders}
             icon={Package}
           />
           <StatCardClient
-            title="Average Order Value"
+            title="Valor Promedio de Órdenes"
             value={formatCents(stats.user.aggregations.averageOrderValue)}
             icon={TrendingUp}
           />
@@ -68,15 +68,15 @@ export default function ClientDashboardPage() {
         {/* Charts */}
         <div className="grid gap-4 md:grid-cols-2">
           <TimeSeriesChart
-            title="Monthly Spending"
+            title="Gasto Mensual"
             data={stats.spending}
             valueFormatter={formatCents}
           />
           <TimeSeriesChart
-            title="Loyalty Points Earned"
+            title="Historial de Puntos NC"
             data={stats.spending.map((item) => ({
               date: item.date,
-              value: Math.round(item.value / 100), // 1 point per cent spent
+              value: item.value,
             }))}
             valueFormatter={(value) => value.toString()}
           />
@@ -88,7 +88,7 @@ export default function ClientDashboardPage() {
           {stats.popularProduct && (
             <div className="bg-card p-6 rounded-lg shadow-sm">
               <h3 className="text-sm font-medium text-muted-foreground mb-4">
-                Most Ordered Product
+                Mi Producto Favorito
               </h3>
               <div className="flex items-center justify-between">
                 <div>
@@ -96,22 +96,19 @@ export default function ClientDashboardPage() {
                     {stats.popularProduct.name}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Ordered{" "}
+                    Ordenado{" "}
                     {
                       stats.user.aggregations.productOrderCounts[
                         stats.popularProduct.id
                       ]
                     }{" "}
-                    times
+                    {stats.user.aggregations.productOrderCounts[
+                      stats.popularProduct.id
+                    ] === 1
+                      ? "vez"
+                      : "veces"}
                   </p>
                 </div>
-                <Link
-                  href={`/productos/${stats.popularProduct.id}`}
-                  className="text-primary hover:underline"
-                >
-                  View Details
-                  <ArrowRight className="inline-block ml-1 w-4 h-4" />
-                </Link>
               </div>
             </div>
           )}
@@ -120,7 +117,7 @@ export default function ClientDashboardPage() {
           {stats.latestOrder && (
             <div className="bg-card p-6 rounded-lg shadow-sm">
               <h3 className="text-sm font-medium text-muted-foreground mb-4">
-                Latest Order
+                Última Orden Realizada
               </h3>
               <div className="flex items-center justify-between">
                 <div>
