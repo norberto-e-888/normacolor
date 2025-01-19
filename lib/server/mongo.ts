@@ -1,8 +1,10 @@
+// lib/server/mongo.ts
 "use server";
 
-// This approach is taken from https://github.com/vercel/next.js/tree/canary/examples/with-mongodb
 import { MongoClient, MongoClientOptions, ServerApiVersion } from "mongodb";
 import mongoose from "mongoose";
+
+import { createOrderFrequencyView } from "@/database/user";
 
 if (!process.env.MONGODB_URI) {
   throw new Error('Invalid/Missing environment variable: "MONGODB_URI"');
@@ -20,8 +22,6 @@ const options: MongoClientOptions = {
 let mongoClient: MongoClient;
 
 if (process.env.NODE_ENV === "development") {
-  // In development mode, use a global variable so that the value
-  // is preserved across module reloads caused by HMR (Hot Module Replacement).
   const globalWithMongo = global as typeof globalThis & {
     _mongoClient?: MongoClient;
   };
@@ -32,7 +32,6 @@ if (process.env.NODE_ENV === "development") {
 
   mongoClient = globalWithMongo._mongoClient;
 } else {
-  // In production mode, it's best to not use a global variable.
   mongoClient = new MongoClient(uri, options);
 }
 
@@ -44,7 +43,9 @@ export const connectToMongo = async () => {
     return mongoose.connection;
   }
 
-  return mongoose.connect(uri);
+  const connection = await mongoose.connect(uri);
+  await createOrderFrequencyView();
+  return connection;
 };
 
 export const getMongoClient = async () => mongoClient;
