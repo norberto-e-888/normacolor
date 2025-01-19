@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { Content } from "@/components/ui/content";
-import { StatCard } from "@/components/ui/stat-card";
+import { StatCardAdmin } from "@/components/ui/stat-card-admin";
 import { TimeSeriesChart } from "@/components/ui/time-series-chart";
 import { formatCents } from "@/utils";
 
@@ -45,12 +45,12 @@ export default function AdminDashboardPage() {
     <Content>
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2">
-          <StatCard
+          <StatCardAdmin
             title="Usuarios"
             value={stats.totalUsers}
             trend={stats.signUpsTrend}
           />
-          <StatCard
+          <StatCardAdmin
             title={monthlyIncomeTitle}
             value={formatCents(
               stats.income[stats.income.length - 1]?.value || 0

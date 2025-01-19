@@ -1,4 +1,3 @@
-// database/user.ts
 import mongoose, { Model } from "mongoose";
 
 import {
@@ -151,6 +150,7 @@ export async function createOrderFrequencyView() {
   // Drop existing view if it exists
   try {
     await db.dropCollection("order_frequencies");
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     // Ignore if collection doesn't exist
   }

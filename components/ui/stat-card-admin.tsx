@@ -1,4 +1,4 @@
-export function StatCard({
+export function StatCardAdmin({
   title,
   value,
   trend,
