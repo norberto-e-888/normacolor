@@ -144,8 +144,8 @@ export default function AdminOrdersPage() {
   }
 
   return (
-    <Content title="Órdenes">
-      <div className="flex flex-col md:flex-row h-[calc(100vh-8rem)] gap-4">
+    <Content title="Órdenes" className="pb-0">
+      <div className="flex flex-col md:flex-row  gap-4">
         <div className="w-full md:w-1/2 lg:w-2/5 overflow-hidden flex flex-col">
           <div className="flex gap-2 mb-4">
             <DropdownMenu>
@@ -187,52 +187,64 @@ export default function AdminOrdersPage() {
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            <div className="space-y-2">
-              <AnimatePresence>
-                {ordersData?.orders.map((order) => (
-                  <motion.div
-                    key={order.id}
-                    initial={{ scale: 0.95, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                  >
-                    <OrderListItem
-                      order={order}
-                      isSelected={selectedId === order.id}
-                      onClick={handleOrderClick}
-                    />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-              <div ref={loadMoreRef} className="h-4" />
-              {isIntersecting && ordersData?.nextCursor && (
-                <div className="flex justify-center p-4">
-                  <Button
-                    variant="outline"
-                    onClick={handleLoadMore}
-                    disabled={isLoadingOrders}
-                  >
-                    {isLoadingOrders ? (
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
-                    ) : (
-                      "Cargar más"
-                    )}
-                  </Button>
-                </div>
-              )}
-            </div>
+            {!!ordersData?.orders.length && (
+              <div className="space-y-2">
+                <AnimatePresence>
+                  {ordersData?.orders.map((order) => (
+                    <motion.div
+                      key={order.id}
+                      initial={{ scale: 0.95, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                    >
+                      <OrderListItem
+                        order={order}
+                        isSelected={selectedId === order.id}
+                        onClick={handleOrderClick}
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+                <div ref={loadMoreRef} className="h-4" />
+                {isIntersecting && ordersData?.nextCursor && (
+                  <div className="flex justify-center p-4">
+                    <Button
+                      variant="outline"
+                      onClick={handleLoadMore}
+                      disabled={isLoadingOrders}
+                    >
+                      {isLoadingOrders ? (
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+                      ) : (
+                        "Cargar más"
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!ordersData?.orders.length && !isLoadingOrders && (
+              <div className="flex flex-col items-center justify-center min-h-[calc(100vh-16rem)] gap-4">
+                <p className="text-muted-foreground">
+                  No se encontraron órdenes, intenta cambiando los filtros
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
         <div className="w-full md:w-1/2 lg:w-3/5 h-full overflow-y-auto">
-          {selectedOrderData?.selectedOrder ? (
+          {selectedOrderData?.selectedOrder && (
             <OrderDetail
               order={selectedOrderData.selectedOrder}
               isAdmin
               onStatusChange={handleStatusChange}
             />
-          ) : (
-            <div className="h-full flex items-center justify-center">
-              <p className="text-lg text-muted-foreground">
+          )}
+
+          {!selectedOrderData?.selectedOrder && !!ordersData?.orders.length && (
+            <div className="h-full flex items-center justify-center min-h-[calc(100vh-16rem)]">
+              <p className="text-muted-foreground">
                 Selecciona una orden para ver sus detalles
               </p>
             </div>

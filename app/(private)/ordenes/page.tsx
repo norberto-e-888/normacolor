@@ -93,7 +93,7 @@ export default function OrdersPage() {
   if (orders.length === 0) {
     return (
       <Content>
-        <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] gap-4">
           <p className="text-lg text-muted-foreground">No tienes órdenes</p>
           <a href="/productos" className="text-primary hover:underline">
             Ver productos
@@ -104,7 +104,7 @@ export default function OrdersPage() {
   }
 
   return (
-    <Content>
+    <Content className="pb-0">
       <div className="flex flex-col md:flex-row h-[calc(100vh-8rem)] gap-4">
         <div className="w-full md:w-1/2 lg:w-2/5 overflow-hidden flex flex-col">
           <div className="flex-1 overflow-y-auto">

@@ -18,7 +18,7 @@ export const Content = ({
   <div
     className={cn(
       // Base styles
-      "w-full h-[calc(100vh-4rem)] flex flex-col",
+      "w-full h-100vh flex flex-col p-4",
       padding && "p-4",
       className
     )}

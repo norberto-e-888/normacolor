@@ -73,7 +73,7 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
   }, [isMediumScreen]);
 
   const MenuHeader = () => (
-    <header className="xl:hidden flex items-center justify-between px-4 py-2 h-14 w-full bg-neutral-50 dark:bg-neutral-950 border-neutral-950 dark:border-neutral-50">
+    <header className="xl:hidden flex items-center justify-between px-4 py-2 h-14 w-full bg-neutral-50 dark:bg-neutral-950">
       <Button
         className="block xl:hidden items-center p-0"
         variant="ghost"
@@ -87,9 +87,9 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
   return (
     <div className="flex h-screen">
       <aside
-        className={`fixed inset-y-0 left-0 z-5 border-r-2 bg-neutral-50 dark:bg-neutral-950 border-neutral-950 dark:border-neutral-50 ${
+        className={`fixed inset-y-0 left-0 z-5 border-r bg-neutral-50 dark:bg-neutral-950 ${
           isMobileMenuOpen ? "translate-x-0 w-full " : "-translate-x-full"
-        } xl:relative xl:translate-x-0 xl:w-80`}
+        } xl:relative xl:translate-x-0 xl:w-96 transition-transform duration-200`}
       >
         <div className="flex flex-col justify-between h-full">
           <ScrollArea className="flex-grow">
@@ -114,18 +114,20 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
               })}
             </nav>
           </ScrollArea>
-          <div className="bg-neutral-50 dark:bg-neutral-950 border-t-2 border-neutral-950 dark:border-neutral-50 flex flex-col items-end">
-            <NotificationDropdown />
+          <div className="bg-neutral-50 dark:bg-neutral-950 border-t flex flex-col">
+            <div className="p-4">
+              <NotificationDropdown />
+            </div>
             <DropdownMenu>
-              <DropdownMenuTrigger asChild className="p-6">
-                <Button className="flex items-center justify-between w-full rounded-none bg-neutral-50 hover:bg-neutral-50 dark:bg-neutral-950 dark:hover:bg-neutral-950">
+              <DropdownMenuTrigger asChild>
+                <Button className="flex items-center justify-between w-full rounded-none p-4 bg-neutral-50 hover:bg-neutral-50 dark:bg-neutral-950 dark:hover:bg-neutral-950">
                   <span className="flex items-center mr-2">
                     <Avatar className="h-8 w-8 mr-3">
                       <AvatarFallback className="text-zinc-100 bg-indigo-800">
                         {(user?.name || user?.email)?.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex flex-col items-star">
+                    <div className="flex flex-col items-start">
                       <span className="text-sm text-zinc-800 dark:text-zinc-300 max-w-48 overflow-hidden whitespace-nowrap text-ellipsis">
                         {user.email}
                       </span>
@@ -140,7 +142,7 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
 
               <DropdownMenuContent
                 align="end"
-                className="w-52 m-0 -mb-1 bg-neutral-50 dark:bg-neutral-950 border-r-0 border-t-2 border-l-2 border-b-2 border-neutral-950 dark:border-neutral-50 rounded-none"
+                className="w-52 m-0 -mb-1 bg-neutral-50 dark:bg-neutral-950 border-r-0 border-t border-l border-b rounded-none"
               >
                 <DropdownMenuItem
                   onClick={(e) => {
@@ -179,7 +181,7 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
       <div className="flex-1 flex flex-col overflow-hidden">
         <MenuHeader />
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-neutral-50 dark:bg-neutral-950">
-          <div className="mx-auto min-h-screen px-8 py-8">{children}</div>
+          <div className="mx-auto min-h-screen px-8">{children}</div>
         </main>
       </div>
     </div>

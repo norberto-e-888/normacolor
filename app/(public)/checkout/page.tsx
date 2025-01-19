@@ -215,7 +215,7 @@ export default function CheckoutPage() {
   if (items.length === 0) {
     return (
       <Content>
-        <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-9rem)] gap-4">
           <p className="text-lg text-muted-foreground">Tu carrito está vacío</p>
           <a href="/productos" className="text-primary hover:underline">
             Ver productos
@@ -243,9 +243,9 @@ export default function CheckoutPage() {
   };
 
   return (
-    <Content>
-      <div className="flex flex-col h-[calc(100vh-8rem)]">
-        <div className="flex justify-between items-center p-4 border-b">
+    <Content padding={false}>
+      <div className="flex flex-col">
+        <div className="flex justify-between items-center p-2 border-b">
           <h1 className="text-2xl font-bold">Carrito</h1>
           <div className="flex items-center gap-4">
             <div className="text-lg font-semibold text-green-600">
