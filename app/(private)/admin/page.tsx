@@ -36,17 +36,22 @@ export default function AdminDashboardPage() {
     );
   }
 
+  const now = new Date();
+  const currentMonth = now.toLocaleString("es", { month: "long" });
+  const currentYear = now.getFullYear();
+  const monthlyIncomeTitle = `Ingreso ${currentMonth} ${currentYear}`;
+
   return (
     <Content>
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2">
           <StatCard
-            title="Total Users"
+            title="Usuarios"
             value={stats.totalUsers}
             trend={stats.signUpsTrend}
           />
           <StatCard
-            title="Monthly Income"
+            title={monthlyIncomeTitle}
             value={formatCents(
               stats.income[stats.income.length - 1]?.value || 0
             )}
@@ -56,12 +61,12 @@ export default function AdminDashboardPage() {
 
         <div className="grid gap-4 md:grid-cols-2">
           <TimeSeriesChart
-            title="User Sign Ups"
+            title="Nuevos Registros"
             data={stats.signUps}
             valueFormatter={(value) => value.toString()}
           />
           <TimeSeriesChart
-            title="Income"
+            title="Ingreso"
             data={stats.income}
             valueFormatter={formatCents}
           />
