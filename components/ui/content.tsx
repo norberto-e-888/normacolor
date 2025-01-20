@@ -7,6 +7,7 @@ type ContentProps = Readonly<{
   className?: string;
   padding?: boolean;
   title?: string;
+  scrollable?: boolean;
 }>;
 
 export const Content = ({
@@ -15,11 +16,12 @@ export const Content = ({
   className,
   padding = true,
   title,
+  scrollable = false,
 }: ContentProps) => (
   <div
     className={cn(
       // Base styles
-      "w-full h-100vh flex flex-col",
+      "w-full h-auto flex flex-col",
       padding && "p-4",
       className
     )}
@@ -34,9 +36,9 @@ export const Content = ({
     {/* Main content area */}
     <div
       className={cn(
-        "flex-1 min-h-0", // Critical for proper scrolling
-        center && "flex justify-center",
-        "overflow-auto" // Enable scrolling by default
+        "min-h-0", // Critical for proper scrolling
+        center && "flex items-center justify-center",
+        scrollable && "overflow-auto" // Enable scrolling by default
       )}
     >
       {children}

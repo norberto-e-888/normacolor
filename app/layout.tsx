@@ -38,7 +38,7 @@ export default function RootLayout({
       >
         <Providers>
           <Navigation />
-          <main className="flex-1 overflow-y-auto">{children}</main>
+          <main className="overflow-y-auto h-full">{children}</main>
           <Footer />
           <PromotionNotifications />
           <Effects />

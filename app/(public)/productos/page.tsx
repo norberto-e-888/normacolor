@@ -20,8 +20,8 @@ export default async function ProductsPage() {
   }
 
   return (
-    <Content center>
-      <div className="w-full max-w-screen-2xl mx-auto">
+    <Content padding={false} center>
+      <div className="w-full max-w-screen-2xl mx-auto sm:p-2 md:p-4 lg:p-6 xl:py-10">
         <ProductFormProvider>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {data.products.map((product) => (
