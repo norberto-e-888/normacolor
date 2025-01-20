@@ -1,5 +1,5 @@
 // components/ui/upload.tsx
-import { UploadIcon } from "lucide-react";
+import { Loader, UploadIcon } from "lucide-react";
 import { forwardRef } from "react";
 
 import { cn } from "@/lib/client";
@@ -7,13 +7,22 @@ import { cn } from "@/lib/client";
 export interface UploadProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   icon?: React.ReactNode;
+  isLoading?: boolean;
 }
 
 const Upload = forwardRef<HTMLInputElement, UploadProps>(
-  ({ className, icon = <UploadIcon className="w-4 h-4" />, ...props }, ref) => {
+  (
+    {
+      className,
+      icon = <UploadIcon className="w-4 h-4" />,
+      isLoading,
+      ...props
+    },
+    ref
+  ) => {
     return (
       <>
-        {icon}
+        {isLoading ? <Loader className="w-4 h-4 animate-spin" /> : icon}
         <input
           type="file"
           className={cn(

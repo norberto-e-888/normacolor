@@ -1,17 +1,17 @@
 "use client";
 
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
+import { ProductDetail } from "@/components/smart/product-detail";
+import { ProductsTable } from "@/components/smart/products-table";
 import { Button } from "@/components/ui/button";
 import { Content } from "@/components/ui/content";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { Product } from "@/database";
 import { useProducts } from "@/hooks/use-products";
-import { ProductsTable } from "@/components/smart/products-table";
-import { ProductDetail } from "@/components/smart/product-detail";
 
 export default function AdminProductsPage() {
   const [selectedProduct, setSelectedProduct] = useState<Product<true> | null>(
@@ -60,6 +60,23 @@ export default function AdminProductsPage() {
     }
   };
 
+  const handleNewImage = useCallback((imageUrl: string) => {
+    setSelectedProduct((prev) => {
+      if (!prev) return prev;
+      return { ...prev, images: [...prev.images, imageUrl] };
+    });
+  }, []);
+
+  const handleRemovedImage = useCallback((imageUrl: string) => {
+    setSelectedProduct((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        images: prev.images.filter((img) => img !== imageUrl),
+      };
+    });
+  }, []);
+
   if (isLoading) {
     return (
       <Content>
@@ -93,7 +110,12 @@ export default function AdminProductsPage() {
 
           {/* Detail Panel */}
           <div className="hidden lg:block w-1/3 overflow-auto">
-            <ProductDetail product={selectedProduct} onUpdate={refetch} />
+            <ProductDetail
+              product={selectedProduct}
+              onUpdate={refetch}
+              onNewImage={handleNewImage}
+              onRemovedImage={handleRemovedImage}
+            />
           </div>
         </div>
       </div>

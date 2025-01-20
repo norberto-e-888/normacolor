@@ -1,6 +1,5 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
@@ -22,10 +21,18 @@ type Tab = "options" | "pricing" | "images";
 interface ProductDetailProps {
   product: Product<true> | null;
   onUpdate: () => void;
+  onNewImage: (imageUrl: string) => void;
+  onRemovedImage: (imageUrl: string) => void;
 }
 
-export function ProductDetail({ product, onUpdate }: ProductDetailProps) {
+export function ProductDetail({
+  product,
+  onUpdate,
+  onNewImage,
+  onRemovedImage,
+}: ProductDetailProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(false);
   const [formData, setFormData] = useState<DeepPartial<Product<true>>>({
     name: "",
     isPublic: false,
@@ -50,7 +57,6 @@ export function ProductDetail({ product, onUpdate }: ProductDetailProps) {
 
   const [activeTab, setActiveTab] = useState<Tab>("options");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (product) {
@@ -135,7 +141,7 @@ export function ProductDetail({ product, onUpdate }: ProductDetailProps) {
     try {
       const formData = new FormData();
       formData.append("file", file);
-
+      setIsImageLoading(true);
       const response = await fetch(`/api/products/${product.id}/images`, {
         method: "POST",
         body: formData,
@@ -143,11 +149,8 @@ export function ProductDetail({ product, onUpdate }: ProductDetailProps) {
 
       if (!response.ok) throw new Error("Failed to upload image");
 
-      await queryClient.refetchQueries({
-        queryKey: "products",
-      });
-
       const { imageUrl } = await response.json();
+      onNewImage(imageUrl);
       setFormData((prev) => ({
         ...prev,
         images: [...(prev.images || []), imageUrl],
@@ -157,6 +160,8 @@ export function ProductDetail({ product, onUpdate }: ProductDetailProps) {
     } catch (error) {
       console.error("Error uploading image:", error);
       toast.error("Error al subir la imagen");
+    } finally {
+      setIsImageLoading(false);
     }
   };
 
@@ -172,6 +177,7 @@ export function ProductDetail({ product, onUpdate }: ProductDetailProps) {
     }
 
     try {
+      setIsImageLoading(true);
       const response = await fetch(
         `/api/products/${product.id}/images/${imageId}`,
         {
@@ -181,14 +187,13 @@ export function ProductDetail({ product, onUpdate }: ProductDetailProps) {
 
       if (!response.ok) throw new Error("Failed to delete image");
 
-      await queryClient.refetchQueries({
-        queryKey: ["products"],
-      });
-
+      onRemovedImage(imageUrl);
       toast.success("Imagen eliminada exitosamente");
     } catch (error) {
       console.error("Error deleting image:", error);
       toast.error("Error al eliminar la imagen");
+    } finally {
+      setIsImageLoading(false);
     }
   };
 
@@ -392,6 +397,7 @@ export function ProductDetail({ product, onUpdate }: ProductDetailProps) {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <Button
+                disabled={isImageLoading}
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className="flex items-center gap-2"
@@ -399,7 +405,7 @@ export function ProductDetail({ product, onUpdate }: ProductDetailProps) {
                   width: "100%",
                 }}
               >
-                <Upload className="w-4 h-4" />
+                <Upload className="w-4 h-4" isLoading={isImageLoading} />
               </Button>
               <input
                 ref={fileInputRef}
