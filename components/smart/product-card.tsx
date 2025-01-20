@@ -1,6 +1,7 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
 
+import Image from "next/image";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -13,6 +14,7 @@ import {
   ProductOptionSide,
 } from "@/database";
 import { useCart } from "@/hooks/use-cart";
+import { cn } from "@/lib/client";
 import { formatCents } from "@/utils";
 import { calculatePrice } from "@/utils/calculate-price";
 
@@ -149,10 +151,27 @@ export function ProductCard({ product }: { product: Product<true> }) {
     );
   };
 
+  // "rounded-lg bg-muted flex items-center justify-center"
+
   return (
     <div className="group relative overflow-hidden rounded-lg border bg-background p-6 hover:border-primary transition-colors w-full max-w-sm h-full flex flex-col">
-      <div className="aspect-square rounded-lg bg-muted flex items-center justify-center">
-        <span className="text-2xl text-muted-foreground">📄</span>
+      <div
+        className={cn(
+          "rounded-lg bg-muted flex items-center justify-center",
+          product.images.length === 0 && "aspect-square w-full h-40"
+        )}
+      >
+        {product.images.length === 0 ? (
+          <span className="text-2xl text-muted-foreground">📄</span>
+        ) : (
+          <Image
+            src={product.images[0]}
+            alt={`Product ${product.name}`}
+            width={320}
+            height={320}
+            className="w-full h-40 object-cover rounded-lg"
+          />
+        )}
       </div>
 
       <div className="mt-4 flex-1 flex flex-col">
