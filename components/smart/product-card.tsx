@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tooltip } from "@/components/ui/tool-tip";
+import { TRANSLATIONS } from "@/constants/translations";
 import { useProductForm } from "@/contexts/use-product-form";
 import {
   OrderProductOptions,
@@ -242,7 +243,7 @@ export function ProductCard({ product }: { product: Product<true> }) {
                     required
                   >
                     <option value={product.options.sides[0]}>
-                      {formatOptionLabel(product.options.sides[0])}
+                      {TRANSLATIONS[product.options.sides[0]]}
                     </option>
                   </select>
                 </Tooltip>
@@ -261,7 +262,7 @@ export function ProductCard({ product }: { product: Product<true> }) {
                   <option value="">Seleccionar</option>
                   {product.options.sides.map((side) => (
                     <option key={side} value={side}>
-                      {formatOptionLabel(side)}
+                      {TRANSLATIONS[side]}
                     </option>
                   ))}
                 </select>
