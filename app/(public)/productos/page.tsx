@@ -1,5 +1,6 @@
 import { ProductCard } from "@/components/smart/product-card";
 import { Content } from "@/components/ui/content";
+import { MasonryGrid } from "@/components/ui/masonry-grid";
 import { fetchProducts } from "@/functions/products";
 
 export default async function ProductsPage() {
@@ -24,11 +25,11 @@ export default async function ProductsPage() {
           Explora nuestra selección de productos de impresión de alta calidad.
         </p>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 justify-items-center">
+        <MasonryGrid columns={3} spacing={24}>
           {data.products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
-        </div>
+        </MasonryGrid>
       </div>
     </Content>
   );

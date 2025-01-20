@@ -1,11 +1,14 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Upload } from "@/components/ui/upload";
 import {
   Product,
   ProductOptionFinish,
@@ -14,7 +17,7 @@ import {
 } from "@/database";
 import { DeepPartial } from "@/utils/deep-partial";
 
-type Tab = "options" | "pricing";
+type Tab = "options" | "pricing" | "images";
 
 interface ProductDetailProps {
   product: Product<true> | null;
@@ -46,6 +49,8 @@ export function ProductDetail({ product, onUpdate }: ProductDetailProps) {
   });
 
   const [activeTab, setActiveTab] = useState<Tab>("options");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (product) {
@@ -108,6 +113,82 @@ export function ProductDetail({ product, onUpdate }: ProductDetailProps) {
       toast.error("Error al actualizar el producto");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !product.id) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Tipo de archivo no soportado. Sube una imagen");
+      return;
+    }
+
+    // Validate file size (e.g., 5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Archivo demasiado grande. Máximo 5MB");
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch(`/api/products/${product.id}/images`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Failed to upload image");
+
+      await queryClient.refetchQueries({
+        queryKey: "products",
+      });
+
+      const { imageUrl } = await response.json();
+      setFormData((prev) => ({
+        ...prev,
+        images: [...(prev.images || []), imageUrl],
+      }));
+
+      toast.success("Imagen subida exitosamente");
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast.error("Error al subir la imagen");
+    }
+  };
+
+  const handleRemoveImage = async (index: number) => {
+    if (!product) return;
+
+    const imageUrl = product.images[index];
+    const imageId = imageUrl.split("/").pop()?.split(".")[0];
+
+    if (!imageId) {
+      toast.error("Error al identificar la imagen");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/products/${product.id}/images/${imageId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to delete image");
+
+      await queryClient.refetchQueries({
+        queryKey: ["products"],
+      });
+
+      toast.success("Imagen eliminada exitosamente");
+    } catch (error) {
+      console.error("Error deleting image:", error);
+      toast.error("Error al eliminar la imagen");
     }
   };
 
@@ -251,6 +332,22 @@ export function ProductDetail({ product, onUpdate }: ProductDetailProps) {
             required
           />
         </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="isPublic"
+            checked={formData?.isPublic}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                isPublic: e.target.checked,
+              })
+            }
+          />
+          <label htmlFor="isPublic" className="text-sm font-medium">
+            Publicado
+          </label>
+        </div>
 
         {/* Tabs */}
         <div className="border-b">
@@ -277,10 +374,64 @@ export function ProductDetail({ product, onUpdate }: ProductDetailProps) {
             >
               Precios
             </button>
+            <button
+              type="button"
+              className={`px-4 py-2 ${
+                activeTab === "images"
+                  ? "border-b-2 border-primary"
+                  : "text-muted-foreground"
+              }`}
+              onClick={() => setActiveTab("images")}
+            >
+              Imágenes
+            </button>
           </div>
         </div>
 
-        {activeTab === "options" ? (
+        {activeTab === "images" ? (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <Button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-2"
+                style={{
+                  width: "100%",
+                }}
+              >
+                <Upload className="w-4 h-4" />
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageUpload}
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              {product.images.map((imageUrl, index) => (
+                <div key={index} className="relative group">
+                  <Image
+                    src={imageUrl!}
+                    alt={`Product ${index + 1}`}
+                    width={320}
+                    height={160}
+                    className="w-full h-40 object-cover rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(index)}
+                    className="absolute top-2 right-2 p-1 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 className="w-4 h-4 text-red-500" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : activeTab === "options" ? (
           <div className="space-y-6">
             {/* Sides Options */}
             <div className="space-y-2">
@@ -404,7 +555,7 @@ export function ProductDetail({ product, onUpdate }: ProductDetailProps) {
                   setFormData({
                     ...formData,
                     pricing: {
-                      ...formData?.pricing!,
+                      ...formData.pricing!,
                       baseUnitPrice: parseInt(e.target.value),
                     },
                   })
@@ -424,7 +575,7 @@ export function ProductDetail({ product, onUpdate }: ProductDetailProps) {
                   setFormData({
                     ...formData,
                     pricing: {
-                      ...formData?.pricing!,
+                      ...formData.pricing!,
                       minimumPurchase: parseInt(e.target.value),
                     },
                   })
@@ -549,7 +700,9 @@ export function ProductDetail({ product, onUpdate }: ProductDetailProps) {
                         return (
                           <div key={key} className="flex items-center gap-2">
                             <span className="text-sm w-24">
+                              {/* eslint-disable-next-line react/no-unescaped-entities */}
                               {(dimension as [number, number])[0]}" x{" "}
+                              {/* eslint-disable-next-line react/no-unescaped-entities */}
                               {(dimension as [number, number])[1]}"
                             </span>
                             <Input
@@ -641,34 +794,19 @@ export function ProductDetail({ product, onUpdate }: ProductDetailProps) {
             </div>
           </div>
         )}
+      </div>
 
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="isPublic"
-            checked={formData?.isPublic}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                isPublic: e.target.checked,
-              })
-            }
-          />
-          <label htmlFor="isPublic" className="text-sm font-medium">
-            Publicado
-          </label>
+      {activeTab !== "images" && (
+        <div className="pt-4 border-t">
+          <Button type="submit" disabled={isLoading} className="w-full">
+            {isLoading ? (
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
+            ) : (
+              "Guardar Cambios"
+            )}
+          </Button>
         </div>
-      </div>
-
-      <div className="pt-4 border-t">
-        <Button type="submit" disabled={isLoading} className="w-full">
-          {isLoading ? (
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-          ) : (
-            "Guardar Cambios"
-          )}
-        </Button>
-      </div>
+      )}
     </form>
   );
 }
