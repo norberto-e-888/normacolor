@@ -1,19 +1,10 @@
 "use client";
 
 import { format } from "date-fns";
-import { MoreVertical } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Promotion, PromotionStatus } from "@/database";
 import { usePromotions } from "@/hooks/use-promotions";
 import { formatNumber } from "@/utils";
-import { rewardTypeLabels } from "@/utils/promotion-translations";
+import { promotionTypeLabels } from "@/utils/promotion-translations";
 
 interface PromotionHistoryProps {
   onPromotionSelect: (promotion: Promotion) => void;
@@ -38,9 +29,8 @@ export function PromotionHistory({ onPromotionSelect }: PromotionHistoryProps) {
             <th className="text-left p-4 font-medium">Nombre</th>
             <th className="text-left p-4 font-medium">Tipo</th>
             <th className="text-left p-4 font-medium">Puntos</th>
-            <th className="text-left p-4 font-medium">Recompensas</th>
-            <th className="text-left p-4 font-medium">Fin</th>
             <th className="text-left p-4 font-medium">Canjeos</th>
+            <th className="text-left p-4 font-medium">Fin</th>
           </tr>
         </thead>
         <tbody>
@@ -52,27 +42,19 @@ export function PromotionHistory({ onPromotionSelect }: PromotionHistoryProps) {
             >
               <td className="p-4">{promotion.name}</td>
               <td className="p-4 capitalize">
-                {promotion.type.replace(/_/g, " ")}
+                {promotionTypeLabels[promotion.type]}
               </td>
               <td className="p-4">{formatNumber(promotion.pointsCost)}</td>
-              <td className="p-4">
-                {promotion.rewards
-                  .map(
-                    (reward) =>
-                      `${rewardTypeLabels[reward.type]} ${reward.value}`
-                  )
-                  .join(", ")}
-              </td>
-              <td className="p-4">
-                {promotion.endDate
-                  ? format(new Date(promotion.endDate), "d MMM, yyyy")
-                  : "-"}
-              </td>
               <td className="p-4">
                 {promotion.currentRedemptions}
                 {promotion.maxRedemptions
                   ? ` / ${formatNumber(promotion.maxRedemptions)}`
                   : ""}
+              </td>
+              <td className="p-4">
+                {promotion.endDate
+                  ? format(new Date(promotion.endDate), "d MMM, yyyy")
+                  : "-"}
               </td>
             </tr>
           ))}
