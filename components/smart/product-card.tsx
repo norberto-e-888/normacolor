@@ -232,7 +232,7 @@ export function ProductCard({ product }: { product: Product<true> }) {
           {/* Options Fields */}
           {!!product.options.sides?.length && (
             <div>
-              <label className="block text-sm font-medium mb-1">Lados</label>
+              <label className="block text-sm font-bold mb-1">Lados</label>
               {product.options.sides.length === 1 ? (
                 <Tooltip text={TOOLTIP_TEXT}>
                   <select
@@ -258,7 +258,7 @@ export function ProductCard({ product }: { product: Product<true> }) {
                   value={selectedOptions.sides || ""}
                   required
                 >
-                  <option value="">Seleccionar lado</option>
+                  <option value="">Seleccionar</option>
                   {product.options.sides.map((side) => (
                     <option key={side} value={side}>
                       {formatOptionLabel(side)}
@@ -270,7 +270,7 @@ export function ProductCard({ product }: { product: Product<true> }) {
           )}
           {!!product.options.paper?.length && (
             <div>
-              <label className="block text-sm font-medium mb-1">Papel</label>
+              <label className="block text-sm font-bold mb-1">Papel</label>
               {product.options.paper.length === 1 ? (
                 <Tooltip text={TOOLTIP_TEXT}>
                   <select
@@ -296,7 +296,7 @@ export function ProductCard({ product }: { product: Product<true> }) {
                   value={selectedOptions.paper || ""}
                   required
                 >
-                  <option value="">Seleccionar papel</option>
+                  <option value="">Seleccionar</option>
                   {product.options.paper.map((paper) => (
                     <option key={paper} value={paper}>
                       {formatOptionLabel(paper)}
@@ -309,7 +309,7 @@ export function ProductCard({ product }: { product: Product<true> }) {
 
           {!!product.options.finish?.length && (
             <div>
-              <label className="block text-sm font-medium mb-1">Acabado</label>
+              <label className="block text-sm font-bold mb-1">Acabado</label>
               {product.options.finish.length === 1 ? (
                 <Tooltip text={TOOLTIP_TEXT}>
                   <select
@@ -335,7 +335,7 @@ export function ProductCard({ product }: { product: Product<true> }) {
                   value={selectedOptions.finish || ""}
                   required
                 >
-                  <option value="">Seleccionar acabado</option>
+                  <option value="">Seleccionar</option>
                   {product.options.finish.map((finish) => (
                     <option key={finish} value={finish}>
                       {formatOptionLabel(finish)}
@@ -348,7 +348,7 @@ export function ProductCard({ product }: { product: Product<true> }) {
 
           {!!product.options.dimensions?.length && (
             <div>
-              <label className="block text-sm font-medium mb-1">
+              <label className="block text-sm font-bold mb-1">
                 Dimensiones
               </label>
               {product.options.dimensions.length === 1 ? (
@@ -383,7 +383,7 @@ export function ProductCard({ product }: { product: Product<true> }) {
                   value={JSON.stringify(selectedOptions.dimensions)}
                   required
                 >
-                  <option value="">Seleccionar dimensiones</option>
+                  <option value="">Seleccionar</option>
                   {product.options.dimensions.map((dim) => (
                     <option key={dim.join("x")} value={JSON.stringify(dim)}>
                       {/* eslint-disable-next-line react/no-unescaped-entities */}
@@ -396,7 +396,7 @@ export function ProductCard({ product }: { product: Product<true> }) {
           )}
 
           <div>
-            <label className="block text-sm font-medium mb-1">Cantidad</label>
+            <label className="block text-sm font-bold mb-1">Cantidad</label>
             <Input
               type="number"
               min="1"
@@ -413,7 +413,7 @@ export function ProductCard({ product }: { product: Product<true> }) {
 
           {/* Price and Submit */}
           <div className="flex items-center justify-between pt-2">
-            <span className="text-lg font-bold">
+            <span className="text-lg font-thin">
               {formatCents(calculateItemPrice())}
             </span>
             <Tooltip
