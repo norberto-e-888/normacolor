@@ -299,7 +299,12 @@ export function PromotionFormModal({
         </h2>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form
+            onSubmit={form.handleSubmit(onSubmit, (e) => {
+              console.log("form errors", e);
+            })}
+            className="space-y-6"
+          >
             <FormField
               control={form.control}
               name="name"

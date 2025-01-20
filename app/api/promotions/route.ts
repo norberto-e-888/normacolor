@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
 import {
   basePromotionSchema,
@@ -11,9 +12,12 @@ import { ExtendedSession, getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
 
 export const promotionSchema = basePromotionSchema
+  .extend({
+    startDate: z.string(),
+    endDate: z.string(),
+  })
   .refine(
     (data) => {
-      // Validate that all conditions are valid for the promotion type
       const validConditionTypes = VALID_TYPE_CONDITION_COMBINATIONS[data.type];
       return data.conditions.every((condition) =>
         validConditionTypes.includes(condition.type)
@@ -26,7 +30,6 @@ export const promotionSchema = basePromotionSchema
   )
   .refine(
     (data) => {
-      // Validate that all rewards are valid for the promotion type
       const validRewardTypes = VALID_TYPE_REWARD_COMBINATIONS[data.type];
       return data.rewards.every((reward) =>
         validRewardTypes.includes(reward.type)
@@ -39,7 +42,6 @@ export const promotionSchema = basePromotionSchema
   )
   .refine(
     (data) => {
-      // Validate reward values based on their type
       return data.rewards.every((reward) => {
         switch (reward.type) {
           case "discount_percentage":
@@ -95,15 +97,20 @@ export const promotionSchema = basePromotionSchema
   )
   .refine(
     (data) => {
-      // Validate dates if both are provided
-      if (data.startDate && data.endDate) {
-        return data.startDate < data.endDate;
-      }
-      return true;
+      return new Date(data.startDate) < new Date(data.endDate);
     },
     {
       message: "End date must be after start date",
       path: ["endDate"],
+    }
+  )
+  .refine(
+    (data) => {
+      return new Date(data.startDate) > new Date();
+    },
+    {
+      message: "Start date must be in the future",
+      path: ["startDate"],
     }
   );
 
@@ -140,6 +147,7 @@ export async function POST(request: Request) {
   }
 
   const json = await request.json();
+  console.log(json);
   const validation = await promotionSchema.safeParseAsync(json);
 
   if (!validation.success) {
@@ -153,6 +161,8 @@ export async function POST(request: Request) {
   const promotion = await Promotion.create({
     ...validation.data,
     currentRedemptions: 0,
+    startDate: new Date(validation.data.startDate),
+    endDate: new Date(validation.data.endDate),
   });
 
   return NextResponse.json({

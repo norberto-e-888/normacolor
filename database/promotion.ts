@@ -57,8 +57,8 @@ export type Promotion = {
   type: PromotionType;
   status: PromotionStatus;
   trigger: PromotionTrigger;
-  startDate?: Date;
-  endDate?: Date;
+  startDate: Date;
+  endDate: Date;
   pointsCost: number;
   conditions: PromotionCondition[];
   rewards: PromotionReward[];
@@ -100,9 +100,11 @@ const promotionSchema = getSchema<Promotion>({
   },
   startDate: {
     type: Date,
+    required: true,
   },
   endDate: {
     type: Date,
+    required: true,
   },
   pointsCost: {
     type: Number,
@@ -230,14 +232,14 @@ export const VALID_TYPE_REWARD_COMBINATIONS: Record<
 };
 
 export const basePromotionSchema = z.object({
-  id: z.string(),
+  id: z.string().optional(),
   name: z.string().min(3),
   description: z.string().min(10),
   type: z.nativeEnum(PromotionType),
   status: z.nativeEnum(PromotionStatus),
   trigger: z.nativeEnum(PromotionTrigger),
-  startDate: z.date().optional(),
-  endDate: z.date().optional(),
+  startDate: z.date(),
+  endDate: z.date(),
   pointsCost: z.number().min(0),
   maxRedemptions: z.number().min(1).max(2_000).default(100),
   conditions: z.array(
