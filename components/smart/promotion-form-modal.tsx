@@ -417,6 +417,7 @@ export function PromotionFormModal({
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
+                          autoFocus
                           mode="single"
                           selected={field.value}
                           onSelect={field.onChange}
@@ -427,7 +428,6 @@ export function PromotionFormModal({
                               date > (form.watch("endDate") as unknown as Date)
                             )
                           }
-                          initialFocus
                         />
                       </PopoverContent>
                     </Popover>
@@ -463,6 +463,7 @@ export function PromotionFormModal({
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
+                          autoFocus
                           mode="single"
                           selected={field.value}
                           onSelect={field.onChange}
@@ -474,7 +475,6 @@ export function PromotionFormModal({
                                 (form.watch("startDate") as unknown as Date)
                             )
                           }
-                          initialFocus
                         />
                       </PopoverContent>
                     </Popover>
