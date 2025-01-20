@@ -40,32 +40,15 @@ export function PromotionCarousel({
     );
   }
 
-  const test = [
-    {
-      ...promotions[0],
-      id: "1",
-      name: "Promotion 1",
-    },
-    {
-      ...promotions[0],
-      id: "2",
-      name: "Promotion 2",
-    },
-    {
-      ...promotions[0],
-      id: "3",
-      name: "Promotion 3",
-    },
-  ];
-
   return (
     <div className="relative h-64 perspective-1000">
       <div className="absolute inset-0 flex items-center justify-center">
-        {test.map((promotion, index) => {
-          const offset = (index - activeIndex + test.length) % test.length;
+        {promotions.map((promotion, index) => {
+          const offset =
+            (index - activeIndex + promotions.length) % promotions.length;
           const isActive = offset === 0;
           const isNext = offset === 1;
-          const isPrev = offset === test.length - 1;
+          const isPrev = offset === promotions.length - 1;
 
           return (
             <motion.div
@@ -104,10 +87,13 @@ export function PromotionCarousel({
                 if (Math.abs(info.offset.x) > 100) {
                   if (info.offset.x > 0) {
                     setActiveIndex(
-                      (current) => (current - 1 + test.length) % test.length
+                      (current) =>
+                        (current - 1 + promotions.length) % promotions.length
                     );
                   } else {
-                    setActiveIndex((current) => (current + 1) % test.length);
+                    setActiveIndex(
+                      (current) => (current + 1) % promotions.length
+                    );
                   }
                 }
               }}
