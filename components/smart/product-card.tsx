@@ -111,10 +111,7 @@ export function ProductCard({ product }: { product: Product<true> }) {
     });
 
     setOpenFormId(null);
-    setSelectedOptions({
-      ...getForcedOptions(product),
-    });
-
+    setSelectedOptions(getForcedOptions(product));
     setQuantity(1);
     toast.success(
       `${quantity} ${product.name} agregado${
