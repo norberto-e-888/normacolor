@@ -1,6 +1,5 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { MoreVertical } from "lucide-react";
 
@@ -12,27 +11,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Promotion, PromotionStatus } from "@/database";
+import { usePromotions } from "@/hooks/use-promotions";
 
 interface PromotionHistoryProps {
   onPromotionSelect: (promotion: Promotion) => void;
 }
 
 export function PromotionHistory({ onPromotionSelect }: PromotionHistoryProps) {
-  const { data: history = [] } = useQuery<Promotion[]>({
-    queryKey: ["ended-promotions"],
-    queryFn: async () => {
-      const response = await fetch(
-        "/api/promotions?status=" + PromotionStatus.Ended
-      );
-      if (!response.ok) throw new Error("Failed to fetch history");
-      return response.json();
-    },
-  });
+  const { data: history = [] } = usePromotions(PromotionStatus.Ended);
 
   if (history.length === 0) {
     return (
       <div className="h-32 flex items-center justify-center text-muted-foreground border rounded-lg">
-        No ended promotions
+        No hay promociones pasadas
       </div>
     );
   }

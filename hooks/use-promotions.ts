@@ -6,13 +6,14 @@ export function usePromotions(status?: PromotionStatus) {
   return useQuery<Promotion[]>({
     queryKey: ["promotions", status],
     queryFn: async () => {
-      const url = new URL("/api/promotions", window.location.origin);
-      if (status) {
-        url.searchParams.set("status", status);
-      }
-      const response = await fetch(url);
+      const response = await fetch(
+        "/api/promotions?status=" + PromotionStatus.Active
+      );
+
       if (!response.ok) throw new Error("Failed to fetch promotions");
-      return response.json();
+      const promotions = await response.json();
+      console.log({ promotions });
+      return promotions;
     },
   });
 }

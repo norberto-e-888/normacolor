@@ -17,6 +17,7 @@ export function Effects() {
         const response = await fetch(
           "/api/promotions?status=" + PromotionStatus.Active
         );
+
         if (!response.ok) throw new Error("Failed to fetch promotions");
         const promotions = await response.json();
         console.log({ promotions });

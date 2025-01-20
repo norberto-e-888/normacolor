@@ -1,30 +1,21 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 
 import { Promotion, PromotionStatus } from "@/database";
+import { usePromotions } from "@/hooks/use-promotions";
 
 interface PromotionDraftsProps {
   onPromotionSelect: (promotion: Promotion) => void;
 }
 
 export function PromotionDrafts({ onPromotionSelect }: PromotionDraftsProps) {
-  const { data: drafts = [] } = useQuery<Promotion[]>({
-    queryKey: ["draft-promotions"],
-    queryFn: async () => {
-      const response = await fetch(
-        "/api/promotions?status=" + PromotionStatus.Draft
-      );
-      if (!response.ok) throw new Error("Failed to fetch drafts");
-      return response.json();
-    },
-  });
+  const { data: drafts = [] } = usePromotions(PromotionStatus.Draft);
 
   if (drafts.length === 0) {
     return (
       <div className="h-32 flex items-center justify-center text-muted-foreground border rounded-lg">
-        No draft promotions
+        No hay borradores de promociones
       </div>
     );
   }
