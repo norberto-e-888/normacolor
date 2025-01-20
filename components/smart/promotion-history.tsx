@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Promotion, PromotionStatus } from "@/database";
 import { usePromotions } from "@/hooks/use-promotions";
+import { formatNumber } from "@/utils";
+import { rewardTypeLabels } from "@/utils/promotion-translations";
 
 interface PromotionHistoryProps {
   onPromotionSelect: (promotion: Promotion) => void;
@@ -33,12 +35,12 @@ export function PromotionHistory({ onPromotionSelect }: PromotionHistoryProps) {
       <table className="w-full">
         <thead>
           <tr className="bg-muted/50">
-            <th className="text-left p-4 font-medium">Name</th>
-            <th className="text-left p-4 font-medium">Type</th>
-            <th className="text-left p-4 font-medium">Points Cost</th>
-            <th className="text-left p-4 font-medium">End Date</th>
-            <th className="text-left p-4 font-medium">Redemptions</th>
-            <th className="text-left p-4 font-medium">Actions</th>
+            <th className="text-left p-4 font-medium">Nombre</th>
+            <th className="text-left p-4 font-medium">Tipo</th>
+            <th className="text-left p-4 font-medium">Puntos</th>
+            <th className="text-left p-4 font-medium">Recompensas</th>
+            <th className="text-left p-4 font-medium">Fin</th>
+            <th className="text-left p-4 font-medium">Canjeos</th>
           </tr>
         </thead>
         <tbody>
@@ -52,40 +54,25 @@ export function PromotionHistory({ onPromotionSelect }: PromotionHistoryProps) {
               <td className="p-4 capitalize">
                 {promotion.type.replace(/_/g, " ")}
               </td>
-              <td className="p-4">{promotion.pointsCost}</td>
+              <td className="p-4">{formatNumber(promotion.pointsCost)}</td>
+              <td className="p-4">
+                {promotion.rewards
+                  .map(
+                    (reward) =>
+                      `${rewardTypeLabels[reward.type]} ${reward.value}`
+                  )
+                  .join(", ")}
+              </td>
               <td className="p-4">
                 {promotion.endDate
-                  ? format(new Date(promotion.endDate), "MMM d, yyyy")
+                  ? format(new Date(promotion.endDate), "d MMM, yyyy")
                   : "-"}
               </td>
               <td className="p-4">
                 {promotion.currentRedemptions}
                 {promotion.maxRedemptions
-                  ? ` / ${promotion.maxRedemptions}`
+                  ? ` / ${formatNumber(promotion.maxRedemptions)}`
                   : ""}
-              </td>
-              <td className="p-4">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="h-8 w-8 p-0"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Clone promotion logic here
-                      }}
-                    >
-                      Clone
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </td>
             </tr>
           ))}
