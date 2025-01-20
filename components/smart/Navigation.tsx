@@ -103,10 +103,12 @@ export function Navigation() {
     return !!session;
   });
 
+  const rootLink = session ? "/" : "/login";
+
   return (
     <>
       <nav className="flex gap-8 items-center p-4 bg-primary text-primary-foreground shrink-0">
-        <Link href="/login" className="flex gap-1 items-center">
+        <Link href={rootLink} className="flex gap-1 items-center">
           <Hexagon size="24px" />
           <span className="text-lg font-bold">Normacolor</span>
         </Link>
