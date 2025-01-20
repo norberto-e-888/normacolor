@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "sonner";
 
-import { ToastProvider } from "@/hooks/use-toast";
+import { ToastProvider } from "@/contexts/use-toast";
 
 const queryClient = new QueryClient();
 
