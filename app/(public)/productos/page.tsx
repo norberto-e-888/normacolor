@@ -21,11 +21,7 @@ export default async function ProductsPage() {
 
   return (
     <Content>
-      <div className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 mx-auto space-y-6">
-        <p className="text-center text-muted-foreground">
-          Explora nuestra selección de productos de impresión de alta calidad.
-        </p>
-
+      <div className="w-full max-w-7xl p-4 sm:px-6 lg:px-8 mx-auto">
         <ProductFormProvider>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {data.products.map((product) => (
