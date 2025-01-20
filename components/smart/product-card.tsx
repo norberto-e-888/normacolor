@@ -1,8 +1,14 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, ChevronUp, Plus } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  Plus,
+  ShoppingCart,
+} from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -18,7 +24,7 @@ import {
 } from "@/database";
 import { useCart } from "@/hooks/use-cart";
 import { cn } from "@/lib/client";
-import { formatCents } from "@/utils";
+import { formatCents, getForcedOptions } from "@/utils";
 import { calculatePrice } from "@/utils/calculate-price";
 
 const formatOptionLabel = (option: string) => {
@@ -39,7 +45,6 @@ export function ProductCard({ product }: { product: Product<true> }) {
 
   const [quantity, setQuantity] = useState<number | "">(1);
   const addItem = useCart((state) => state.addItem);
-
   const calculateItemPrice = () => {
     return calculatePrice(
       typeof quantity === "number" ? quantity : 0,
@@ -104,9 +109,12 @@ export function ProductCard({ product }: { product: Product<true> }) {
       price: totalPrice,
     });
 
-    setSelectedOptions({});
-    setQuantity(1);
+    setOpenFormId(null);
+    setSelectedOptions({
+      ...getForcedOptions(product),
+    });
 
+    setQuantity(1);
     toast.success(
       `${quantity} ${product.name} agregado${
         quantity > 1 ? "s" : ""
@@ -133,6 +141,14 @@ export function ProductCard({ product }: { product: Product<true> }) {
   const handleExpandClick = () => {
     setOpenFormId(isExpanded ? null : product.id);
   };
+
+  // Ensure that if there's only one option available, it's selected by default
+  useEffect(() => {
+    setSelectedOptions((prev) => ({
+      ...prev,
+      ...getForcedOptions(product),
+    }));
+  }, [product, product.options]);
 
   return (
     <div className="relative w-full">
@@ -406,10 +422,13 @@ export function ProductCard({ product }: { product: Product<true> }) {
             >
               <Button
                 type="submit"
-                disabled={!isFormComplete()}
-                className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90"
+                style={{
+                  cursor: isFormComplete() ? "pointer" : "not-allowed",
+                  opacity: isFormComplete() ? 1 : 0.5,
+                }}
               >
-                Agregar al carrito
+                <ShoppingCart className="w-5 h-5" />
               </Button>
             </Tooltip>
           </div>
