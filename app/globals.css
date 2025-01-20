@@ -109,3 +109,7 @@ body {
 .rdp-week td {
   text-align: center;
 }
+
+.rdp-disabled {
+  color: #ccc;
+}
