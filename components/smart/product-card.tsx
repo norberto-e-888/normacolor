@@ -8,7 +8,7 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,7 @@ const formatOptionLabel = (option: string) => {
 const TOOLTIP_TEXT = "única opción disponible";
 
 export function ProductCard({ product }: { product: Product<true> }) {
+  const formRef = useRef<HTMLFormElement>(null);
   const { openFormId, setOpenFormId } = useProductForm();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedOptions, setSelectedOptions] = useState<OrderProductOptions>(
@@ -138,6 +139,12 @@ export function ProductCard({ product }: { product: Product<true> }) {
   const isExpanded = openFormId === product.id;
   const handleExpandClick = () => {
     setOpenFormId(isExpanded ? null : product.id);
+    if (formRef.current && !isExpanded) {
+      formRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
   };
 
   // Ensure that if there's only one option available, it's selected by default
@@ -226,7 +233,7 @@ export function ProductCard({ product }: { product: Product<true> }) {
             : "opacity-0 scale-y-0 pointer-events-none -z-10"
         )}
       >
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+        <form onSubmit={handleSubmit} className="p-4 space-y-4" ref={formRef}>
           {/* Options Fields */}
           {!!product.options.sides?.length && (
             <div>
@@ -417,6 +424,7 @@ export function ProductCard({ product }: { product: Product<true> }) {
             <Tooltip
               text={getValidationMessages().join("\n")}
               show={!isFormComplete()}
+              position="top"
             >
               <Button
                 type="submit"

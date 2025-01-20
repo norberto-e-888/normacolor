@@ -20,8 +20,8 @@ export default async function ProductsPage() {
   }
 
   return (
-    <Content>
-      <div className="w-full max-w-7xl p-4 sm:px-6 lg:px-8 mx-auto">
+    <Content center>
+      <div className="w-full max-w-screen-2xl mx-auto">
         <ProductFormProvider>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {data.products.map((product) => (

@@ -233,10 +233,8 @@ export default function CheckoutPage() {
     }
 
     if (itemsWithoutArt.length <= 3) {
-      return itemsWithoutArt
-        .map((item) => `• ${item.name}`)
-        .join("\n")
-        .concat("\nrequieren arte");
+      const text = itemsWithoutArt.map((item) => `• ${item.name}`).join("\n");
+      return `requieren arte:\n${text}`;
     }
 
     return `${itemsWithoutArt.length} productos requieren arte`;
@@ -251,7 +249,7 @@ export default function CheckoutPage() {
             <div className="text-lg font-semibold text-green-600">
               Total: {formatCents(totalPrice())}
             </div>
-            <Tooltip text={getTooltipText()} position="left">
+            <Tooltip text={getTooltipText()} position="bottom" translateX={32}>
               <button
                 onClick={handleSubmitOrder}
                 disabled={!allItemsHaveArt || isSubmitting}

@@ -1,3 +1,4 @@
+// components/ui/content.tsx
 import { cn } from "@/lib/client";
 
 type ContentProps = Readonly<{
@@ -18,7 +19,7 @@ export const Content = ({
   <div
     className={cn(
       // Base styles
-      "w-full h-100vh flex flex-col p-4",
+      "w-full h-100vh flex flex-col",
       padding && "p-4",
       className
     )}

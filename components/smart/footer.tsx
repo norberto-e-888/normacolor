@@ -9,7 +9,7 @@ export function Footer() {
   }
 
   return (
-    <footer className="p-1.5 bg-muted text-center">
+    <footer className="p-2 bg-muted text-center">
       <p className="text-sm text-muted-foreground">
         © {new Date().getFullYear()} Normacolor Panama S.A. Todos los derechos
         reservados.

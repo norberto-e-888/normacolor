@@ -8,18 +8,22 @@ export function Tooltip({
   position = "top",
   show = true,
   className = "",
+  translateY = 2,
+  translateX = 2,
 }: {
   children: React.ReactNode;
   text: string;
   position?: Position;
   show?: boolean;
   className?: string;
+  translateY?: number;
+  translateX?: number;
 }) {
   const positionClasses = {
-    top: "bottom-full left-1/2 -translate-y-2",
-    bottom: "top-full left-1/2 translate-y-2",
-    left: "right-full top-1/2 -translate-y-1/2 -translate-x-2",
-    right: "left-full top-1/2 -translate-y-1/2 translate-x-2",
+    top: `bottom-full -translate-x-${translateX} -translate-y-${translateY}`,
+    bottom: `top-full -translate-x-${translateX} translate-y-${translateY}`,
+    left: `right-full translate-x-${translateX} -translate-y-${translateY}`,
+    right: `left-full -translate-x-${translateX} -translate-y-${translateY}`,
   };
 
   const arrowPositionClasses = {
