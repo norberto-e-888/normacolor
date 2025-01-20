@@ -125,7 +125,40 @@ export async function GET(request: Request) {
 
   await connectToMongo();
 
-  const query = status ? { status } : {};
+  let query: Record<string, unknown> = {};
+
+  console.log({ status });
+
+  if (status === PromotionStatus.Active) {
+    const now = new Date();
+    query = {
+      status,
+      $or: [
+        // No dates specified
+        { startDate: { $exists: false }, endDate: { $exists: false } },
+        // Only start date specified and it's in the past
+        {
+          startDate: { $exists: true, $lte: now },
+          endDate: { $exists: false },
+        },
+        // Only end date specified and it's in the future
+        {
+          startDate: { $exists: false },
+          endDate: { $exists: true, $gt: now },
+        },
+        // Both dates specified and we're within the range
+        {
+          startDate: { $exists: true, $lte: now },
+          endDate: { $exists: true, $gt: now },
+        },
+      ],
+    };
+  } else if (status) {
+    query = { status };
+  }
+
+  console.log({ query });
+
   const promotions = await Promotion.find(query)
     .sort({ "metadata.priority": -1, createdAt: -1 })
     .lean()

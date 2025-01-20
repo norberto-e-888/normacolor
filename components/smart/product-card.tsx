@@ -68,7 +68,6 @@ export function ProductCard({ product }: { product: Product<true> }) {
     const messages: string[] = [];
     const totalPrice = calculateItemPrice();
 
-    // Check required options
     if (product.options.sides?.length && !selectedOptions.sides) {
       messages.push("Selecciona los lados");
     }
@@ -137,11 +136,9 @@ export function ProductCard({ product }: { product: Product<true> }) {
       price: totalPrice,
     });
 
-    // Reset form while keeping default values
     setSelectedOptions(getDefaultOptions());
     setQuantity(1);
 
-    // Show success toast
     toast.success(
       `${quantity} ${product.name} agregado${
         quantity > 1 ? "s" : ""

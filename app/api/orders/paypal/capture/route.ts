@@ -1,9 +1,8 @@
-// app/api/orders/paypal/capture/route.ts
+import { NextResponse } from "next/server";
 
 import { Order, OrderProduct, OrderStatus, User } from "@/database";
 import { getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
-import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   const session = await getServerSession();
@@ -44,66 +43,79 @@ export async function POST(request: Request) {
       status: OrderStatus.Paid,
     });
 
-    // Update user's loyalty points and aggregations
-    const pointsEarned = order.total;
-    const cart = order.cart.map((item) => item.toObject() as OrderProduct);
-    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const updateUserAggregations = async (order: Order, userId: string) => {
+      const user = await User.findById(userId);
+      if (!user) {
+        throw new Error("User not found");
+      }
 
-    // Get current user data for average calculation
-    const user = await User.findById(session.user.id);
-    if (!user) {
-      throw new Error("User not found");
-    }
+      const totalItems = order.cart.reduce((sum, item) => {
+        const itemData = item.toObject() as OrderProduct;
+        return sum + itemData.quantity;
+      }, 0);
 
-    // Calculate new average order value
-    const newTotalOrders = (user.aggregations?.totalOrders || 0) + 1;
-    const currentTotalValue =
-      (user.aggregations?.averageOrderValue || 0) *
-      (user.aggregations?.totalOrders || 0);
-    const newAverageOrderValue =
-      (currentTotalValue + order.total) / newTotalOrders;
-
-    // Build product order counts update
-    const productCounts = { ...(user.aggregations?.productOrderCounts || {}) };
-    for (const item of cart) {
-      productCounts[item.productId] =
-        (productCounts[item.productId] || 0) + item.quantity;
-    }
-
-    // Find most ordered product
-    const mostOrderedProduct = Object.entries(productCounts).reduce(
-      (max, [productId, count]) =>
-        count > (max.count || 0) ? { productId, count } : max,
-      { productId: "", count: 0 }
-    ).productId;
-
-    // Update order status counts
-    const orderStatusCounts = {
-      ...(user.aggregations?.orderStatusCounts || {}),
-    };
-    orderStatusCounts[OrderStatus.Paid] =
-      (orderStatusCounts[OrderStatus.Paid] || 0) + 1;
-
-    await User.findByIdAndUpdate(session.user.id, {
-      $inc: {
-        totalSpentCents: order.total,
-        totalLoyaltyPoints: pointsEarned,
-        unspentLoyaltyPoints: pointsEarned,
-      },
-      $set: {
-        aggregations: {
-          lastOrderDate: new Date(),
-          averageOrderValue: newAverageOrderValue,
-          mostOrderedProduct:
-            mostOrderedProduct || user.aggregations?.mostOrderedProduct,
-          orderStatusCounts,
-          totalOrderItems:
-            (user.aggregations?.totalOrderItems || 0) + totalItems,
-          productOrderCounts: productCounts,
-          totalOrders: newTotalOrders,
+      const productCounts = order.cart.reduce(
+        (counts: Record<string, number>, item) => {
+          const itemData = item.toObject() as OrderProduct;
+          counts[itemData.productId] = (counts[itemData.productId] || 0) + 1;
+          return counts;
         },
-      },
-    });
+        {}
+      );
+
+      const newTotalOrders = (user.aggregations?.totalOrders || 0) + 1;
+      const newTotalSpent = (user.totalSpentCents || 0) + order.total;
+      const newAverageOrderValue = Math.round(newTotalSpent / newTotalOrders);
+
+      const orderStatusCounts = {
+        ...(user.aggregations?.orderStatusCounts || {}),
+        [OrderStatus.Paid]:
+          ((user.aggregations?.orderStatusCounts || {})[OrderStatus.Paid] ||
+            0) + 1,
+      };
+
+      const mergedProductCounts = {
+        ...(user.aggregations?.productOrderCounts || {}),
+      };
+      Object.entries(productCounts).forEach(([productId, count]) => {
+        mergedProductCounts[productId] =
+          (mergedProductCounts[productId] || 0) + count;
+      });
+
+      const mostOrderedProduct = Object.entries(mergedProductCounts).reduce(
+        (max, [id, count]) => (count > max.count ? { id, count } : max),
+        { id: "", count: 0 }
+      ).id;
+
+      await User.findByIdAndUpdate(session.user.id, {
+        $inc: {
+          totalSpentCents: order.total,
+          totalLoyaltyPoints: order.total,
+          unspentLoyaltyPoints: order.total,
+        },
+        $set: {
+          aggregations: {
+            lastOrderDate: new Date(),
+            averageOrderValue: newAverageOrderValue,
+            mostOrderedProduct,
+            orderStatusCounts,
+            totalOrderItems:
+              (user.aggregations?.totalOrderItems || 0) + totalItems,
+            productOrderCounts: mergedProductCounts,
+            totalOrders: newTotalOrders,
+          },
+        },
+      });
+    };
+
+    // Purposefully not awaiting this to avoid delaying the response
+    updateUserAggregations(order, session.user.id)
+      .then(() => {
+        console.log("User aggregations updated");
+      })
+      .catch((error) => {
+        console.error("Failed to update user aggregations", error);
+      });
   }
 
   return NextResponse.json({ success: true, orderId });

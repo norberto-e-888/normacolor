@@ -9,7 +9,7 @@ import { Content } from "@/components/ui/content";
 import { StatCardClient } from "@/components/ui/stat-card-client";
 import { TimeSeriesChart } from "@/components/ui/time-series-chart";
 import { Order, Product, User } from "@/database";
-import { formatCents } from "@/utils";
+import { formatCents, formatNumber } from "@/utils";
 
 type Stats = {
   user: User;
@@ -51,7 +51,7 @@ export default function ClientDashboardPage() {
           />
           <StatCardClient
             title="Balance de Puntos NC"
-            value={stats.user.unspentLoyaltyPoints}
+            value={formatNumber(stats.user.unspentLoyaltyPoints)}
             icon={TrendingUp}
           />
           <StatCardClient

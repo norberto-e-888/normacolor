@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 import { Order } from "@/database";
 import { useCart } from "@/hooks/use-cart";
+import { calculatePrice } from "@/utils/calculate-price";
 import { getToastUrlConfig, ToastType } from "@/utils/get-toast-url-config";
 
 export default function PaymentPage() {
@@ -73,9 +74,11 @@ export default function PaymentPage() {
                 <span>
                   $
                   {(
-                    (item.quantity *
-                      item.productSnapshot.pricing.baseUnitPrice) /
-                    100
+                    calculatePrice(
+                      item.quantity,
+                      item.productSnapshot.pricing,
+                      item.options
+                    ) / 100
                   ).toFixed(2)}
                 </span>
               </div>

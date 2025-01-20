@@ -6,6 +6,9 @@ import localFont from "next/font/local";
 import { Providers } from "@/components/providers";
 import { Footer } from "@/components/smart/footer";
 import { Navigation } from "@/components/smart/navigation";
+import { PromotionNotifications } from "@/components/smart/promotion-notification";
+
+import { Effects } from "./effects";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -37,6 +40,8 @@ export default function RootLayout({
           <Navigation />
           <main className="flex-1 overflow-y-auto">{children}</main>
           <Footer />
+          <PromotionNotifications />
+          <Effects />
         </Providers>
       </body>
     </html>

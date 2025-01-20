@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { Product } from "@/database";
 import { createProduct } from "@/functions/products";
 import { fetchProducts } from "@/functions/products";
 import { normalize } from "@/utils";

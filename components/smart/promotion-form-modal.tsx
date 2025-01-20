@@ -48,6 +48,7 @@ import {
 // Import the base schema
 import { basePromotionSchema } from "@/database";
 import { cn } from "@/lib/client";
+import { formatNumber } from "@/utils";
 import {
   conditionTypeLabels,
   promotionStatusLabels,
@@ -763,8 +764,4 @@ export function PromotionFormModal({
       </div>
     </Modal>
   );
-}
-
-function formatNumber(value: number) {
-  return new Intl.NumberFormat("en-EN").format(value);
 }
