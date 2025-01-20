@@ -1,18 +1,96 @@
 "use client";
 
 import { format } from "date-fns";
-import { X } from "lucide-react";
-import { useEffect } from "react";
+import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Promotion } from "@/database";
+import { Modal } from "@/components/ui/modal";
+import { Promotion, PromotionStatus } from "@/database";
 
 interface PromotionDetailProps {
   promotion: Promotion | null;
   onClose: () => void;
+  onSuccess: () => void;
 }
 
-export function PromotionDetail({ promotion, onClose }: PromotionDetailProps) {
+export function PromotionDetail({
+  promotion,
+  onClose,
+  onSuccess,
+}: PromotionDetailProps) {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleActivate = async () => {
+    if (!promotion) return;
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(`/api/promotions/${promotion.id}/activate`, {
+        method: "POST",
+      });
+
+      if (!response.ok) throw new Error("Failed to activate promotion");
+
+      toast.success("Promoción activada exitosamente");
+      onSuccess();
+      onClose();
+    } catch (error) {
+      console.error("Error activating promotion:", error);
+      toast.error("Error al activar la promoción");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!promotion) return;
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(`/api/promotions/${promotion.id}/cancel`, {
+        method: "POST",
+      });
+
+      if (!response.ok) throw new Error("Failed to cancel promotion");
+
+      toast.success("Promoción cancelada exitosamente");
+      onSuccess();
+      onClose();
+    } catch (error) {
+      console.error("Error canceling promotion:", error);
+      toast.error("Error al cancelar la promoción");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!promotion) return;
+    if (!confirm("¿Estás seguro de que deseas eliminar esta promoción?"))
+      return;
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(`/api/promotions/${promotion.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) throw new Error("Failed to delete promotion");
+
+      toast.success("Promoción eliminada exitosamente");
+      onSuccess();
+      onClose();
+    } catch (error) {
+      console.error("Error deleting promotion:", error);
+      toast.error("Error al eliminar la promoción");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -27,18 +105,14 @@ export function PromotionDetail({ promotion, onClose }: PromotionDetailProps) {
   if (!promotion) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 w-96 bg-background border-l shadow-lg transform transition-transform duration-200 ease-in-out">
-      <div className="h-full flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold">Promotion Details</h2>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
+    <Modal isOpen={!!promotion} onClose={onClose}>
+      <div className="w-[600px] max-w-full max-h-[90vh] overflow-y-auto p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold">Detalles de la Promoción</h2>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4">
           <div className="space-y-6">
-            {/* Basic Info */}
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-2">
                 Basic Information
@@ -72,7 +146,6 @@ export function PromotionDetail({ promotion, onClose }: PromotionDetailProps) {
               </div>
             </div>
 
-            {/* Dates */}
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-2">
                 Dates
@@ -93,7 +166,6 @@ export function PromotionDetail({ promotion, onClose }: PromotionDetailProps) {
               </div>
             </div>
 
-            {/* Points & Redemptions */}
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-2">
                 Points & Redemptions
@@ -113,7 +185,6 @@ export function PromotionDetail({ promotion, onClose }: PromotionDetailProps) {
               </div>
             </div>
 
-            {/* Conditions */}
             {promotion.conditions.length > 0 && (
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground mb-2">
@@ -136,7 +207,6 @@ export function PromotionDetail({ promotion, onClose }: PromotionDetailProps) {
               </div>
             )}
 
-            {/* Rewards */}
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-2">
                 Rewards
@@ -154,7 +224,44 @@ export function PromotionDetail({ promotion, onClose }: PromotionDetailProps) {
             </div>
           </div>
         </div>
+        <div className="mt-6 flex justify-end gap-2">
+          {promotion.status === PromotionStatus.Draft && (
+            <>
+              <Button
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Borrar"
+                )}
+              </Button>
+              <Button onClick={handleActivate} disabled={isLoading}>
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Activar"
+                )}
+              </Button>
+            </>
+          )}
+          {promotion.status === PromotionStatus.Active && (
+            <Button
+              variant="destructive"
+              onClick={handleCancel}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Cancelar"
+              )}
+            </Button>
+          )}
+        </div>
       </div>
-    </div>
+    </Modal>
   );
 }

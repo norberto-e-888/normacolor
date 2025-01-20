@@ -17,9 +17,9 @@ export default function AdminPromotionsPage() {
   const [selectedPromotion, setSelectedPromotion] = useState<Promotion | null>(
     null
   );
+
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const queryClient = useQueryClient();
-
   const handleSuccess = () => {
     queryClient.invalidateQueries({ queryKey: ["active-promotions"] });
     queryClient.invalidateQueries({ queryKey: ["draft-promotions"] });
@@ -63,6 +63,7 @@ export default function AdminPromotionsPage() {
         <PromotionDetail
           promotion={selectedPromotion}
           onClose={() => setSelectedPromotion(null)}
+          onSuccess={handleSuccess}
         />
       </div>
     </Content>
