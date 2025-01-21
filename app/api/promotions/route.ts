@@ -127,8 +127,6 @@ export async function GET(request: Request) {
 
   let query: Record<string, unknown> = {};
 
-  console.log({ status });
-
   if (status === PromotionStatus.Active) {
     const now = new Date();
     query = {
@@ -156,8 +154,6 @@ export async function GET(request: Request) {
   } else if (status) {
     query = { status };
   }
-
-  console.log({ query });
 
   const promotions = await Promotion.find(query)
     .sort({ "metadata.priority": -1, createdAt: -1 })
