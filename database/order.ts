@@ -231,6 +231,7 @@ orderSchema.pre("save", ensureRefIntegrity);
 
 orderSchema.index({
   customerId: 1,
+  createdAt: -1,
 });
 
 orderSchema.index({
