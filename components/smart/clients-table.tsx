@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { User } from "@/database";
+import { formatNumber } from "@/utils";
 
 interface ClientsTableProps {
   clients: User[];
@@ -65,7 +66,7 @@ export function ClientsTable({
             onClick={() => onClientSelect(client)}
           >
             <td className="p-4">{client.email}</td>
-            <td className="p-4">{client.unspentLoyaltyPoints}</td>
+            <td className="p-4">{formatNumber(client.unspentLoyaltyPoints)}</td>
             <td className="p-4">
               ${(client.totalSpentCents / 100).toFixed(2)}
             </td>

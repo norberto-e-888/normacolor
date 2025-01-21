@@ -1,5 +1,5 @@
 import { User } from "@/database";
-import { formatCents } from "@/utils";
+import { formatCents, formatNumber } from "@/utils";
 
 interface ClientDetailProps {
   client: User | null;
@@ -24,7 +24,7 @@ export function ClientDetail({ client }: ClientDetailProps) {
 
       <div className="space-y-4">
         <div>
-          <h3 className="font-medium mb-2">Información General</h3>
+          <h3 className="font-medium mb-2">General</h3>
           <div className="space-y-2">
             <p>
               <span className="text-muted-foreground">Email:</span>{" "}
@@ -46,13 +46,13 @@ export function ClientDetail({ client }: ClientDetailProps) {
           <div className="space-y-2">
             <p>
               <span className="text-muted-foreground">Puntos disponibles:</span>{" "}
-              {client.unspentLoyaltyPoints}
+              {formatNumber(client.unspentLoyaltyPoints)}
             </p>
             <p>
               <span className="text-muted-foreground">
                 Total de puntos ganados:
               </span>{" "}
-              {client.totalLoyaltyPoints}
+              {formatNumber(client.totalLoyaltyPoints)}
             </p>
           </div>
         </div>
