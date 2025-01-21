@@ -1,3 +1,5 @@
+"use server";
+
 export const downloadShutterstockArt = async (
   id: string
 ): Promise<{ url: string }> => {
