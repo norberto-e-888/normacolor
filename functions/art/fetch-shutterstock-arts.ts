@@ -21,7 +21,6 @@ export const fetchShutterstockArts = async ({
   const params = new URLSearchParams({
     query: term,
     image_type: "photo,illustration,vector",
-    format: "psd",
     per_page: "20",
     sort: "popular",
   });
