@@ -105,8 +105,7 @@ const userSchema = getSchema<User>(
             type: String,
           },
           orderStatusCounts: {
-            type: Map,
-            of: Number,
+            type: Object,
             default: {},
           },
           totalOrderItems: {
@@ -114,8 +113,7 @@ const userSchema = getSchema<User>(
             default: 0,
           },
           productOrderCounts: {
-            type: Map,
-            of: Number,
+            type: Object,
             default: {},
           },
           totalOrders: {
