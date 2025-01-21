@@ -16,7 +16,7 @@ import { ArtSource } from "@/database";
 import { Art, fetchArts } from "@/functions/art";
 import { createOrder } from "@/functions/orders";
 import { useCart } from "@/hooks/use-cart";
-import { formatCents } from "@/utils";
+import { formatCents, formatNumber } from "@/utils";
 
 const SEARCH_TERM_MAP: Record<string, string> = {
   "tarjetas de presentación": "business cards print-ready",
@@ -243,8 +243,7 @@ export default function CheckoutPage() {
   return (
     <Content padding={false}>
       <div className="flex flex-col">
-        <div className="flex justify-between items-center p-2 border-b">
-          <h1 className="text-2xl font-bold">Carrito</h1>
+        <div className="flex justify-end p-2 border-b">
           <div className="flex items-center gap-4">
             <div className="text-lg font-semibold text-green-600">
               Total: {formatCents(totalPrice())}
@@ -288,7 +287,7 @@ export default function CheckoutPage() {
                     <div>
                       <h3 className="font-medium capitalize">{item.name}</h3>
                       <p className="text-sm text-muted-foreground">
-                        Cantidad: {item.quantity}
+                        Cantidad: {formatNumber(item.quantity)}
                       </p>
                       <p className="text-sm text-muted-foreground">
                         Precio: {formatCents(item.price)}

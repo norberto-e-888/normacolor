@@ -87,7 +87,7 @@ export async function POST(request: Request) {
         { id: "", count: 0 }
       ).id;
 
-      await User.findByIdAndUpdate(session.user.id, {
+      await User.findByIdAndUpdate(userId, {
         $inc: {
           totalSpentCents: order.total,
           totalLoyaltyPoints: order.total,
