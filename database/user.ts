@@ -223,7 +223,4 @@ export async function createOrderFrequencyView() {
       },
     ],
   });
-
-  // Create indexes for better query performance
-  await db.collection("order_frequencies").createIndex({ _id: 1 });
 }
