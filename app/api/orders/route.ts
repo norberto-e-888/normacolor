@@ -1,10 +1,27 @@
 import { NextResponse } from "next/server";
 
-import { Order } from "@/database";
+import { Order, OrderStatus } from "@/database";
 import { getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
+import { z } from "zod";
 
 const PAGE_SIZE = 10;
+
+const ACTIVE_STATUSES = [
+  OrderStatus.Paid,
+  OrderStatus.InProgress,
+  OrderStatus.ReadyToPickUp,
+  OrderStatus.EnRoute,
+];
+
+export const OrderGroup = z.enum(["active"]);
+export type OrderGroup = z.infer<typeof OrderGroup>;
+
+const GROUP_STATUSES: {
+  [key in OrderGroup]: OrderStatus[];
+} = {
+  active: ACTIVE_STATUSES,
+};
 
 export async function GET(request: Request) {
   const session = await getServerSession();
@@ -15,25 +32,33 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const cursor = searchParams.get("cursor");
   const selectedId = searchParams.get("selectedId");
+  const group = await OrderGroup.safeParseAsync(searchParams.get("group"));
 
   await connectToMongo();
 
-  const query = {
+  const query: {
+    customerId: string;
+    createdAt?: { $lt: Date };
+    status?: { $in: OrderStatus[] };
+  } = {
     customerId: session.user.id,
     ...(cursor ? { createdAt: { $lt: new Date(cursor) } } : {}),
   };
 
+  if (group.success) {
+    query.status = { $in: GROUP_STATUSES[group.data] };
+  }
+
   const orders = await Order.find(query)
     .sort({ createdAt: -1 })
     .limit(PAGE_SIZE + 1)
-    .lean()
     .then((docs) =>
       docs.map((doc) => ({
-        ...doc,
+        ...doc.toObject(),
         id: doc._id.toString(),
         _id: undefined,
         cart: doc.cart.map((item) => ({
-          ...item,
+          ...item.toObject(),
           id: item._id.toString(),
           _id: undefined,
         })),
@@ -54,22 +79,20 @@ export async function GET(request: Request) {
     selectedOrder = await Order.findOne({
       _id: selectedId,
       customerId: session.user.id,
-    })
-      .lean()
-      .then((doc) =>
-        doc
-          ? {
-              ...doc,
-              id: doc._id.toString(),
+    }).then((doc) =>
+      doc
+        ? {
+            ...doc.toObject(),
+            id: doc._id.toString(),
+            _id: undefined,
+            cart: doc.cart.map((item) => ({
+              ...item.toObject(),
+              id: item._id.toString(),
               _id: undefined,
-              cart: doc.cart.map((item) => ({
-                ...item,
-                id: item._id.toString(),
-                _id: undefined,
-              })),
-            }
-          : null
-      );
+            })),
+          }
+        : null
+    );
   }
 
   return NextResponse.json({

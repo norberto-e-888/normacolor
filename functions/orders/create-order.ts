@@ -23,9 +23,7 @@ type CreateOrderItem = Omit<
 export const createOrder = async (
   cart: CreateOrderItem[],
   total: number
-): Promise<{
-  order: Order;
-}> => {
+): Promise<string> => {
   await connectToMongo();
 
   const session = await getServerSession();
@@ -153,14 +151,11 @@ export const createOrder = async (
     throw new Error(`Total price mismatch: ${totalOrderPrice} !== ${total}`);
   }
 
-  // Create order
   const order = await Order.create({
     customerId: new mongoose.Types.ObjectId(session.user.id),
     cart: updatedCart,
     total,
   });
 
-  return {
-    order: order.toObject(),
-  };
+  return order.id as string;
 };

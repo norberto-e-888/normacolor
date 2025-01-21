@@ -373,6 +373,7 @@ export function ProductCard({ product }: { product: Product<true> }) {
                 onChange={(e) => {
                   const val =
                     e.target.value === "" ? "" : parseInt(e.target.value);
+
                   setQuantity(val);
                 }}
                 className="w-full"

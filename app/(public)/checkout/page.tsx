@@ -17,6 +17,7 @@ import { Art, fetchArts } from "@/functions/art";
 import { createOrder } from "@/functions/orders";
 import { useCart } from "@/hooks/use-cart";
 import { formatCents, formatNumber } from "@/utils";
+import { cn } from "@/lib/client";
 
 const SEARCH_TERM_MAP: Record<string, string> = {
   "tarjetas de presentación": "business cards print-ready",
@@ -72,8 +73,8 @@ export default function CheckoutPage() {
         art: art!,
       }));
 
-      const { order } = await createOrder(cart, totalPrice());
-      router.push(`/pagar/${order.id}`);
+      const orderId = await createOrder(cart, totalPrice());
+      router.push(`/pagar/${orderId}`);
     } catch (error) {
       console.error("Error creating order:", error);
       toast.error("Error al crear la orden", {
@@ -229,7 +230,7 @@ export default function CheckoutPage() {
     const itemsWithoutArt = items.filter((item) => !item.art);
 
     if (itemsWithoutArt.length === 0) {
-      return "Proceder al pago";
+      return "";
     }
 
     if (itemsWithoutArt.length <= 3) {
@@ -248,7 +249,11 @@ export default function CheckoutPage() {
             <div className="text-lg font-semibold text-green-600">
               Total: {formatCents(totalPrice())}
             </div>
-            <Tooltip text={getTooltipText()} position="bottom" translateX={32}>
+            <Tooltip
+              show={!allItemsHaveArt}
+              text={getTooltipText()}
+              position="left"
+            >
               <button
                 onClick={handleSubmitOrder}
                 disabled={!allItemsHaveArt || isSubmitting}

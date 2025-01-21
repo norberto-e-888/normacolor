@@ -63,20 +63,23 @@ export async function POST(request: Request) {
         {}
       );
 
-      const newTotalOrders = (user.aggregations?.totalOrders || 0) + 1;
-      const newTotalSpent = (user.totalSpentCents || 0) + order.total;
+      const userData = user.toObject();
+      const newTotalOrders = (userData.aggregations?.totalOrders || 0) + 1;
+      const newTotalSpent = (userData.totalSpentCents || 0) + order.total;
       const newAverageOrderValue = Math.round(newTotalSpent / newTotalOrders);
+      const currentOrderStatusCounts =
+        userData.aggregations?.orderStatusCounts || {};
 
+      const currentPaidCount = currentOrderStatusCounts[OrderStatus.Paid] || 0;
       const orderStatusCounts = {
-        ...(user.aggregations?.orderStatusCounts || {}),
-        [OrderStatus.Paid]:
-          ((user.aggregations?.orderStatusCounts || {})[OrderStatus.Paid] ||
-            0) + 1,
+        ...currentOrderStatusCounts,
+        [OrderStatus.Paid]: currentPaidCount + 1,
       };
 
       const mergedProductCounts = {
-        ...(user.aggregations?.productOrderCounts || {}),
+        ...(userData.aggregations?.productOrderCounts || {}),
       };
+
       Object.entries(productCounts).forEach(([productId, count]) => {
         mergedProductCounts[productId] =
           (mergedProductCounts[productId] || 0) + count;
@@ -100,7 +103,7 @@ export async function POST(request: Request) {
             mostOrderedProduct,
             orderStatusCounts,
             totalOrderItems:
-              (user.aggregations?.totalOrderItems || 0) + totalItems,
+              (userData.aggregations?.totalOrderItems || 0) + totalItems,
             productOrderCounts: mergedProductCounts,
             totalOrders: newTotalOrders,
           },

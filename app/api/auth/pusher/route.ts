@@ -11,7 +11,6 @@ export async function POST(request: Request) {
 
   const session = await getServerSession();
   if (!session) {
-    console.log("Pusher auth: Unauthorized - no session");
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
@@ -20,15 +19,11 @@ export async function POST(request: Request) {
     const socketId = formData.get("socket_id");
     const channelName = formData.get("channel_name");
 
-    console.log("Pusher auth params:", { socketId, channelName });
-
     if (!socketId || !channelName) {
-      console.log("Pusher auth: Missing required parameters");
       return new NextResponse("Bad Request", { status: 400 });
     }
 
     const channelStr = channelName.toString();
-
     // Handle different channel types
     if (channelStr.startsWith(PusherChannelType.OrderChat)) {
       // Extract orderId and itemId from channel name
@@ -37,7 +32,6 @@ export async function POST(request: Request) {
         .split("-");
 
       if (!orderId || !itemId) {
-        console.log("Pusher auth: Invalid channel format");
         return new NextResponse("Bad Request", { status: 400 });
       }
 
@@ -46,7 +40,6 @@ export async function POST(request: Request) {
         await connectToMongo();
         const order = await Order.findById(orderId);
         if (!order || order.customerId.toString() !== session.user.id) {
-          console.log("Pusher auth: Order ownership verification failed");
           return new NextResponse("Unauthorized", { status: 401 });
         }
       }
@@ -58,21 +51,15 @@ export async function POST(request: Request) {
       );
 
       // Verify the user is only subscribing to their own notifications channel
-      console.log({ userId, sessionUserId: session.user.id });
       if (userId !== session.user.id) {
-        console.log(
-          "Pusher auth: Notification channel ownership verification failed"
-        );
-
         return new NextResponse("Unauthorized", { status: 401 });
       }
     } else if (channelStr.startsWith(PusherChannelType.AdminStats)) {
       if (session.user.role !== UserRole.Admin) {
-        console.log("Pusher auth: Unauthorized - not an admin");
         return new NextResponse("Unauthorized", { status: 401 });
       }
     } else {
-      console.log("Pusher auth: Invalid channel type");
+      console.error("Pusher auth: Invalid channel type");
       return new NextResponse("Bad Request", { status: 400 });
     }
 
@@ -83,7 +70,6 @@ export async function POST(request: Request) {
       channelStr
     );
 
-    console.log("Pusher auth response:", authResponse);
     return new NextResponse(JSON.stringify(authResponse), {
       headers: {
         "Content-Type": "application/json",

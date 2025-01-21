@@ -9,6 +9,7 @@ import { OrderDetail } from "@/components/smart/order-detail";
 import { OrderListItem } from "@/components/smart/order-list-item";
 import { Content } from "@/components/ui/content";
 import { Order } from "@/database";
+import { OrderGroup } from "@/app/api/orders/route";
 
 export default function OrdersPage() {
   const router = useRouter();
@@ -27,6 +28,7 @@ export default function OrdersPage() {
   const fetchOrders = async (cursor?: string, selectedId?: string) => {
     try {
       const params = new URLSearchParams();
+      params.set("group", OrderGroup.Enum.active);
       if (cursor) params.set("cursor", cursor);
       if (selectedId) params.set("selectedId", selectedId);
 
