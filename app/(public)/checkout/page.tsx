@@ -17,7 +17,6 @@ import { Art, fetchArts } from "@/functions/art";
 import { createOrder } from "@/functions/orders";
 import { useCart } from "@/hooks/use-cart";
 import { formatCents, formatNumber } from "@/utils";
-import { cn } from "@/lib/client";
 
 const SEARCH_TERM_MAP: Record<string, string> = {
   "tarjetas de presentación": "business cards print-ready",
