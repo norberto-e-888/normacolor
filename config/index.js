@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 const { z } = require("zod");
 
 let Config = z.object({
@@ -21,6 +20,7 @@ let Config = z.object({
   PUSHER_SECRET: z.string(),
   PUSHER_APP_ID: z.string(),
   PUSHER_CLUSTER: z.enum(["us2"]),
+  SHUTTERSTOCK_API_KEY: z.string(),
   UPSTASH_REDIS_REST_URL: z.string(),
   UPSTASH_REDIS_REST_TOKEN: z.string(),
 });
