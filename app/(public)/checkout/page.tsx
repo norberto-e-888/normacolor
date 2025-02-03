@@ -306,7 +306,8 @@ export default function CheckoutPage() {
                         >
                           Cambiar
                         </button>
-                        <div className="mt-2">
+                        {/* Add fixed dimensions to the container div */}
+                        <div className="mt-2 relative w-32 h-32">
                           {item.art.source === ArtSource.Freepik ? (
                             <FreepikImage id={item.art.value} />
                           ) : (
