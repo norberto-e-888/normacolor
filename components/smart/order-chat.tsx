@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Download, Loader, Paperclip, Send, Trash2 } from "lucide-react";
+import { Loader, Paperclip, Send } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -14,9 +14,9 @@ import { pusherClient } from "@/lib/client/pusher";
 import { ChatMessage } from "@/lib/server/designer-chat";
 import { getPusherChannelName } from "@/utils";
 
-import { S3Image } from "./s3-image";
+import { FileCarousel } from "./file-carousel";
 
-interface OrderChatProps {
+export interface OrderChatProps {
   orderId: string;
   itemId: string;
 }
@@ -27,7 +27,6 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
   const [newMessage, setNewMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -169,109 +168,6 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
     }
   };
 
-  const handleDownload = async (imageId: string) => {
-    try {
-      const response = await fetch(
-        `/api/orders/${orderId}/items/${itemId}/chat/images/${imageId}`
-      );
-      if (!response.ok) throw new Error("Failed to get download URL");
-      const { url } = await response.json();
-
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `design-${imageId}.psd`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      toast.success("Descarga iniciada");
-    } catch (error) {
-      console.error("Error downloading file:", error);
-      toast.error("Error al descargar el archivo");
-    }
-  };
-
-  const handleDelete = async (imageId: string) => {
-    setDeletingImageId(imageId);
-    try {
-      const response = await fetch(
-        `/api/orders/${orderId}/items/${itemId}/chat/images/${imageId}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to delete image");
-
-      await refetchImages();
-      toast.success("Imagen eliminada exitosamente");
-    } catch (error) {
-      console.error("Error deleting image:", error);
-      toast.error("Error al eliminar la imagen");
-    } finally {
-      setDeletingImageId(null);
-    }
-  };
-
-  const ImageCarousel = ({
-    images,
-    title,
-    isDesignerImages,
-  }: {
-    images: string[];
-    title: string;
-    isDesignerImages: boolean;
-  }) => {
-    if (!images?.length) return null;
-
-    return (
-      <div className="mb-4">
-        <h5 className="text-sm font-medium mb-2">{title}</h5>
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          {images.map((imageId) => (
-            <div
-              key={imageId}
-              className="relative w-20 h-20 flex-shrink-0 border rounded-lg overflow-hidden group"
-            >
-              <S3Image s3Key={`chat/${itemId}/${imageId}/preview.png`} />
-              <div className="absolute bottom-1 right-1 flex gap-1">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDownload(imageId);
-                  }}
-                  className="p-1 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <Download className="w-4 h-4" />
-                </button>
-                {((isDesignerImages &&
-                  (session?.user as SessionUser)?.role === UserRole.Admin) ||
-                  (!isDesignerImages &&
-                    (session?.user as SessionUser)?.role !==
-                      UserRole.Admin)) && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(imageId);
-                    }}
-                    disabled={deletingImageId === imageId}
-                    className="p-1 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity text-red-500 disabled:opacity-50"
-                  >
-                    {deletingImageId === imageId ? (
-                      <Loader className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-4 h-4" />
-                    )}
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
   const isCurrentUser = (senderRole: string) => {
     return (
       (senderRole === "designer" &&
@@ -281,27 +177,27 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
     );
   };
 
-  const userRole = (session?.user as SessionUser)?.role;
+  const isAdmin = (session?.user as SessionUser)?.role === UserRole.Admin;
 
   return (
     <div className="mt-4 border-t pt-4">
-      <ImageCarousel
+      <FileCarousel
         images={imagesData?.designerImages || []}
-        title={
-          userRole === UserRole.Admin
-            ? "Archivos enviados"
-            : "Archivos del diseñador"
-        }
+        title="Diseños propuestos"
         isDesignerImages={true}
+        orderId={orderId}
+        itemId={itemId}
+        isAdmin={isAdmin}
+        onRefetchImages={refetchImages}
       />
-      <ImageCarousel
+      <FileCarousel
         images={imagesData?.clientImages || []}
-        title={
-          userRole === UserRole.Client
-            ? "Archivos enviados"
-            : "Archivos del cliente"
-        }
+        title="Tus diseños"
         isDesignerImages={false}
+        orderId={orderId}
+        itemId={itemId}
+        isAdmin={isAdmin}
+        onRefetchImages={refetchImages}
       />
 
       <div

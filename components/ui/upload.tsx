@@ -1,4 +1,3 @@
-// components/ui/upload.tsx
 import { Loader, UploadIcon } from "lucide-react";
 import { forwardRef } from "react";
 
