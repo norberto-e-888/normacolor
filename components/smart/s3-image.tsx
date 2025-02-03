@@ -5,7 +5,13 @@ import { useEffect, useState } from "react";
 
 import { Modal } from "@/components/ui/modal";
 
-export function S3Image({ s3Key }: { s3Key: string }) {
+export function S3Image({
+  namespace,
+  imageId,
+}: {
+  namespace: string;
+  imageId: string;
+}) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -14,22 +20,16 @@ export function S3Image({ s3Key }: { s3Key: string }) {
   useEffect(() => {
     const fetchImageUrl = async () => {
       try {
-        // Extract folder path and replace original.psd with preview.png
-        const key = s3Key.startsWith("s3://")
-          ? s3Key.replace(
-              "s3://" + process.env.NEXT_PUBLIC_AWS_BUCKET_NAME + "/",
-              ""
-            )
-          : s3Key;
-
-        const previewKey = key.replace("/original.psd", "/preview.png");
-
         const response = await fetch(
-          `/api/s3/${encodeURIComponent(previewKey)}`
+          `/api/s3/${encodeURIComponent(
+            imageId
+          )}?namespace=${encodeURIComponent(namespace)}`
         );
+
         if (!response.ok) {
           throw new Error("Failed to fetch image URL");
         }
+
         const data = await response.json();
         setImageUrl(data.url);
       } catch (err) {
@@ -41,7 +41,7 @@ export function S3Image({ s3Key }: { s3Key: string }) {
     };
 
     fetchImageUrl();
-  }, [s3Key]);
+  }, [imageId, namespace]);
 
   if (isLoading) {
     return (

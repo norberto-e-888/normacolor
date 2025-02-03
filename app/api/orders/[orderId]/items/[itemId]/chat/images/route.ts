@@ -77,28 +77,36 @@ export async function POST(
 
   try {
     const isDesigner = session.user.role === UserRole.Admin;
-    const imageId = await DesignerChat.addImage(orderItem.id, isDesigner);
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const fileType = file.type.toLowerCase();
+    const fileType = DesignerChat.normalizeFileType(file.type);
+    const imageId = await DesignerChat.addImage(
+      orderItem.id,
+      isDesigner,
+      fileType
+    );
 
-    if (fileType === "image/psd" || file.name.toLowerCase().endsWith(".psd")) {
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    if (fileType === "psd") {
       await uploadPSDWithPreview(
         new Uint8Array(buffer),
         `chat/${orderItem.id}/${imageId}`
       );
     } else {
-      const processedBuffer = await sharp(buffer)
-        .resize(800, 800, { fit: "inside", withoutEnlargement: true })
-        .png()
-        .toBuffer();
+      let bufferChain = sharp(buffer).resize(800, 800, {
+        fit: "inside",
+        withoutEnlargement: true,
+      });
 
+      if (fileType === "png") {
+        bufferChain = bufferChain.png();
+      } else if (fileType === "jpeg" || fileType === "jpg") {
+        bufferChain = bufferChain.jpeg();
+      }
+
+      const processedBuffer = await bufferChain.toBuffer();
       await Promise.all([
         uploadToS3(
-          `chat/${orderItem.id}/${imageId}/original.png`,
-          processedBuffer
-        ),
-        uploadToS3(
-          `chat/${orderItem.id}/${imageId}/preview.png`,
+          `chat/${orderItem.id}/${imageId}/original.${fileType}`,
           processedBuffer
         ),
       ]);

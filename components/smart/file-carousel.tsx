@@ -79,7 +79,7 @@ export const FileCarousel = memo(
               key={imageId}
               className="relative w-20 h-20 flex-shrink-0 border rounded-lg overflow-hidden group"
             >
-              <S3Image s3Key={`chat/${itemId}/${imageId}/preview.png`} />
+              <S3Image namespace={`chat/${itemId}`} imageId={imageId} />
               <div className="absolute bottom-1 right-1 flex gap-1">
                 <button
                   onClick={(e) => {

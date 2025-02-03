@@ -57,13 +57,22 @@ export class DesignerChat {
     return messages as unknown as ChatMessage[];
   }
 
-  static async addImage(orderItemId: string, isDesigner: boolean) {
+  static async addImage(
+    orderItemId: string,
+    isDesigner: boolean,
+    fileType: string
+  ) {
     const imageId = uuid();
     const key = isDesigner
       ? this.getDesignerImagesKey(orderItemId)
       : this.getClientImagesKey(orderItemId);
 
-    await chatRedis.multi().rpush(key, imageId).expire(key, CHAT_TTL).exec();
+    await chatRedis
+      .multi()
+      .rpush(key, imageId)
+      .expire(key, CHAT_TTL)
+      .set(`image_type:${imageId}`, fileType)
+      .exec();
 
     return imageId;
   }
@@ -99,5 +108,13 @@ export class DesignerChat {
     const designerImagesKey = this.getDesignerImagesKey(orderItemId);
     const clientImagesKey = this.getClientImagesKey(orderItemId);
     await chatRedis.del(messagesKey, designerImagesKey, clientImagesKey);
+  }
+
+  static normalizeFileType(fileType: string) {
+    fileType = fileType.toLowerCase().replaceAll(".", "");
+    fileType =
+      fileType.split("/").length > 1 ? fileType.split("/")[1] : fileType;
+
+    return fileType;
   }
 }
