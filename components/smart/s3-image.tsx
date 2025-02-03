@@ -27,7 +27,9 @@ export function S3Image({
         );
 
         if (!response.ok) {
-          throw new Error("Failed to fetch image URL");
+          const error = await response.text();
+          console.error("Failed to fetch image URL:", error);
+          throw new Error("Failed to fetch image");
         }
 
         const data = await response.json();

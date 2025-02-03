@@ -17,10 +17,10 @@ export async function GET(
       });
     }
 
-    const fileType = await redis.get(`image_type:${params.imageId}`);
+    let fileType = await redis.get(`image_type:${params.imageId}`);
 
     if (!fileType) {
-      return new NextResponse("Image not found", { status: 404 });
+      fileType = "psd";
     }
 
     const key = `${namespace}/${params.imageId}/${

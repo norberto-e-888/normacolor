@@ -111,7 +111,12 @@ export class DesignerChat {
   }
 
   static normalizeFileType(fileType: string) {
-    fileType = fileType.toLowerCase().replaceAll(".", "");
+    fileType = fileType.trim().toLocaleLowerCase();
+    if (fileType === "image/vnd.adobe.photoshop") {
+      return "psd";
+    }
+
+    fileType = fileType.replaceAll(".", "");
     fileType =
       fileType.split("/").length > 1 ? fileType.split("/")[1] : fileType;
 

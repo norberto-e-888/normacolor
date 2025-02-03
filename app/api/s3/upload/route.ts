@@ -6,12 +6,14 @@ import { getSignedUploadUrl } from "@/lib/server/s3";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function POST(_: Request) {
   try {
-    const folderKey = `uploads/${uuid()}`;
+    const imageId = uuid();
+    const folderKey = `uploads/${imageId}`;
     const uploadUrl = await getSignedUploadUrl(`${folderKey}/original.psd`);
 
     return NextResponse.json({
       uploadUrl,
       folderKey,
+      imageId,
     });
   } catch (error) {
     console.error("Error generating signed URL:", error);

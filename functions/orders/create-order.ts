@@ -120,15 +120,9 @@ export const createOrder = async (
 
     if (item.art) {
       if (item.art.source === ArtSource.Custom) {
-        // Extract folder UUID from the S3 path
-        const matches = item.art.value.match(/uploads\/([^/]+)/);
-        if (!matches) {
-          throw new Error("Invalid custom art path format");
-        }
-        const folderUuid = matches[1];
         cartItem.art = {
           source: ArtSource.Custom,
-          value: folderUuid,
+          value: item.art.value,
         };
       } else {
         // For Freepik, just store the ID

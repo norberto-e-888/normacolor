@@ -160,7 +160,7 @@ export default function CheckoutPage() {
       });
 
       if (!response.ok) throw new Error("Failed to get upload URL");
-      const { uploadUrl, folderKey } = await response.json();
+      const { uploadUrl, folderKey, imageId } = await response.json();
 
       // Upload PSD to S3
       await fetch(uploadUrl, {
@@ -183,12 +183,10 @@ export default function CheckoutPage() {
       });
 
       if (!processResponse.ok) throw new Error("Failed to process PSD");
-      const { pngKey } = await processResponse.json();
 
-      // Update cart item with S3 key
       updateItemArt(selectedItemId, {
         source: ArtSource.Custom,
-        value: `s3://${process.env.NEXT_PUBLIC_AWS_BUCKET_NAME}/${pngKey}`,
+        value: imageId,
       });
 
       setSelectedItemId(null);

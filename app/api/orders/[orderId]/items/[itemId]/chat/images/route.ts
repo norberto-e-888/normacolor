@@ -92,10 +92,7 @@ export async function POST(
         `chat/${orderItem.id}/${imageId}`
       );
     } else {
-      let bufferChain = sharp(buffer).resize(800, 800, {
-        fit: "inside",
-        withoutEnlargement: true,
-      });
+      let bufferChain = sharp(buffer);
 
       if (fileType === "png") {
         bufferChain = bufferChain.png();
