@@ -32,7 +32,6 @@ export const FileCarousel = memo(
         );
         if (!response.ok) throw new Error("Failed to get download URL");
         const { url } = await response.json();
-
         const link = document.createElement("a");
         link.href = url;
         link.download = `design-${imageId}.psd`;

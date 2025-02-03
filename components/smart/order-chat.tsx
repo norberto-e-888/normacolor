@@ -74,7 +74,6 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
     }
   }, [messagesData?.messages]);
 
-  // Subscribe to Pusher channel
   useEffect(() => {
     const channelName = getPusherChannelName.orderItemChat(orderId, itemId);
     const channel = pusherClient.subscribe(channelName);
@@ -133,8 +132,13 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
     if (!e.target.files?.[0]) return;
 
     const file = e.target.files[0];
-    if (!file.name.toLowerCase().endsWith(".psd")) {
-      toast.error("Por favor selecciona un archivo PSD", {
+    const allowedTypes = [".psd", ".png", ".jpg", ".jpeg"];
+    const fileExtension = file.name
+      .toLowerCase()
+      .substring(file.name.lastIndexOf("."));
+
+    if (!allowedTypes.includes(fileExtension)) {
+      toast.error("Por favor selecciona un archivo PSD, PNG o JPG", {
         closeButton: true,
       });
       return;
@@ -183,7 +187,7 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
     <div className="mt-4 border-t pt-4">
       <FileCarousel
         images={imagesData?.designerImages || []}
-        title="Diseños propuestos"
+        title={isAdmin ? "Archivos enviados" : "Archivos del diseñador"}
         isDesignerImages={true}
         orderId={orderId}
         itemId={itemId}
@@ -192,7 +196,7 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
       />
       <FileCarousel
         images={imagesData?.clientImages || []}
-        title="Tus diseños"
+        title={isAdmin ? "Archivos del cliente" : "Archivos enviados"}
         isDesignerImages={false}
         orderId={orderId}
         itemId={itemId}
@@ -252,7 +256,7 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
         <input
           ref={fileInputRef}
           type="file"
-          accept=".psd"
+          accept=".psd,.png,.jpg,.jpeg"
           onChange={handleFileSelect}
           className="hidden"
         />
