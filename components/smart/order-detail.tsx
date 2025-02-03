@@ -212,7 +212,6 @@ export function OrderDetail({
                       {item.art.source === ArtSource.Freepik
                         ? "Plantilla"
                         : "Diseño original"}
-                      :
                     </p>
                     {isAdmin && (
                       <Button
