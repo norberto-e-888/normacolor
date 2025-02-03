@@ -281,16 +281,26 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
     );
   };
 
+  const userRole = (session?.user as SessionUser)?.role;
+
   return (
     <div className="mt-4 border-t pt-4">
       <ImageCarousel
         images={imagesData?.designerImages || []}
-        title="Diseños propuestos"
+        title={
+          userRole === UserRole.Admin
+            ? "Archivos enviados"
+            : "Archivos del diseñador"
+        }
         isDesignerImages={true}
       />
       <ImageCarousel
         images={imagesData?.clientImages || []}
-        title="Tus diseños"
+        title={
+          userRole === UserRole.Client
+            ? "Archivos enviados"
+            : "Archivos del cliente"
+        }
         isDesignerImages={false}
       />
 
