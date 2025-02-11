@@ -5,11 +5,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useIntersectionObserver } from "usehooks-ts";
 
+import { OrderGroup } from "@/app/api/orders/route";
 import { OrderDetail } from "@/components/smart/order-detail";
 import { OrderListItem } from "@/components/smart/order-list-item";
 import { Content } from "@/components/ui/content";
 import { Order } from "@/database";
-import { OrderGroup } from "@/app/api/orders/route";
 
 export default function OrdersPage() {
   const router = useRouter();
