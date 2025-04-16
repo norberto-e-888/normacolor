@@ -2,7 +2,7 @@
 
 import z from "zod";
 
-import { Product, UserRole } from "@/database";
+import { Product, ProductCategory, UserRole } from "@/database";
 import { connectToMongo } from "@/lib/server";
 
 import { getServerSession } from "../auth";
@@ -10,6 +10,7 @@ import { getServerSession } from "../auth";
 const querySchema = z.object({
   isPublic: z.boolean().optional(),
   searchTerm: z.string().optional(),
+  category: z.nativeEnum(ProductCategory).optional(),
 });
 
 export type FetchProductQuery = z.infer<typeof querySchema>;
@@ -17,11 +18,13 @@ export type FetchProductQuery = z.infer<typeof querySchema>;
 export const fetchProducts = async ({
   isPublic,
   searchTerm = "",
+  category,
 }: FetchProductQuery = {}) => {
   const session = await getServerSession();
   const validation = await querySchema.safeParseAsync({
     isPublic,
     searchTerm,
+    category,
   });
 
   if (!validation.success) {
@@ -58,6 +61,7 @@ export const fetchProducts = async ({
     {
       $match: {
         ...isPublicFilter,
+        ...(category ? { category } : {}),
       },
     },
     {

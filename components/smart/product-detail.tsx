@@ -7,9 +7,17 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Upload } from "@/components/ui/upload";
 import {
   Product,
+  ProductCategory,
   ProductOptionFinish,
   ProductOptionPaper,
   ProductOptionSide,
@@ -36,6 +44,7 @@ export function ProductDetail({
   const [formData, setFormData] = useState<DeepPartial<Product<true>>>({
     name: "",
     isPublic: false,
+    category: ProductCategory.Impresos,
     options: {
       sides: [],
       finish: [],
@@ -63,6 +72,7 @@ export function ProductDetail({
       setFormData({
         name: product.name || "",
         isPublic: product.isPublic || false,
+        category: product.category || ProductCategory.Impresos,
         options: {
           sides: product.options?.sides || [],
           finish: product.options?.finish || [],
@@ -337,6 +347,29 @@ export function ProductDetail({
             required
           />
         </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Categoría</label>
+          <Select
+            value={formData.category?.toString()}
+            onValueChange={(value) =>
+              setFormData({
+                ...formData,
+                category: value as ProductCategory,
+              })
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Selecciona una categoría" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ProductCategory.Impresos}>Impresos</SelectItem>
+              <SelectItem value={ProductCategory.DTF}>DTF</SelectItem>
+              <SelectItem value={ProductCategory.ThreeD}>3D</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="flex items-center gap-2">
           <input
             type="checkbox"

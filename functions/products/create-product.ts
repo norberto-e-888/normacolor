@@ -2,7 +2,7 @@
 
 import z from "zod";
 
-import { Product } from "@/database";
+import { Product, ProductCategory } from "@/database";
 import { isAdmin } from "@/guards";
 import { connectToMongo } from "@/lib/server";
 import { normalize } from "@/utils";
@@ -14,7 +14,11 @@ const dataSchema = z.object({
       required_error: '"nombre" es requerido.',
     })
     .max(64, "'nombre' no puede tener mas de 64 caracteres"),
-}) satisfies z.ZodType<Pick<Product, "name">>;
+  category: z.nativeEnum(ProductCategory, {
+    required_error: "La categoría es requerida",
+    invalid_type_error: "Categoría inválida",
+  }),
+}) satisfies z.ZodType<Pick<Product, "name" | "category">>;
 
 export type CreateProductData = z.infer<typeof dataSchema>;
 
@@ -45,6 +49,7 @@ export const createProduct = isAdmin(async (data: CreateProductData) => {
 
   const product = await Product.create({
     name: data.name,
+    category: data.category,
     pricing: {
       baseUnitPrice: 1,
       minimumPurchase: 10000,

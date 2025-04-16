@@ -41,12 +41,19 @@ export enum ProductOptionPaper {
   Bond20lb = "bond20lb",
 }
 
+export enum ProductCategory {
+  Impresos = "impresos",
+  DTF = "dtf",
+  ThreeD = "3d",
+}
+
 export type Product<FE extends boolean = false> = {
   name: string;
   images: string[];
   options: ProductOptions;
   pricing: ProductPricing;
   isPublic: boolean;
+  category: ProductCategory;
 } & BaseModel<FE>;
 
 export type ProductOptions = {
@@ -217,6 +224,12 @@ export const productSchema = getSchema<Product>({
     required: true,
     default: false,
   },
+  category: {
+    type: String,
+    required: true,
+    enum: Object.values(ProductCategory),
+    default: ProductCategory.Impresos,
+  },
 });
 
 productSchema.pre(
@@ -232,6 +245,7 @@ productSchema.pre(
 
 productSchema.index({
   isPublic: 1,
+  category: 1,
 });
 
 export const Product: Model<Product> =

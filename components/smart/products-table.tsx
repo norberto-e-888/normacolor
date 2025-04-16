@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Product } from "@/database";
+import { Product, ProductCategory } from "@/database";
 import { formatCents } from "@/utils";
 
 interface ProductsTableProps {
@@ -49,12 +49,25 @@ export function ProductsTable({
     }
   };
 
+  // Helper function to display category name
+  const getCategoryName = (category: ProductCategory | undefined) => {
+    if (!category) return "Impresos";
+
+    switch (category) {
+      case ProductCategory.ThreeD:
+        return "3D";
+      default:
+        return category.charAt(0).toUpperCase() + category.slice(1);
+    }
+  };
+
   return (
     <table className="w-full">
       <thead>
         <tr className="border-b bg-muted/50">
           <TableHeader columnName="Imagen" />
           <TableHeader columnName="Nombre" />
+          <TableHeader columnName="Categoría" />
           <TableHeader columnName="Precio" />
           <TableHeader columnName="Mínimo" />
           <TableHeader columnName="Estado" />
@@ -87,6 +100,7 @@ export function ProductsTable({
               )}
             </td>
             <td className="p-4 capitalize">{product.name}</td>
+            <td className="p-4">{getCategoryName(product.category)}</td>
             <td className="p-4">
               {formatCents(product.pricing.baseUnitPrice)}
             </td>

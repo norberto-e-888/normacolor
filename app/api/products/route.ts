@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { ProductCategory } from "@/database";
 import { createProduct } from "@/functions/products";
 import { fetchProducts } from "@/functions/products";
 import { normalize } from "@/utils";
@@ -14,6 +15,10 @@ const createProductSchema = z.object({
     .min(3, "El nombre debe tener al menos 3 caracteres")
     .max(64, "El nombre no puede tener más de 64 caracteres")
     .transform(normalize),
+  category: z.nativeEnum(ProductCategory, {
+    required_error: "La categoría es requerida",
+    invalid_type_error: "Categoría inválida",
+  }),
 });
 
 export async function GET() {
@@ -38,6 +43,7 @@ export async function POST(request: Request) {
 
     const createResult = await createProduct({
       name: result.data.name,
+      category: result.data.category,
     });
 
     if (!createResult.ok) {

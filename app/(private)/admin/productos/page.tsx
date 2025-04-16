@@ -10,7 +10,14 @@ import { Button } from "@/components/ui/button";
 import { Content } from "@/components/ui/content";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
-import { Product } from "@/database";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Product, ProductCategory } from "@/database";
 import { useProducts } from "@/hooks/use-products";
 
 export default function AdminProductsPage() {
@@ -21,6 +28,9 @@ export default function AdminProductsPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [newProductName, setNewProductName] = useState("");
+  const [newProductCategory, setNewProductCategory] = useState<ProductCategory>(
+    ProductCategory.Impresos
+  );
   const { data, isLoading, refetch } = useProducts();
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +43,10 @@ export default function AdminProductsPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name: newProductName }),
+        body: JSON.stringify({
+          name: newProductName,
+          category: newProductCategory,
+        }),
       });
 
       const data = await response.json();
@@ -49,6 +62,7 @@ export default function AdminProductsPage() {
       await refetch();
       setIsCreateModalOpen(false);
       setNewProductName("");
+      setNewProductCategory(ProductCategory.Impresos);
       toast.success("Producto creado exitosamente");
     } catch (error) {
       console.error("Error creating product:", error);
@@ -126,6 +140,7 @@ export default function AdminProductsPage() {
         onClose={() => {
           setIsCreateModalOpen(false);
           setNewProductName("");
+          setNewProductCategory(ProductCategory.Impresos);
         }}
       >
         <div className="w-[600px] max-w-full p-6">
@@ -144,6 +159,28 @@ export default function AdminProductsPage() {
                 className="w-full"
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Categoría
+              </label>
+              <Select
+                value={newProductCategory}
+                onValueChange={(value) =>
+                  setNewProductCategory(value as ProductCategory)
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Selecciona una categoría" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ProductCategory.Impresos}>
+                    Impresos
+                  </SelectItem>
+                  <SelectItem value={ProductCategory.DTF}>DTF</SelectItem>
+                  <SelectItem value={ProductCategory.ThreeD}>3D</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="flex justify-end gap-2">
               <Button
                 type="button"
@@ -151,6 +188,7 @@ export default function AdminProductsPage() {
                 onClick={() => {
                   setIsCreateModalOpen(false);
                   setNewProductName("");
+                  setNewProductCategory(ProductCategory.Impresos);
                 }}
               >
                 Cancelar
