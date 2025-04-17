@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { ProductTemplateForm } from "@/components/smart/product-template-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,7 +25,7 @@ import {
 } from "@/database";
 import { DeepPartial } from "@/utils/deep-partial";
 
-type Tab = "options" | "pricing" | "images";
+type Tab = "options" | "pricing" | "images" | "templates";
 
 interface ProductDetailProps {
   product: Product<true> | null;
@@ -336,6 +337,32 @@ export function ProductDetail({
     });
   };
 
+  const handleSaveTemplates = async (updatedProduct: Product<true>) => {
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(`/api/products/${product.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ templates: updatedProduct.templates }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update product templates");
+      }
+
+      onUpdate();
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Error updating product templates:", error);
+      return Promise.reject(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="border rounded-lg p-6 space-y-6">
       <div className="space-y-6">
@@ -370,63 +397,84 @@ export function ProductDetail({
           </Select>
         </div>
 
-        <div className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="isPublic"
-            checked={formData?.isPublic}
-            onChange={(e) =>
+        <div>
+          <label className="block text-sm font-medium mb-1">Estado</label>
+          <Select
+            value={formData.isPublic ? "published" : "draft"}
+            onValueChange={(value) =>
               setFormData({
                 ...formData,
-                isPublic: e.target.checked,
+                isPublic: value === "published",
               })
             }
-          />
-          <label htmlFor="isPublic" className="text-sm font-medium">
-            Publicado
-          </label>
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Selecciona estado" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="published">Publicado</SelectItem>
+              <SelectItem value="draft">Borrador</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        {/* Tabs */}
-        <div className="border-b">
-          <div className="flex gap-4">
+        <div className="border-t pt-4">
+          <div className="flex border-b overflow-x-auto flex-nowrap scrollbar-none pb-px">
             <button
               type="button"
-              className={`px-4 py-2 ${
-                activeTab === "options"
-                  ? "border-b-2 border-primary"
-                  : "text-muted-foreground"
-              }`}
               onClick={() => setActiveTab("options")}
+              className={`px-4 py-2 whitespace-nowrap flex-shrink-0 ${
+                activeTab === "options"
+                  ? "border-b-2 border-primary font-medium"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
             >
               Opciones
             </button>
             <button
               type="button"
-              className={`px-4 py-2 ${
-                activeTab === "pricing"
-                  ? "border-b-2 border-primary"
-                  : "text-muted-foreground"
-              }`}
               onClick={() => setActiveTab("pricing")}
+              className={`px-4 py-2 whitespace-nowrap flex-shrink-0 ${
+                activeTab === "pricing"
+                  ? "border-b-2 border-primary font-medium"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
             >
               Precios
             </button>
             <button
               type="button"
-              className={`px-4 py-2 ${
-                activeTab === "images"
-                  ? "border-b-2 border-primary"
-                  : "text-muted-foreground"
-              }`}
               onClick={() => setActiveTab("images")}
+              className={`px-4 py-2 whitespace-nowrap flex-shrink-0 ${
+                activeTab === "images"
+                  ? "border-b-2 border-primary font-medium"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
             >
               Imágenes
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("templates")}
+              className={`px-4 py-2 whitespace-nowrap flex-shrink-0 ${
+                activeTab === "templates"
+                  ? "border-b-2 border-primary font-medium"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Estándares
             </button>
           </div>
         </div>
 
-        {activeTab === "images" ? (
+        {activeTab === "templates" ? (
+          <div className="pt-4">
+            <ProductTemplateForm
+              product={product}
+              onSave={handleSaveTemplates}
+            />
+          </div>
+        ) : activeTab === "images" ? (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <Button
@@ -470,118 +518,7 @@ export function ProductDetail({
               ))}
             </div>
           </div>
-        ) : activeTab === "options" ? (
-          <div className="space-y-6">
-            {/* Sides Options */}
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium">Lados</h4>
-              <div className="grid grid-cols-2 gap-2">
-                {Object.values(ProductOptionSide).map((side) => (
-                  <label key={side} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={formData.options?.sides?.includes(side) || false}
-                      onChange={() => updateOptions("sides", side)}
-                    />
-                    <span className="text-sm capitalize">{side}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Finish Options */}
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium">Acabado</h4>
-              <div className="grid grid-cols-2 gap-2">
-                {Object.values(ProductOptionFinish).map((finish) => (
-                  <label key={finish} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={
-                        formData.options?.finish?.includes(finish) || false
-                      }
-                      onChange={() => updateOptions("finish", finish)}
-                    />
-                    <span className="text-sm capitalize">{finish}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Paper Options */}
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium">Papel</h4>
-              <div className="grid grid-cols-2 gap-2">
-                {Object.values(ProductOptionPaper).map((paper) => (
-                  <label key={paper} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={
-                        formData.options?.paper?.includes(paper) || false
-                      }
-                      onChange={() => updateOptions("paper", paper)}
-                    />
-                    <span className="text-sm capitalize">{paper}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Dimensions */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium">Dimensiones</h4>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addDimension}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Agregar Dimensión
-                </Button>
-              </div>
-              <div className="space-y-2">
-                {formData.options?.dimensions
-                  ?.filter(Boolean)
-                  .map((dimension, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={(dimension as [number, number])[0] || 0}
-                        onChange={(e) =>
-                          updateDimension(index, 0, parseFloat(e.target.value))
-                        }
-                        className="w-24"
-                      />
-                      <span>x</span>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        value={(dimension as [number, number])[1] || 0}
-                        onChange={(e) =>
-                          updateDimension(index, 1, parseFloat(e.target.value))
-                        }
-                        className="w-24"
-                      />
-                      <span>pulgadas</span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeDimension(index)}
-                      >
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </Button>
-                    </div>
-                  ))}
-              </div>
-            </div>
-          </div>
-        ) : (
+        ) : activeTab === "pricing" ? (
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium mb-1">
@@ -623,7 +560,6 @@ export function ProductDetail({
               />
             </div>
 
-            {/* Option Multipliers */}
             <div className="space-y-4">
               <h3 className="text-sm font-medium">
                 Multiplicadores de Opciones
@@ -739,10 +675,8 @@ export function ProductDetail({
                         return (
                           <div key={key} className="flex items-center gap-2">
                             <span className="text-sm w-24">
-                              {/* eslint-disable-next-line react/no-unescaped-entities */}
-                              {(dimension as [number, number])[0]}" x{" "}
-                              {/* eslint-disable-next-line react/no-unescaped-entities */}
-                              {(dimension as [number, number])[1]}"
+                              {(dimension as [number, number])[0]}&quot; x{" "}
+                              {(dimension as [number, number])[1]}&quot;
                             </span>
                             <Input
                               type="number"
@@ -769,7 +703,6 @@ export function ProductDetail({
               )}
             </div>
 
-            {/* Quantity Discount Multipliers */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-medium">Descuentos por Cantidad</h3>
@@ -832,19 +765,124 @@ export function ProductDetail({
               </div>
             </div>
           </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Sides Options */}
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium">Lados</h4>
+              <div className="grid grid-cols-2 gap-2">
+                {Object.values(ProductOptionSide).map((side) => (
+                  <label key={side} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={formData.options?.sides?.includes(side) || false}
+                      onChange={() => updateOptions("sides", side)}
+                    />
+                    <span className="text-sm capitalize">{side}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Finish Options */}
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium">Acabado</h4>
+              <div className="grid grid-cols-2 gap-2">
+                {Object.values(ProductOptionFinish).map((finish) => (
+                  <label key={finish} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={
+                        formData.options?.finish?.includes(finish) || false
+                      }
+                      onChange={() => updateOptions("finish", finish)}
+                    />
+                    <span className="text-sm capitalize">{finish}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Paper Options */}
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium">Papel</h4>
+              <div className="grid grid-cols-2 gap-2">
+                {Object.values(ProductOptionPaper).map((paper) => (
+                  <label key={paper} className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={
+                        formData.options?.paper?.includes(paper) || false
+                      }
+                      onChange={() => updateOptions("paper", paper)}
+                    />
+                    <span className="text-sm capitalize">{paper}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Dimensions */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium">Dimensiones</h4>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addDimension}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Agregar Dimensión
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {formData.options?.dimensions
+                  ?.filter(Boolean)
+                  .map((dimension, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={(dimension as [number, number])[0] || 0}
+                        onChange={(e) =>
+                          updateDimension(index, 0, parseFloat(e.target.value))
+                        }
+                        className="w-24"
+                      />
+                      <span>x</span>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={(dimension as [number, number])[1] || 0}
+                        onChange={(e) =>
+                          updateDimension(index, 1, parseFloat(e.target.value))
+                        }
+                        className="w-24"
+                      />
+                      <span>pulgadas</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeDimension(index)}
+                      >
+                        <Trash2 className="w-4 h-4 text-destructive" />
+                      </Button>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          </div>
         )}
       </div>
 
-      {activeTab !== "images" && (
-        <div className="pt-4 border-t">
-          <Button type="submit" disabled={isLoading} className="w-full">
-            {isLoading ? (
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-            ) : (
-              "Guardar Cambios"
-            )}
-          </Button>
-        </div>
+      {activeTab !== "templates" && (
+        <Button type="submit" disabled={isLoading} className="w-full">
+          {isLoading ? "Guardando..." : "Guardar Cambios"}
+        </Button>
       )}
     </form>
   );

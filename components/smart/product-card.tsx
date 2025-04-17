@@ -37,6 +37,10 @@ export function ProductCard({ product }: { product: Product<true> }) {
   const [selectedOptions, setSelectedOptions] = useState<OrderProductOptions>(
     getForcedOptions(product)
   );
+  const [activeTab, setActiveTab] = useState<"templates" | "custom">(
+    "templates"
+  );
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
 
   const [quantity, setQuantity] = useState<number | "">(1);
   const addItem = useCart((state) => state.addItem);
@@ -80,6 +84,14 @@ export function ProductCard({ product }: { product: Product<true> }) {
 
   const isFormComplete = () => getValidationMessages().length === 0;
 
+  const handleSelectTemplate = (templateId: string) => {
+    const template = product.templates.find((t) => t.id === templateId);
+    if (template) {
+      setSelectedOptions(template.options);
+      setSelectedTemplate(templateId);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -106,6 +118,7 @@ export function ProductCard({ product }: { product: Product<true> }) {
 
     setIsModalOpen(false);
     setSelectedOptions(getForcedOptions(product));
+    setSelectedTemplate(null);
     setQuantity(1);
     toast.success(
       `${formatNumber(quantity)} ${product.name} agregado${
@@ -200,166 +213,265 @@ export function ProductCard({ product }: { product: Product<true> }) {
             proceso de pago.
           </p>
 
+          <div className="mb-6">
+            <div className="flex border-b">
+              <button
+                className={cn(
+                  "px-4 py-2 font-medium",
+                  activeTab === "templates"
+                    ? "border-b-2 border-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                onClick={() => setActiveTab("templates")}
+              >
+                Estándares
+              </button>
+              <button
+                className={cn(
+                  "px-4 py-2 font-medium",
+                  activeTab === "custom"
+                    ? "border-b-2 border-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+                onClick={() => setActiveTab("custom")}
+              >
+                Personalizado
+              </button>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!!product.options.sides?.length && (
-              <div>
-                <label className="block text-sm font-bold mb-1">Lados</label>
-                {product.options.sides.length === 1 ? (
-                  <Tooltip text={TOOLTIP_TEXT}>
-                    <select
-                      className="w-full border rounded-md p-2"
-                      value={selectedOptions.sides || ""}
-                      disabled
-                      required
-                    >
-                      <option value={product.options.sides[0]}>
-                        {TRANSLATIONS[product.options.sides[0]]}
-                      </option>
-                    </select>
-                  </Tooltip>
-                ) : (
-                  <select
-                    className="w-full border rounded-md p-2"
-                    onChange={(e) =>
-                      setSelectedOptions((prev) => ({
-                        ...prev,
-                        sides: e.target.value as ProductOptionSide,
-                      }))
-                    }
-                    value={selectedOptions.sides || ""}
-                    required
-                  >
-                    <option value="">Seleccionar</option>
-                    {product.options.sides.map((side) => (
-                      <option key={side} value={side}>
-                        {TRANSLATIONS[side]}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
-            )}
-
-            {!!product.options.paper?.length && (
-              <div>
-                <label className="block text-sm font-bold mb-1">Papel</label>
-                {product.options.paper.length === 1 ? (
-                  <Tooltip text={TOOLTIP_TEXT}>
-                    <select
-                      className="w-full border rounded-md p-2"
-                      value={selectedOptions.paper || ""}
-                      disabled
-                      required
-                    >
-                      <option value={product.options.paper[0]}>
-                        {formatOptionLabel(product.options.paper[0])}
-                      </option>
-                    </select>
-                  </Tooltip>
-                ) : (
-                  <select
-                    className="w-full border rounded-md p-2"
-                    onChange={(e) =>
-                      setSelectedOptions((prev) => ({
-                        ...prev,
-                        paper: e.target.value as ProductOptionPaper,
-                      }))
-                    }
-                    value={selectedOptions.paper || ""}
-                    required
-                  >
-                    <option value="">Seleccionar</option>
-                    {product.options.paper.map((paper) => (
-                      <option key={paper} value={paper}>
-                        {formatOptionLabel(paper)}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
-            )}
-
-            {!!product.options.finish?.length && (
-              <div>
-                <label className="block text-sm font-bold mb-1">Acabado</label>
-                {product.options.finish.length === 1 ? (
-                  <Tooltip text={TOOLTIP_TEXT}>
-                    <select
-                      className="w-full border rounded-md p-2"
-                      value={selectedOptions.finish || ""}
-                      disabled
-                      required
-                    >
-                      <option value={product.options.finish[0]}>
-                        {formatOptionLabel(product.options.finish[0])}
-                      </option>
-                    </select>
-                  </Tooltip>
-                ) : (
-                  <select
-                    className="w-full border rounded-md p-2"
-                    onChange={(e) =>
-                      setSelectedOptions((prev) => ({
-                        ...prev,
-                        finish: e.target.value as ProductOptionFinish,
-                      }))
-                    }
-                    value={selectedOptions.finish || ""}
-                    required
-                  >
-                    <option value="">Seleccionar</option>
-                    {product.options.finish.map((finish) => (
-                      <option key={finish} value={finish}>
-                        {formatOptionLabel(finish)}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
-            )}
-
-            {!!product.options.dimensions?.length && (
-              <div>
-                <label className="block text-sm font-bold mb-1">
-                  Dimensiones
-                </label>
-                {product.options.dimensions.length === 1 ? (
-                  <Tooltip text={TOOLTIP_TEXT}>
-                    <select
-                      className="w-full border rounded-md p-2"
-                      value={JSON.stringify(selectedOptions.dimensions)}
-                      disabled
-                      required
-                    >
-                      <option
-                        value={JSON.stringify(product.options.dimensions[0])}
+            {activeTab === "templates" ? (
+              <div className="space-y-4">
+                {product.templates && product.templates.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-3">
+                    {product.templates.map((template) => (
+                      <div
+                        key={template.id}
+                        className={cn(
+                          "border rounded-md p-3 cursor-pointer hover:border-primary",
+                          selectedTemplate === template.id &&
+                            "border-primary bg-primary/5"
+                        )}
+                        onClick={() => handleSelectTemplate(template.id)}
                       >
-                        {product.options.dimensions[0][0]}" x{" "}
-                        {product.options.dimensions[0][1]}"
-                      </option>
-                    </select>
-                  </Tooltip>
-                ) : (
-                  <select
-                    className="w-full border rounded-md p-2"
-                    onChange={(e) =>
-                      setSelectedOptions((prev) => ({
-                        ...prev,
-                        dimensions: e.target.value
-                          ? JSON.parse(e.target.value)
-                          : undefined,
-                      }))
-                    }
-                    value={JSON.stringify(selectedOptions.dimensions)}
-                    required
-                  >
-                    <option value="">Seleccionar</option>
-                    {product.options.dimensions.map((dim) => (
-                      <option key={dim.join("x")} value={JSON.stringify(dim)}>
-                        {dim[0]}" x {dim[1]}"
-                      </option>
+                        <div className="font-medium">{template.name}</div>
+                        <div className="text-sm text-muted-foreground mt-1">
+                          {template.options.sides && (
+                            <div>
+                              Lados: {TRANSLATIONS[template.options.sides]}
+                            </div>
+                          )}
+                          {template.options.paper && (
+                            <div>
+                              Papel: {formatOptionLabel(template.options.paper)}
+                            </div>
+                          )}
+                          {template.options.finish && (
+                            <div>
+                              Acabado:{" "}
+                              {formatOptionLabel(template.options.finish)}
+                            </div>
+                          )}
+                          {template.options.dimensions && (
+                            <div>
+                              Dimensiones: {template.options.dimensions[0]}
+                              &quot; x {template.options.dimensions[1]}&quot;
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     ))}
-                  </select>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No hay opciones estándar disponibles.
+                    <div className="mt-2">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => setActiveTab("custom")}
+                      >
+                        Ir a personalizado
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {!!product.options.sides?.length && (
+                  <div>
+                    <label className="block text-sm font-bold mb-1">
+                      Lados
+                    </label>
+                    {product.options.sides.length === 1 ? (
+                      <Tooltip text={TOOLTIP_TEXT}>
+                        <select
+                          className="w-full border rounded-md p-2"
+                          value={selectedOptions.sides || ""}
+                          disabled
+                          required
+                        >
+                          <option value={product.options.sides[0]}>
+                            {TRANSLATIONS[product.options.sides[0]]}
+                          </option>
+                        </select>
+                      </Tooltip>
+                    ) : (
+                      <select
+                        className="w-full border rounded-md p-2"
+                        onChange={(e) =>
+                          setSelectedOptions((prev) => ({
+                            ...prev,
+                            sides: e.target.value as ProductOptionSide,
+                          }))
+                        }
+                        value={selectedOptions.sides || ""}
+                        required
+                      >
+                        <option value="">Seleccionar</option>
+                        {product.options.sides.map((side) => (
+                          <option key={side} value={side}>
+                            {TRANSLATIONS[side]}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                )}
+
+                {!!product.options.paper?.length && (
+                  <div>
+                    <label className="block text-sm font-bold mb-1">
+                      Papel
+                    </label>
+                    {product.options.paper.length === 1 ? (
+                      <Tooltip text={TOOLTIP_TEXT}>
+                        <select
+                          className="w-full border rounded-md p-2"
+                          value={selectedOptions.paper || ""}
+                          disabled
+                          required
+                        >
+                          <option value={product.options.paper[0]}>
+                            {formatOptionLabel(product.options.paper[0])}
+                          </option>
+                        </select>
+                      </Tooltip>
+                    ) : (
+                      <select
+                        className="w-full border rounded-md p-2"
+                        onChange={(e) =>
+                          setSelectedOptions((prev) => ({
+                            ...prev,
+                            paper: e.target.value as ProductOptionPaper,
+                          }))
+                        }
+                        value={selectedOptions.paper || ""}
+                        required
+                      >
+                        <option value="">Seleccionar</option>
+                        {product.options.paper.map((paper) => (
+                          <option key={paper} value={paper}>
+                            {formatOptionLabel(paper)}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                )}
+
+                {!!product.options.finish?.length && (
+                  <div>
+                    <label className="block text-sm font-bold mb-1">
+                      Acabado
+                    </label>
+                    {product.options.finish.length === 1 ? (
+                      <Tooltip text={TOOLTIP_TEXT}>
+                        <select
+                          className="w-full border rounded-md p-2"
+                          value={selectedOptions.finish || ""}
+                          disabled
+                          required
+                        >
+                          <option value={product.options.finish[0]}>
+                            {formatOptionLabel(product.options.finish[0])}
+                          </option>
+                        </select>
+                      </Tooltip>
+                    ) : (
+                      <select
+                        className="w-full border rounded-md p-2"
+                        onChange={(e) =>
+                          setSelectedOptions((prev) => ({
+                            ...prev,
+                            finish: e.target.value as ProductOptionFinish,
+                          }))
+                        }
+                        value={selectedOptions.finish || ""}
+                        required
+                      >
+                        <option value="">Seleccionar</option>
+                        {product.options.finish.map((finish) => (
+                          <option key={finish} value={finish}>
+                            {formatOptionLabel(finish)}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                )}
+
+                {!!product.options.dimensions?.length && (
+                  <div>
+                    <label className="block text-sm font-bold mb-1">
+                      Dimensiones
+                    </label>
+                    {product.options.dimensions.length === 1 ? (
+                      <Tooltip text={TOOLTIP_TEXT}>
+                        <select
+                          className="w-full border rounded-md p-2"
+                          value={JSON.stringify(selectedOptions.dimensions)}
+                          disabled
+                          required
+                        >
+                          <option
+                            value={JSON.stringify(
+                              product.options.dimensions[0]
+                            )}
+                          >
+                            {product.options.dimensions[0][0]}&quot; x{" "}
+                            {product.options.dimensions[0][1]}&quot;
+                          </option>
+                        </select>
+                      </Tooltip>
+                    ) : (
+                      <select
+                        className="w-full border rounded-md p-2"
+                        onChange={(e) =>
+                          setSelectedOptions((prev) => ({
+                            ...prev,
+                            dimensions: e.target.value
+                              ? JSON.parse(e.target.value)
+                              : undefined,
+                          }))
+                        }
+                        value={JSON.stringify(selectedOptions.dimensions)}
+                        required
+                      >
+                        <option value="">Seleccionar</option>
+                        {product.options.dimensions.map((dim) => (
+                          <option
+                            key={dim.join("x")}
+                            value={JSON.stringify(dim)}
+                          >
+                            {dim[0]}&quot; x {dim[1]}&quot;
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
                 )}
               </div>
             )}

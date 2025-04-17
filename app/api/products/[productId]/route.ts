@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import {
   Product,
+  ProductCategory,
   ProductOptionFinish,
   ProductOptionPaper,
   ProductOptionSide,
@@ -10,10 +11,55 @@ import {
 import { getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
 
+// Create a schema for the template options
+const templateOptionsSchema = z.object({
+  sides: z
+    .enum([
+      ProductOptionSide.One,
+      ProductOptionSide.Both,
+      ProductOptionSide.Diptic,
+      ProductOptionSide.Triptic,
+    ])
+    .optional(),
+  finish: z
+    .enum([
+      ProductOptionFinish.PlastifiedGloss,
+      ProductOptionFinish.PlastifiedMatte,
+      ProductOptionFinish.UVVarnishGloss,
+      ProductOptionFinish.UVVarnishMatte,
+      ProductOptionFinish.None,
+    ])
+    .optional(),
+  paper: z
+    .enum([
+      ProductOptionPaper.HundredLbMatte,
+      ProductOptionPaper.HundredLbSatin,
+      ProductOptionPaper.HundredThirtyLbMatte,
+      ProductOptionPaper.HundredThirtyLbSatin,
+      ProductOptionPaper.ThreeHundredGMatte,
+      ProductOptionPaper.ThreeHundredGSatin,
+      ProductOptionPaper.HundredFiftyGMatte,
+      ProductOptionPaper.HundredFiftyGSatin,
+      ProductOptionPaper.Chemical,
+      ProductOptionPaper.Bond,
+      ProductOptionPaper.Bond20lb,
+    ])
+    .optional(),
+  dimensions: z.tuple([z.number(), z.number()]).optional(),
+});
+
+// Create a schema for the product template
+const productTemplateSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1),
+  options: templateOptionsSchema,
+});
+
 const updateProductSchema = z
   .object({
     name: z.string().min(3).optional(),
     isPublic: z.boolean().optional(),
+    category: z.nativeEnum(ProductCategory).optional(),
     options: z
       .object({
         sides: z
@@ -112,6 +158,7 @@ const updateProductSchema = z
           .optional(),
       })
       .optional(),
+    templates: z.array(productTemplateSchema).optional(),
   })
   .strict();
 

@@ -47,6 +47,12 @@ export enum ProductCategory {
   ThreeD = "3d",
 }
 
+export type ProductTemplate = {
+  id: string;
+  name: string;
+  options: OrderProductOptions;
+};
+
 export type Product<FE extends boolean = false> = {
   name: string;
   images: string[];
@@ -54,6 +60,7 @@ export type Product<FE extends boolean = false> = {
   pricing: ProductPricing;
   isPublic: boolean;
   category: ProductCategory;
+  templates: ProductTemplate[];
 } & BaseModel<FE>;
 
 export type ProductOptions = {
@@ -61,6 +68,13 @@ export type ProductOptions = {
   finish?: ProductOptionFinish[];
   paper?: ProductOptionPaper[];
   dimensions?: [number, number][];
+};
+
+export type OrderProductOptions = {
+  sides?: ProductOptionSide;
+  finish?: ProductOptionFinish;
+  paper?: ProductOptionPaper;
+  dimensions?: [number, number];
 };
 
 export type ProductPricingOptionMultipliers = {
@@ -76,6 +90,57 @@ export type ProductPricing = {
   optionMultipliers: ProductPricingOptionMultipliers;
   quantityDiscountMultipliers: [number, number][];
 };
+
+export const productTemplateSchema = new mongoose.Schema<ProductTemplate>(
+  {
+    id: {
+      type: String,
+      required: true,
+    },
+    name: {
+      type: String,
+      required: true,
+      set: normalize,
+      minlength: 3,
+    },
+    options: {
+      type: new mongoose.Schema(
+        {
+          sides: {
+            type: String,
+            enum: Object.values(ProductOptionSide),
+          },
+          finish: {
+            type: String,
+            enum: Object.values(ProductOptionFinish),
+          },
+          paper: {
+            type: String,
+            enum: Object.values(ProductOptionPaper),
+          },
+          dimensions: {
+            type: [Number],
+            validate: [
+              {
+                validator: (dimensions: [number, number]) =>
+                  dimensions.length === 2 &&
+                  Number.isInteger(dimensions[0]) &&
+                  dimensions[0] > 0 &&
+                  Number.isInteger(dimensions[1]) &&
+                  dimensions[1] > 0,
+                message:
+                  "Dimensions must include exactly two positive integers",
+              },
+            ],
+          },
+        },
+        { _id: false }
+      ),
+      required: true,
+    },
+  },
+  { _id: false }
+);
 
 export const productOptionsSchema = new mongoose.Schema<ProductOptions>(
   {
@@ -229,6 +294,11 @@ export const productSchema = getSchema<Product>({
     required: true,
     enum: Object.values(ProductCategory),
     default: ProductCategory.Impresos,
+  },
+  templates: {
+    type: [productTemplateSchema],
+    required: true,
+    default: [],
   },
 });
 
