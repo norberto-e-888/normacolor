@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { config } from "@/config";
 import { Product } from "@/database";
 import { getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
@@ -30,7 +31,7 @@ export async function DELETE(
 
     // Extract S3 key from the URL
     const s3Key = imageUrl.replace(
-      `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/`,
+      `https://${config.AWS_BUCKET_NAME}.s3.amazonaws.com/`,
       ""
     );
 

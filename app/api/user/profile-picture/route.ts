@@ -2,6 +2,7 @@ import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 
+import { config } from "@/config";
 import { User } from "@/database";
 import { ExtendedSession, getServerSession } from "@/functions/auth";
 import { s3 } from "@/lib/server/s3";
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     // Upload to S3
     const command = new PutObjectCommand({
-      Bucket: process.env.S3_BUCKET_NAME!,
+      Bucket: config.AWS_BUCKET_NAME,
       Key: fileName,
       Body: buffer,
       ContentType: file.type,
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
     await s3.send(command);
 
     // Generate public URL
-    const profilePictureUrl = `https://${process.env.S3_BUCKET_NAME}.s3.amazonaws.com/${fileName}`;
+    const profilePictureUrl = `https://${config.AWS_BUCKET_NAME}.s3.amazonaws.com/${fileName}`;
 
     // Find user and update
     const user = await User.findById(session.user.id);

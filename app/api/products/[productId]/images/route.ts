@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import sharp from "sharp";
 
+import { config } from "@/config";
 import { Product } from "@/database";
 import { getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
@@ -37,7 +38,7 @@ export async function POST(
 
     // Update product in database
     await connectToMongo();
-    const imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.amazonaws.com/${s3Key}`;
+    const imageUrl = `https://${config.AWS_BUCKET_NAME}.s3.amazonaws.com/${s3Key}`;
 
     await Product.findByIdAndUpdate(productId, {
       $push: { images: imageUrl },
