@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Download, Loader, Trash2 } from "lucide-react";
+import { Download, FileImage, FileText, Loader, Trash2 } from "lucide-react";
 import { memo, useState } from "react";
 import { toast } from "sonner";
 
@@ -24,6 +24,7 @@ export const FileCarousel = memo(
     onRefetchImages: ReturnType<typeof useQuery>["refetch"];
   }) => {
     const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
+    const [imageTypes, setImageTypes] = useState<Record<string, string>>({});
 
     const handleDownload = async (imageId: string) => {
       try {
@@ -31,10 +32,18 @@ export const FileCarousel = memo(
           `/api/orders/${orderId}/items/${itemId}/chat/images/${imageId}`
         );
         if (!response.ok) throw new Error("Failed to get download URL");
-        const { url } = await response.json();
+        const { url, fileType } = await response.json();
+
+        // Save the file type for later use (like showing icons)
+        setImageTypes((prev) => ({ ...prev, [imageId]: fileType }));
+
         const link = document.createElement("a");
         link.href = url;
-        link.download = `design-${imageId}.psd`;
+
+        // Set appropriate file extension based on the file type
+        const fileExtension = fileType || "unknown";
+        link.download = `design-${imageId}.${fileExtension}`;
+
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -68,6 +77,34 @@ export const FileCarousel = memo(
       }
     };
 
+    // Function to render the appropriate file type icon
+    const renderFileTypeIcon = (imageId: string) => {
+      const fileType = imageTypes[imageId];
+
+      // If we don't know the type yet, don't show a special icon
+      if (!fileType) return null;
+
+      // For PDF files, show a document icon
+      if (fileType === "pdf") {
+        return (
+          <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-gray-100 opacity-70">
+            <FileText className="w-8 h-8 text-gray-500" />
+          </div>
+        );
+      }
+
+      // For AI files, show a vector icon
+      if (fileType === "ai") {
+        return (
+          <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-gray-100 opacity-70">
+            <FileImage className="w-8 h-8 text-gray-500" />
+          </div>
+        );
+      }
+
+      return null;
+    };
+
     if (!images?.length) return null;
 
     return (
@@ -80,6 +117,7 @@ export const FileCarousel = memo(
               className="relative w-20 h-20 flex-shrink-0 border rounded-lg overflow-hidden group"
             >
               <S3Image namespace={`chat/${itemId}`} imageId={imageId} />
+              {renderFileTypeIcon(imageId)}
               <div className="absolute bottom-1 right-1 flex gap-1">
                 <button
                   onClick={(e) => {

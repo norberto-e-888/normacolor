@@ -42,11 +42,26 @@ export async function GET(
   }
 
   try {
-    const downloadUrl = await getSignedDownloadUrl(
+    // Get the original file
+    const originalUrl = await getSignedDownloadUrl(
       `chat/${params.itemId}/${params.imageId}/original.${fileType}`
     );
 
-    return NextResponse.json({ url: downloadUrl });
+    // For file types that have previews, also return the preview URL
+    let previewUrl = null;
+    if (
+      ["psd", "pdf", "ai", "png", "jpeg", "jpg"].includes(fileType as string)
+    ) {
+      previewUrl = await getSignedDownloadUrl(
+        `chat/${params.itemId}/${params.imageId}/preview.png`
+      );
+    }
+
+    return NextResponse.json({
+      url: originalUrl,
+      previewUrl,
+      fileType,
+    });
   } catch (error) {
     console.error("Error generating signed URL:", error);
     return new NextResponse("Failed to generate download URL", { status: 500 });
@@ -93,7 +108,8 @@ export async function DELETE(
     ),
   ];
 
-  if (fileType === "psd") {
+  // Delete preview file if it exists for this file type
+  if (["psd", "pdf", "ai", "png", "jpeg", "jpg"].includes(fileType as string)) {
     promises.push(
       deleteS3Object(`chat/${params.itemId}/${params.imageId}/preview.png`)
     );

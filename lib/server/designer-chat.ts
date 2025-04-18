@@ -112,13 +112,26 @@ export class DesignerChat {
 
   static normalizeFileType(fileType: string) {
     fileType = fileType.trim().toLocaleLowerCase();
+
+    // Handle specific mime types
     if (fileType === "image/vnd.adobe.photoshop") {
       return "psd";
     }
 
+    if (fileType === "application/pdf") {
+      return "pdf";
+    }
+
+    // Remove AI file type handling
+
     fileType = fileType.replaceAll(".", "");
     fileType =
       fileType.split("/").length > 1 ? fileType.split("/")[1] : fileType;
+
+    // Map common image file extensions
+    if (fileType === "jpg" || fileType === "jpeg") {
+      return "jpeg";
+    }
 
     return fileType;
   }

@@ -20,15 +20,27 @@ export async function GET(
     let fileType = await redis.get(`image_type:${params.imageId}`);
 
     if (!fileType) {
-      fileType = "psd";
+      fileType = "psd"; // Default to PSD as fallback
     }
 
-    const key = `${namespace}/${params.imageId}/${
-      fileType === "psd" ? "preview" : "original"
-    }.${fileType === "psd" ? "png" : fileType}`;
+    // Get the original file URL
+    const originalKey = `${namespace}/${params.imageId}/original.${fileType}`;
+    const url = await getSignedDownloadUrl(originalKey);
 
-    const url = await getSignedDownloadUrl(key);
-    return NextResponse.json({ url });
+    let previewUrl = null;
+
+    // For file types that have previews, also return the preview URL
+    if (["psd", "pdf", "png", "jpeg", "jpg"].includes(fileType as string)) {
+      // The convention is to use a PNG preview for most file types
+      const previewKey = `${namespace}/${params.imageId}/preview.png`;
+      previewUrl = await getSignedDownloadUrl(previewKey);
+    }
+
+    return NextResponse.json({
+      url,
+      previewUrl,
+      fileType,
+    });
   } catch (error) {
     console.error("Error generating signed URL:", error);
     return new NextResponse("Failed to generate download URL", { status: 500 });

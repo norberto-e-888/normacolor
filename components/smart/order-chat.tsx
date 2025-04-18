@@ -132,13 +132,24 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
     if (!e.target.files?.[0]) return;
 
     const file = e.target.files[0];
-    const allowedTypes = [".psd", ".png", ".jpg", ".jpeg"];
+    const isAdmin = (session?.user as SessionUser)?.role === UserRole.Admin;
+
+    // Define allowed file types based on user role
     const fileExtension = file.name
       .toLowerCase()
       .substring(file.name.lastIndexOf("."));
 
+    const adminAllowedTypes = [".psd", ".png", ".jpg", ".jpeg", ".pdf"];
+    const clientAllowedTypes = [".png", ".jpg", ".jpeg", ".pdf"];
+
+    const allowedTypes = isAdmin ? adminAllowedTypes : clientAllowedTypes;
+
     if (!allowedTypes.includes(fileExtension)) {
-      toast.error("Por favor selecciona un archivo PSD, PNG o JPG", {
+      const allowedTypesText = isAdmin
+        ? "PSD, PNG, JPG o PDF"
+        : "PNG, JPG o PDF";
+
+      toast.error(`Por favor selecciona un archivo ${allowedTypesText}`, {
         closeButton: true,
       });
       return;
@@ -256,7 +267,11 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
         <input
           ref={fileInputRef}
           type="file"
-          accept=".psd,.png,.jpg,.jpeg"
+          accept={
+            (session?.user as SessionUser)?.role === UserRole.Admin
+              ? ".psd,.png,.jpg,.jpeg,.pdf"
+              : ".png,.jpg,.jpeg,.pdf"
+          }
           onChange={handleFileSelect}
           className="hidden"
         />

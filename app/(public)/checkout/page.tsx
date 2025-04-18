@@ -194,8 +194,8 @@ export default function CheckoutPage() {
     if (!selectedItemId || !e.target.files?.[0]) return;
 
     const file = e.target.files[0];
-    if (!file.name.toLowerCase().endsWith(".psd")) {
-      toast.error("Por favor selecciona un archivo PSD", {
+    if (!file.name.toLowerCase().endsWith(".pdf")) {
+      toast.error("Por favor selecciona un archivo PDF", {
         closeButton: true,
       });
       return;
@@ -203,48 +203,77 @@ export default function CheckoutPage() {
 
     setIsUploading(true);
     try {
+      console.log("Uploading PDF file:", file.name);
       // Get signed URL and folder key for upload
       const response = await fetch("/api/s3/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileType: "pdf" }),
       });
 
-      if (!response.ok) throw new Error("Failed to get upload URL");
-      const { uploadUrl, folderKey, imageId } = await response.json();
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Failed to get upload URL:", errorText);
+        throw new Error(`Failed to get upload URL: ${errorText}`);
+      }
 
-      // Upload PSD to S3
-      await fetch(uploadUrl, {
+      const { uploadUrl, folderKey, imageId } = await response.json();
+      console.log("Upload info received:", { folderKey, imageId });
+
+      // Upload PDF to S3
+      const uploadResponse = await fetch(uploadUrl, {
         method: "PUT",
         body: file,
         headers: {
-          "Content-Type": "application/octet-stream",
-          "x-amz-acl": "private",
+          "Content-Type": "application/pdf",
         },
       });
 
-      // Process PSD and create preview
+      if (!uploadResponse.ok) {
+        const errorText = await uploadResponse.text();
+        console.error("Failed to upload file to S3:", errorText);
+        throw new Error(`Failed to upload file to S3: ${errorText}`);
+      }
+
+      console.log("PDF uploaded to S3, now processing for preview");
+
+      // Process PDF and create preview
       const formData = new FormData();
       formData.append("file", file);
       formData.append("folderKey", folderKey);
+      formData.append("fileType", "pdf");
 
       const processResponse = await fetch("/api/s3/process", {
         method: "POST",
         body: formData,
       });
 
-      if (!processResponse.ok) throw new Error("Failed to process PSD");
+      if (!processResponse.ok) {
+        const errorText = await processResponse.text();
+        console.error("Failed to process PDF:", errorText);
+        throw new Error(`Failed to process PDF: ${errorText}`);
+      }
 
+      const processResult = await processResponse.json();
+      console.log("PDF processed successfully:", processResult);
+
+      // Update the cart item with the new art
       updateItemArt(selectedItemId, {
         source: ArtSource.Custom,
         value: imageId,
       });
+      console.log("Cart updated with new PDF art:", imageId);
 
       setSelectedItemId(null);
+      toast.success("PDF subido exitosamente");
     } catch (error) {
       console.error("Error uploading file:", error);
-      toast.error("Error al subir el archivo", {
-        closeButton: true,
-      });
+      toast.error(
+        error instanceof Error ? error.message : "Error al subir el archivo",
+        {
+          closeButton: true,
+        }
+      );
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {
@@ -617,12 +646,12 @@ export default function CheckoutPage() {
                 <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed rounded-lg">
                   <Upload className="w-12 h-12 text-muted-foreground mb-4" />
                   <p className="text-muted-foreground mb-4">
-                    Arrastra tu archivo PSD aquí o
+                    Arrastra tu archivo PDF aquí o
                   </p>
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept=".psd"
+                    accept=".pdf"
                     onChange={handleFileSelect}
                     className="hidden"
                     disabled={isUploading}
