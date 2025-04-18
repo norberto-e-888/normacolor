@@ -14,8 +14,9 @@ export async function POST(request: Request) {
       if (body?.fileType) {
         fileType = body.fileType;
       }
-    } catch (e) {
+    } catch (e: unknown) {
       // If parsing fails, use default fileType
+      console.error("Error parsing fileType:", e);
     }
 
     const imageId = uuid();
