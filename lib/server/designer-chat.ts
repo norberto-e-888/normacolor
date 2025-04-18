@@ -60,9 +60,10 @@ export class DesignerChat {
   static async addImage(
     orderItemId: string,
     isDesigner: boolean,
-    fileType: string
+    fileType: string,
+    customImageId?: string
   ) {
-    const imageId = uuid();
+    const imageId = customImageId || uuid();
     const key = isDesigner
       ? this.getDesignerImagesKey(orderItemId)
       : this.getClientImagesKey(orderItemId);

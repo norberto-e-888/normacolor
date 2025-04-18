@@ -104,8 +104,19 @@ export async function POST(
     const imageId = uuid();
     const folderPath = `order-chats/${params.orderId}/${params.itemId}/${imageId}`;
 
-    // Store image metadata in database
-    await DesignerChat.addImage(orderItem.id, isDesigner, actualFileType);
+    console.log(
+      `Created image ID: ${imageId} for order: ${params.orderId}, item: ${params.itemId}`
+    );
+    console.log(`Saving to folder path: ${folderPath}`);
+
+    // Store image metadata in database with our custom imageId
+    await DesignerChat.addImage(
+      orderItem.id,
+      isDesigner,
+      actualFileType,
+      imageId
+    );
+    console.log(`Saved image ID in DesignerChat: ${imageId}`);
 
     // Process the file based on its type
     if (actualFileType === "psd") {

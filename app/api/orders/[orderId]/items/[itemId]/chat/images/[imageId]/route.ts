@@ -44,7 +44,7 @@ export async function GET(
   try {
     // Get the original file
     const originalUrl = await getSignedDownloadUrl(
-      `chat/${params.itemId}/${params.imageId}/original.${fileType}`
+      `order-chats/${params.orderId}/${params.itemId}/${params.imageId}/original.${fileType}`
     );
 
     // For file types that have previews, also return the preview URL
@@ -53,7 +53,7 @@ export async function GET(
       ["psd", "pdf", "ai", "png", "jpeg", "jpg"].includes(fileType as string)
     ) {
       previewUrl = await getSignedDownloadUrl(
-        `chat/${params.itemId}/${params.imageId}/preview.png`
+        `order-chats/${params.orderId}/${params.itemId}/${params.imageId}/preview.png`
       );
     }
 
@@ -104,14 +104,16 @@ export async function DELETE(
 
   const promises: Promise<DeleteObjectCommandOutput>[] = [
     deleteS3Object(
-      `chat/${params.itemId}/${params.imageId}/original.${fileType}`
+      `order-chats/${params.orderId}/${params.itemId}/${params.imageId}/original.${fileType}`
     ),
   ];
 
   // Delete preview file if it exists for this file type
   if (["psd", "pdf", "ai", "png", "jpeg", "jpg"].includes(fileType as string)) {
     promises.push(
-      deleteS3Object(`chat/${params.itemId}/${params.imageId}/preview.png`)
+      deleteS3Object(
+        `order-chats/${params.orderId}/${params.itemId}/${params.imageId}/preview.png`
+      )
     );
   }
 
