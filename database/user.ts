@@ -211,7 +211,9 @@ export function calculateLoyaltyPoints(
   amountCents: number,
   tier: UserLoyaltyTier
 ): number {
-  return Math.round(amountCents * LOYALTY_TIER_CONFIG[tier].pointsMultiplier);
+  // Convert cents to dollars (1% of dollars spent) before applying multiplier
+  const amountDollars = amountCents / 100;
+  return Math.round(amountDollars * LOYALTY_TIER_CONFIG[tier].pointsMultiplier);
 }
 
 export const User: Model<User> =

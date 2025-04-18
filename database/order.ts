@@ -43,6 +43,7 @@ export type Order<FE = false> = {
   cart: FE extends true ? OrderProduct[] : Document<OrderProduct>[];
   total: number;
   status: OrderStatus;
+  loyaltyPointsSpent?: number; // Points spent as discount (1 point = 1 cent)
 } & BaseModel;
 
 export type OrderProduct = {
@@ -224,6 +225,12 @@ const orderSchema = getSchema<Order>({
     required: true,
     default: OrderStatus.WaitingForPayment,
     enum: Object.values(OrderStatus),
+  },
+  loyaltyPointsSpent: {
+    type: Number,
+    required: false,
+    default: 0,
+    min: 0,
   },
 });
 

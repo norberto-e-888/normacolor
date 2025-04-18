@@ -8,6 +8,7 @@ import {
   OrderProduct,
   OrderProductOptions,
   Product,
+  User,
 } from "@/database";
 import { getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
@@ -22,7 +23,8 @@ type CreateOrderItem = Omit<
 
 export const createOrder = async (
   cart: CreateOrderItem[],
-  total: number
+  total: number,
+  selectedPoints: number = 0
 ): Promise<string> => {
   await connectToMongo();
 
@@ -30,6 +32,26 @@ export const createOrder = async (
   if (!session) {
     throw new Error("Must be logged in to create an order");
   }
+
+  // Fetch the current user to get their unspent loyalty points
+  const user = await User.findById(session.user.id);
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  // Get unspent loyalty points and validate selected points
+  const unspentPoints = user.unspentLoyaltyPoints || 0;
+
+  // Ensure selectedPoints doesn't exceed available points
+  const pointsToUse = Math.min(unspentPoints, selectedPoints);
+
+  // Ensure minimum order value of $1 (100 cents)
+  const minimumPriceCents = 100;
+  const maxPointsAllowed = Math.max(0, total - minimumPriceCents);
+  const adjustedPointsToUse = Math.min(pointsToUse, maxPointsAllowed);
+
+  // Calculate final price after points discount (will be at least $1)
+  const finalPrice = Math.max(minimumPriceCents, total - adjustedPointsToUse);
 
   // Fetch product snapshots
   const products = await Product.find({
@@ -145,11 +167,20 @@ export const createOrder = async (
     throw new Error(`Total price mismatch: ${totalOrderPrice} !== ${total}`);
   }
 
+  // Create the order
   const order = await Order.create({
     customerId: new mongoose.Types.ObjectId(session.user.id),
     cart: updatedCart,
-    total,
+    total: finalPrice,
+    loyaltyPointsSpent: adjustedPointsToUse,
   });
+
+  // Update user's unspent points
+  if (adjustedPointsToUse > 0) {
+    await User.findByIdAndUpdate(session.user.id, {
+      $inc: { unspentLoyaltyPoints: -adjustedPointsToUse },
+    });
+  }
 
   return order.id as string;
 };

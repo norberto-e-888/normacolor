@@ -6,15 +6,21 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { Order } from "@/database";
+import { LOYALTY_TIER_CONFIG, Order, UserLoyaltyTier } from "@/database";
 import { useCart } from "@/hooks/use-cart";
+import { formatCents } from "@/utils";
 import { calculatePrice } from "@/utils/calculate-price";
 import { getToastUrlConfig, ToastType } from "@/utils/get-toast-url-config";
+
+// Extend the Order type to include customerTier property
+interface ExtendedOrder extends Order<true> {
+  customerTier?: UserLoyaltyTier;
+}
 
 export default function PaymentPage() {
   const { orderId } = useParams();
   const router = useRouter();
-  const [order, setOrder] = useState<Order<true> | null>(null);
+  const [order, setOrder] = useState<ExtendedOrder | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const { clearCart } = useCart();
@@ -40,6 +46,19 @@ export default function PaymentPage() {
     fetchOrder();
   }, [orderId]);
 
+  // Calculate potential points earned from this order
+  const calculatePotentialPoints = () => {
+    if (!order) return 0;
+
+    // Get the points multiplier based on tier
+    const tier = order.customerTier || UserLoyaltyTier.Bronze;
+    const pointsMultiplier = LOYALTY_TIER_CONFIG[tier].pointsMultiplier;
+
+    // Calculate points based on what's actually being charged (dollars, not cents)
+    const orderAmountDollars = order.total / 100;
+    return Math.round(orderAmountDollars * pointsMultiplier);
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -51,6 +70,11 @@ export default function PaymentPage() {
   if (!order) {
     return <div>Order not found</div>;
   }
+
+  // Calculate the original total before points discount
+  const originalTotal = order.total + (order.loyaltyPointsSpent || 0);
+  const potentialPoints = calculatePotentialPoints();
+  const loyaltyPointsSpent = order.loyaltyPointsSpent || 0;
 
   return (
     <div className="container mx-auto p-6 max-w-3xl">
@@ -72,22 +96,44 @@ export default function PaymentPage() {
                   {item.productSnapshot.name} x {item.quantity}
                 </span>
                 <span>
-                  $
-                  {(
+                  {formatCents(
                     calculatePrice(
                       item.quantity,
                       item.productSnapshot.pricing,
                       item.options
-                    ) / 100
-                  ).toFixed(2)}
+                    )
+                  )}
                 </span>
               </div>
             ))}
-            <div className="border-t pt-2 font-bold">
-              <div className="flex justify-between">
-                <span>Total</span>
-                <span>${(order.total / 100).toFixed(2)}</span>
+            <div className="border-t pt-2">
+              <div className="flex justify-between text-gray-700">
+                <span>Subtotal</span>
+                <span>{formatCents(originalTotal)}</span>
               </div>
+
+              {loyaltyPointsSpent > 0 && (
+                <div className="flex justify-between text-green-600">
+                  <span className="flex items-center">
+                    <span role="img" aria-label="Points" className="mr-1">
+                      🎁
+                    </span>
+                    Puntos aplicados ({loyaltyPointsSpent})
+                  </span>
+                  <span>-{formatCents(loyaltyPointsSpent)}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between font-bold mt-2 text-lg">
+                <span>Total</span>
+                <span>{formatCents(order.total)}</span>
+              </div>
+
+              {potentialPoints > 0 && (
+                <div className="mt-2 text-sm text-blue-600 flex justify-end">
+                  <span>Ganarás {potentialPoints} puntos con esta compra</span>
+                </div>
+              )}
             </div>
           </div>
         </div>

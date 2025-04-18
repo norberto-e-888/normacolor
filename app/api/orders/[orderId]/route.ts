@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { Order } from "@/database";
+import { Order, User } from "@/database";
 import { getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
 
@@ -24,6 +24,12 @@ export async function GET(
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
+  // Fetch the user to get their loyalty tier
+  const user = await User.findById(session.user.id);
+  if (!user) {
+    return new NextResponse("User not found", { status: 404 });
+  }
+
   const cart = order.cart.map((item) => ({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ...(item as any).toObject(),
@@ -35,6 +41,7 @@ export async function GET(
     order: {
       ...order.toObject(),
       cart,
+      customerTier: user.loyaltyTier, // Add the user's loyalty tier
     },
   });
 }

@@ -12,7 +12,7 @@ import { FreepikImage } from "@/components/smart/freepik-image";
 import { S3Image } from "@/components/smart/s3-image";
 import { Content } from "@/components/ui/content";
 import { Tooltip } from "@/components/ui/tool-tip";
-import { ArtSource } from "@/database";
+import { ArtSource, LOYALTY_TIER_CONFIG, UserLoyaltyTier } from "@/database";
 import { Art, fetchArts } from "@/functions/art";
 import { createOrder } from "@/functions/orders";
 import { useCart } from "@/hooks/use-cart";
@@ -32,6 +32,16 @@ const SEARCH_TERM_MAP: Record<string, string> = {
 };
 
 type ArtTab = "freepik" | "custom";
+
+// Format a percentage with 0 decimal places
+const formatPercentage = (value: number) => `${Math.round(value * 100)}%`;
+
+// Function to get next tier based on current tier
+const getNextTier = (currentTier: UserLoyaltyTier) => {
+  if (currentTier === UserLoyaltyTier.Bronze) return UserLoyaltyTier.Silver;
+  if (currentTier === UserLoyaltyTier.Silver) return UserLoyaltyTier.Gold;
+  return null; // No next tier if already Gold
+};
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -53,6 +63,17 @@ export default function CheckoutPage() {
     setDebouncedSearchTerm(value);
   }, 500);
 
+  // User state with more complete loyalty information
+  const [userData, setUserData] = useState<{
+    unspentLoyaltyPoints: number;
+    loyaltyTier: UserLoyaltyTier;
+    tierQualificationSpendCents: number;
+    totalSpentCents: number;
+  } | null>(null);
+
+  // State for selected points to use
+  const [selectedPoints, setSelectedPoints] = useState(0);
+
   const handleSubmitOrder = useCallback(async () => {
     if (!allItemsHaveArt) return;
 
@@ -72,7 +93,8 @@ export default function CheckoutPage() {
         art: art!,
       }));
 
-      const orderId = await createOrder(cart, totalPrice());
+      // Include selected points to use in order creation
+      const orderId = await createOrder(cart, totalPrice(), selectedPoints);
       router.push(`/pagar/${orderId}`);
     } catch (error) {
       console.error("Error creating order:", error);
@@ -82,7 +104,7 @@ export default function CheckoutPage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [allItemsHaveArt, items, router, totalPrice]);
+  }, [allItemsHaveArt, items, router, totalPrice, selectedPoints]);
 
   useEffect(() => {
     const fromLogin = searchParams.get("fromLogin");
@@ -128,6 +150,34 @@ export default function CheckoutPage() {
       fetchFreepikArts();
     }
   }, [debouncedSearchTerm, selectedItem]);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const session = await getSession();
+        if (session) {
+          const response = await fetch("/api/auth/me");
+          if (response.ok) {
+            const data = await response.json();
+            setUserData(data);
+
+            // Initialize selected points to max allowable (with $1 minimum)
+            if (data.user.unspentLoyaltyPoints > 0) {
+              const minimumPriceCents = 100; // $1 minimum
+              const maxPoints = Math.max(0, totalPrice() - minimumPriceCents);
+              setSelectedPoints(
+                Math.min(data.user.unspentLoyaltyPoints, maxPoints)
+              );
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchUserData();
+  }, [totalPrice]);
 
   const handleArtSelect = (art: Art) => {
     if (!selectedItemId) return;
@@ -210,6 +260,69 @@ export default function CheckoutPage() {
     }
   };
 
+  // Calculate max points that can be used (respecting $1 minimum)
+  const getMaxPointsToUse = () => {
+    if (!userData) return 0;
+    const minimumOrderCents = 100; // $1 minimum
+    return Math.min(
+      userData.unspentLoyaltyPoints,
+      Math.max(0, totalPrice() - minimumOrderCents)
+    );
+  };
+
+  // Calculate final price after points discount
+  const calculateFinalPrice = () => {
+    const total = totalPrice();
+    // Ensure at least $1 final price
+    return Math.max(100, total - selectedPoints);
+  };
+
+  // Calculate potential points earned from this order
+  const calculatePotentialPoints = () => {
+    if (!userData) return 0;
+
+    const finalPrice = calculateFinalPrice();
+    const pointsMultiplier =
+      LOYALTY_TIER_CONFIG[userData.loyaltyTier].pointsMultiplier;
+
+    // Points are earned on the post-discount amount
+    // Convert cents to dollars (1% of dollars spent) before applying multiplier
+    const finalPriceDollars = finalPrice / 100;
+    return Math.round(finalPriceDollars * pointsMultiplier);
+  };
+
+  // Calculate tier progress
+  const calculateTierProgress = () => {
+    if (!userData) return { percentage: 0, nextTier: null, remaining: 0 };
+
+    const nextTier = getNextTier(userData.loyaltyTier);
+    if (!nextTier) return { percentage: 1, nextTier: null, remaining: 0 };
+
+    const currentRequirement =
+      LOYALTY_TIER_CONFIG[userData.loyaltyTier].spendingRequirement;
+    const nextRequirement = LOYALTY_TIER_CONFIG[nextTier].spendingRequirement;
+    const spentTowardsNext = userData.tierQualificationSpendCents;
+
+    const targetSpend = nextRequirement - currentRequirement;
+    const currentProgress = Math.min(
+      spentTowardsNext - currentRequirement,
+      targetSpend
+    );
+    const percentage = currentProgress / targetSpend;
+    const remaining = nextRequirement - spentTowardsNext;
+
+    return {
+      percentage,
+      nextTier,
+      remaining,
+    };
+  };
+
+  const handlePointsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    setSelectedPoints(isNaN(value) ? 0 : value);
+  };
+
   if (items.length === 0) {
     return (
       <Content>
@@ -238,13 +351,113 @@ export default function CheckoutPage() {
     return `${itemsWithoutArt.length} productos requieren arte`;
   };
 
+  const tierProgress = calculateTierProgress();
+  const maxPointsToUse = getMaxPointsToUse();
+
   return (
     <Content padding={false}>
       <div className="flex flex-col">
-        <div className="flex justify-end p-2 border-b">
+        {userData && (
+          <div className="p-4 bg-gray-50 border-b">
+            <div className="max-w-3xl mx-auto">
+              {/* Loyalty Tier Information */}
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-lg font-medium">
+                    Tu nivel:{" "}
+                    <span className="capitalize font-semibold">
+                      {userData.loyaltyTier}
+                    </span>
+                  </h3>
+                  <span className="text-sm text-gray-500">
+                    {calculatePotentialPoints()} puntos a ganar con esta compra
+                  </span>
+                </div>
+
+                {tierProgress.nextTier && (
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span>Progreso hacia {tierProgress.nextTier}</span>
+                      <span>{formatPercentage(tierProgress.percentage)}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div
+                        className="bg-primary h-2.5 rounded-full"
+                        style={{
+                          width: formatPercentage(tierProgress.percentage),
+                        }}
+                      />
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Te faltan {formatCents(tierProgress.remaining)} para
+                      alcanzar el siguiente nivel
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Loyalty Points Usage */}
+              {userData.unspentLoyaltyPoints > 0 && (
+                <div className="p-3 border rounded-lg bg-white">
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="font-medium">Usar puntos de lealtad</h4>
+                    <span className="text-sm">
+                      {userData.unspentLoyaltyPoints} puntos disponibles
+                    </span>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="range"
+                        min="0"
+                        max={maxPointsToUse}
+                        value={selectedPoints}
+                        onChange={handlePointsChange}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      />
+                      <input
+                        type="number"
+                        min="0"
+                        max={maxPointsToUse}
+                        value={selectedPoints}
+                        onChange={handlePointsChange}
+                        className="w-20 p-1 border rounded text-center"
+                      />
+                    </div>
+
+                    <div className="text-sm flex justify-between">
+                      <span className="text-gray-500">
+                        Descuento aplicado: -{formatCents(selectedPoints)}
+                      </span>
+                      {totalPrice() - selectedPoints < 100 && (
+                        <span className="text-amber-600">
+                          El valor mínimo de una orden es de 1 dólar
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        <div className="flex justify-between p-2 border-b">
+          <div className="flex items-center">{/* Left side content */}</div>
           <div className="flex items-center gap-4">
+            <div className="flex flex-col items-end text-sm">
+              <div className="text-gray-500">
+                Subtotal: {formatCents(totalPrice())}
+              </div>
+              {selectedPoints > 0 && (
+                <div className="text-green-600">
+                  Descuento: -{formatCents(selectedPoints)}
+                </div>
+              )}
+            </div>
             <div className="text-lg font-semibold text-green-600">
-              Total: {formatCents(totalPrice())}
+              Total: {formatCents(calculateFinalPrice())}
             </div>
             <Tooltip
               show={!allItemsHaveArt}

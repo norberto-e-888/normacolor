@@ -16,5 +16,7 @@ export async function GET() {
     return new NextResponse(null);
   }
 
+  console.log(user);
+
   return NextResponse.json(user.toObject());
 }
