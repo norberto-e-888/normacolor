@@ -193,6 +193,10 @@ const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.id = user.id;
         token.role = (user as User).role;
+        token.firstName = (user as User).firstName;
+        token.lastName = (user as User).lastName;
+        token.phoneNumber = (user as User).phoneNumber;
+        token.profilePicture = (user as User).profilePicture;
       }
 
       return token;
@@ -200,6 +204,17 @@ const { handlers, signIn, signOut, auth } = NextAuth({
     async session({ session, token }) {
       session.user.id = token.id as string;
       (session.user as unknown as User).role = token.role as UserRole;
+      (session.user as unknown as User).firstName = token.firstName as
+        | string
+        | undefined;
+      (session.user as unknown as User).lastName = token.lastName as
+        | string
+        | undefined;
+      (session.user as unknown as User).phoneNumber = token.phoneNumber as
+        | string
+        | undefined;
+      (session.user as unknown as User).profilePicture =
+        token.profilePicture as string | undefined;
 
       return session;
     },
@@ -210,4 +225,13 @@ const { handlers, signIn, signOut, auth } = NextAuth({
 });
 
 export { auth, handlers, signIn, signOut };
-export type SessionUser = Pick<User, "id" | "email" | "role" | "name">;
+export type SessionUser = Pick<
+  User,
+  | "id"
+  | "email"
+  | "role"
+  | "firstName"
+  | "lastName"
+  | "phoneNumber"
+  | "profilePicture"
+>;

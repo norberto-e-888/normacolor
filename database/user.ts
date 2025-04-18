@@ -50,14 +50,22 @@ export interface User extends BaseModel {
   password?: string;
   role: UserRole;
   providers: UserProvider[];
-  name?: string;
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
   image?: string;
+  profilePicture?: string;
   totalSpentCents: number;
   totalLoyaltyPoints: number;
   unspentLoyaltyPoints: number;
   loyaltyTier: UserLoyaltyTier;
   tierQualificationEndDate: Date;
   tierQualificationSpendCents: number;
+  profileCompletionFlags: {
+    nameAdded: boolean;
+    phoneAdded: boolean;
+    profilePictureAdded: boolean;
+  };
   aggregations: {
     lastOrderDate?: Date;
     averageOrderValue: number;
@@ -93,12 +101,22 @@ const userSchema = getSchema<User>(
       validate: [isEnumArray(UserProvider)],
       set: setUniqueMembers,
     },
-    name: {
+    firstName: {
       type: String,
-      lowercase: true,
+      trim: true,
+    },
+    lastName: {
+      type: String,
+      trim: true,
+    },
+    phoneNumber: {
+      type: String,
       trim: true,
     },
     image: {
+      type: String,
+    },
+    profilePicture: {
       type: String,
     },
     totalSpentCents: {
@@ -139,6 +157,27 @@ const userSchema = getSchema<User>(
       required: true,
       default: 0,
       min: 0,
+    },
+    profileCompletionFlags: {
+      type: new mongoose.Schema(
+        {
+          nameAdded: {
+            type: Boolean,
+            default: false,
+          },
+          phoneAdded: {
+            type: Boolean,
+            default: false,
+          },
+          profilePictureAdded: {
+            type: Boolean,
+            default: false,
+          },
+        },
+        { _id: false }
+      ),
+      required: true,
+      default: () => ({}),
     },
     aggregations: {
       type: new mongoose.Schema(

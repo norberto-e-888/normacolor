@@ -1,12 +1,13 @@
 "use client";
 
-import { Hexagon, LogOut, ShoppingCart } from "lucide-react";
+import { Hexagon, LogOut, ShoppingCart, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 
 import { SessionUser } from "@/auth";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { routes } from "@/constants/routes";
@@ -124,7 +125,28 @@ export function Navigation() {
         </div>
 
         <div className="ml-auto flex items-center gap-4">
-          {status === "authenticated" && <NotificationDropdown />}
+          {status === "authenticated" && (
+            <>
+              <NotificationDropdown />
+              <NavLink href="/perfil">
+                <div className="relative">
+                  {(session?.user as SessionUser)?.profilePicture ? (
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage
+                        src={(session?.user as SessionUser).profilePicture!}
+                        alt="Profile"
+                      />
+                      <AvatarFallback>
+                        <User size="16px" />
+                      </AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <User size="24px" />
+                  )}
+                </div>
+              </NavLink>
+            </>
+          )}
           <NavLink href="/checkout">
             <div className="relative">
               <ShoppingCart size="24px" />
