@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 
-import { Order, OrderProduct, OrderStatus, User } from "@/database";
+import {
+  calculateLoyaltyPoints,
+  determineUserTier,
+  Order,
+  OrderProduct,
+  OrderStatus,
+  TIER_QUALIFICATION_PERIOD_MONTHS,
+  User,
+} from "@/database";
 import { getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
 
@@ -49,6 +57,36 @@ export async function POST(request: Request) {
         throw new Error("User not found");
       }
 
+      const userData = user.toObject();
+      const orderAmount = order.total;
+
+      // Check if qualification period has expired and reset if needed
+      const now = new Date();
+      const qualificationEndDate = userData.tierQualificationEndDate || now;
+
+      let tierQualificationSpendCents =
+        userData.tierQualificationSpendCents || 0;
+      let newQualificationEndDate = qualificationEndDate;
+
+      if (now > qualificationEndDate) {
+        // Reset qualification period
+        tierQualificationSpendCents = orderAmount;
+        newQualificationEndDate = new Date();
+        newQualificationEndDate.setMonth(
+          now.getMonth() + TIER_QUALIFICATION_PERIOD_MONTHS
+        );
+      } else {
+        // Add to existing qualification spending
+        tierQualificationSpendCents += orderAmount;
+      }
+
+      // Determine tier based on qualification spend
+      const newTier = determineUserTier(tierQualificationSpendCents);
+
+      // Calculate loyalty points based on tier
+      const loyaltyPoints = calculateLoyaltyPoints(orderAmount, newTier);
+
+      // Calculate order analytics
       const totalItems = order.cart.reduce((sum, item) => {
         const itemData = item.toObject() as OrderProduct;
         return sum + itemData.quantity;
@@ -63,9 +101,8 @@ export async function POST(request: Request) {
         {}
       );
 
-      const userData = user.toObject();
       const newTotalOrders = (userData.aggregations?.totalOrders || 0) + 1;
-      const newTotalSpent = (userData.totalSpentCents || 0) + order.total;
+      const newTotalSpent = (userData.totalSpentCents || 0) + orderAmount;
       const newAverageOrderValue = Math.round(newTotalSpent / newTotalOrders);
       const orderStatusCounts = {
         ...(userData.aggregations?.orderStatusCounts || {}),
@@ -90,11 +127,14 @@ export async function POST(request: Request) {
 
       await User.findByIdAndUpdate(userId, {
         $inc: {
-          totalSpentCents: order.total,
-          totalLoyaltyPoints: order.total,
-          unspentLoyaltyPoints: order.total,
+          totalSpentCents: orderAmount,
+          totalLoyaltyPoints: loyaltyPoints,
+          unspentLoyaltyPoints: loyaltyPoints,
         },
         $set: {
+          loyaltyTier: newTier,
+          tierQualificationEndDate: newQualificationEndDate,
+          tierQualificationSpendCents: tierQualificationSpendCents,
           aggregations: {
             lastOrderDate: new Date(),
             averageOrderValue: newAverageOrderValue,
@@ -112,10 +152,13 @@ export async function POST(request: Request) {
     // Purposefully not awaiting this to avoid delaying the response
     updateUserAggregations(order, session.user.id)
       .then(() => {
-        console.log("User aggregations updated");
+        console.log("User aggregations and loyalty tier updated");
       })
       .catch((error) => {
-        console.error("Failed to update user aggregations", error);
+        console.error(
+          "Failed to update user aggregations and loyalty tier",
+          error
+        );
       });
   }
 

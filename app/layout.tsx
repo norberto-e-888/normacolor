@@ -6,7 +6,6 @@ import localFont from "next/font/local";
 import { Providers } from "@/components/providers";
 import { Footer } from "@/components/smart/footer";
 import { Navigation } from "@/components/smart/navigation";
-import { PromotionNotifications } from "@/components/smart/promotion-notification";
 
 import { Effects } from "./effects";
 
@@ -40,7 +39,6 @@ export default function RootLayout({
           <Navigation />
           <main className="overflow-y-auto h-full">{children}</main>
           <Footer />
-          <PromotionNotifications />
           <Effects />
         </Providers>
       </body>
