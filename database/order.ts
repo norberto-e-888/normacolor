@@ -54,6 +54,7 @@ export type OrderProduct = {
   quantity: number;
   totalPrice: number;
   art?: OrderArt;
+  approvedArtId?: string; // ID of the approved design image
 } & Omit<BaseModel, "createdAt" | "updatedAt">;
 
 export type ProductSnapshot = Pick<
@@ -190,6 +191,10 @@ const orderProductSchema = getSchema<OrderProduct>(
     art: {
       type: orderArtSchema,
       required: true,
+    },
+    approvedArtId: {
+      type: String,
+      required: false,
     },
     totalPrice: {
       type: Number,

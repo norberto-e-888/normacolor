@@ -27,10 +27,6 @@ const statusOptions = [
   { label: "Entregado", value: OrderStatus.Delivered },
 ];
 
-const clientStatusOptions = [
-  { label: "Aprobar diseño", value: OrderStatus.InProgress },
-];
-
 const getStatusLabel = (status: OrderStatus) => {
   switch (status) {
     case OrderStatus.Paid:
@@ -171,27 +167,6 @@ export function OrderDetail({
                   key={option.value}
                   onClick={() => onStatusChange?.(order, option.value)}
                   disabled={option.value === order.status}
-                >
-                  {option.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : order.status === OrderStatus.DesignApprovalPending && !isAdmin ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className={`${getStatusColor(order.status)} border-none`}
-              >
-                {getStatusLabel(order.status)}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {clientStatusOptions.map((option) => (
-                <DropdownMenuItem
-                  key={option.value}
-                  onClick={() => onStatusChange?.(order, option.value)}
                 >
                   {option.label}
                 </DropdownMenuItem>

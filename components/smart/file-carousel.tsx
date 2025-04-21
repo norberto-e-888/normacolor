@@ -1,5 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { Download, FileImage, FileText, Loader, Trash2 } from "lucide-react";
+import {
+  Check,
+  Download,
+  FileImage,
+  FileText,
+  Loader,
+  Trash2,
+} from "lucide-react";
 import { forwardRef, memo, useImperativeHandle, useState } from "react";
 import { toast } from "sonner";
 
@@ -43,6 +50,20 @@ export const FileCarousel = memo(
       );
       const [imageTypes, setImageTypes] = useState<Record<string, string>>({});
       const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+      const [approvingImageId, setApprovingImageId] = useState<string | null>(
+        null
+      );
+
+      // Check if this order item has an approved art
+      const orderItem = order?.cart.find((item) => item.id === itemId);
+      const approvedArtId = orderItem?.approvedArtId;
+
+      // Sort images to show approved art first
+      const sortedImages = [...images].sort((a, b) => {
+        if (a === approvedArtId) return -1;
+        if (b === approvedArtId) return 1;
+        return 0;
+      });
 
       const handleDownload = async (imageId: string) => {
         try {
@@ -111,6 +132,37 @@ export const FileCarousel = memo(
         }
       };
 
+      const handleApproveArt = async (imageId: string) => {
+        if (!order || approvingImageId) return;
+
+        setApprovingImageId(imageId);
+        try {
+          const response = await fetch(
+            `/api/orders/${orderId}/items/${itemId}/approve-art`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ imageId }),
+            }
+          );
+
+          if (!response.ok) throw new Error("Failed to approve art");
+
+          // Successful response received
+          await response.json();
+
+          toast.success("Diseño aprobado correctamente");
+
+          // Force reload the page to refresh the order status
+          window.location.reload();
+        } catch (error) {
+          console.error("Error approving art:", error);
+          toast.error("Error al aprobar el diseño");
+        } finally {
+          setApprovingImageId(null);
+        }
+      };
+
       useImperativeHandle(ref, () => ({
         handleUpdateToDesignApprovalPending,
       }));
@@ -165,23 +217,51 @@ export const FileCarousel = memo(
         return null;
       };
 
+      // Show an approval button when:
+      // 1. These are designer images
+      // 2. The user is a client (not admin)
+      // 3. The order is in DesignApprovalPending state
+      const showApproveButton =
+        isDesignerImages &&
+        !isAdmin &&
+        order?.status === OrderStatus.DesignApprovalPending;
+
+      // Show the approved indicator when:
+      // 1. We have an approved art ID
+      // 2. And it matches this image
+      const isApproved = (imageId: string) => approvedArtId === imageId;
+
       if (!images?.length) return null;
 
       return (
         <div className="mb-4">
           <h5 className="text-sm font-medium mb-2">{title}</h5>
           <div className="flex gap-2 overflow-x-auto pb-2">
-            {images.map((imageId) => (
+            {sortedImages.map((imageId) => (
               <div
                 key={imageId}
-                className="relative w-20 h-20 flex-shrink-0 border rounded-lg overflow-hidden group"
+                className={`relative w-20 h-20 flex-shrink-0 border rounded-lg overflow-hidden group 
+                  ${
+                    isApproved(imageId)
+                      ? "border-green-500 border-2 shadow-md"
+                      : ""
+                  }`}
               >
                 <S3Image
                   namespace={`order-chats/${orderId}/${itemId}`}
                   imageId={imageId}
                 />
                 {renderFileTypeIcon(imageId)}
+
+                {/* Approved check mark */}
+                {isApproved(imageId) && (
+                  <div className="absolute top-1 right-1 bg-green-500 rounded-full p-0.5">
+                    <Check className="w-3 h-3 text-white" />
+                  </div>
+                )}
+
                 <div className="absolute bottom-1 right-1 flex gap-1">
+                  {/* Download button */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -191,6 +271,26 @@ export const FileCarousel = memo(
                   >
                     <Download className="w-4 h-4" />
                   </button>
+
+                  {/* Approve button */}
+                  {showApproveButton && !isApproved(imageId) && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleApproveArt(imageId);
+                      }}
+                      disabled={approvingImageId === imageId}
+                      className="p-1 bg-green-500 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity text-white disabled:opacity-50"
+                    >
+                      {approvingImageId === imageId ? (
+                        <Loader className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Check className="w-4 h-4" />
+                      )}
+                    </button>
+                  )}
+
+                  {/* Delete button */}
                   {((isDesignerImages && isAdmin) ||
                     (!isDesignerImages && !isAdmin)) && (
                     <button
