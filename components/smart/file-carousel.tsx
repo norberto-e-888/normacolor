@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Check,
   Download,
@@ -7,11 +7,21 @@ import {
   Loader,
   Trash2,
 } from "lucide-react";
-import { forwardRef, memo, useImperativeHandle, useState } from "react";
+import {
+  forwardRef,
+  memo,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from "react";
 import { toast } from "sonner";
 
+import { ConfirmModal } from "@/components/ui/confirm-modal";
+import { PusherEventName } from "@/constants/pusher";
 import { ArtSource, Order, OrderStatus } from "@/database";
 import { updateOrderStatus } from "@/functions/orders/update-order-status";
+import { pusherClient } from "@/lib/client/pusher";
+import { getPusherChannelName } from "@/utils/pusher";
 
 import { S3Image } from "./s3-image";
 
@@ -30,6 +40,17 @@ export interface FileCarouselRef {
   handleUpdateToDesignApprovalPending: () => Promise<void>;
 }
 
+interface OrderQueryData {
+  selectedOrder?: Order<true>;
+  [key: string]: unknown;
+}
+
+interface OrdersQueryData {
+  orders: Order<true>[];
+  nextCursor?: string | null;
+  [key: string]: unknown;
+}
+
 export const FileCarousel = memo(
   forwardRef<FileCarouselRef, FileCarouselProps>(
     (
@@ -45,6 +66,7 @@ export const FileCarousel = memo(
       },
       ref
     ) => {
+      const queryClient = useQueryClient();
       const [deletingImageId, setDeletingImageId] = useState<string | null>(
         null
       );
@@ -53,6 +75,13 @@ export const FileCarousel = memo(
       const [approvingImageId, setApprovingImageId] = useState<string | null>(
         null
       );
+
+      // Confirm modals state
+      const [showUpdateStatusModal, setShowUpdateStatusModal] = useState(false);
+      const [showApproveArtModal, setShowApproveArtModal] = useState(false);
+      const [selectedImageForApproval, setSelectedImageForApproval] = useState<
+        string | null
+      >(null);
 
       // Check if this order item has an approved art
       const orderItem = order?.cart.find((item) => item.id === itemId);
@@ -64,6 +93,59 @@ export const FileCarousel = memo(
         if (b === approvedArtId) return 1;
         return 0;
       });
+
+      // Subscribe to order status channel for real-time updates
+      useEffect(() => {
+        if (!order) return;
+
+        const channelName = getPusherChannelName.orderStatus(order.id);
+        const channel = pusherClient.subscribe(channelName);
+
+        // Listen for order updates
+        channel.bind(
+          PusherEventName.OrderUpdated,
+          (updatedOrder: Order<true>) => {
+            // Update the order in the React Query cache
+            queryClient.setQueryData<OrderQueryData>(
+              ["order", order.id],
+              (oldData) => {
+                if (!oldData) return { selectedOrder: updatedOrder };
+                return {
+                  ...oldData,
+                  selectedOrder: updatedOrder,
+                };
+              }
+            );
+
+            // Also update the orders list if it exists in the cache
+            queryClient.setQueryData<OrdersQueryData>(["orders"], (oldData) => {
+              if (!oldData) return oldData;
+
+              return {
+                ...oldData,
+                orders: oldData.orders.map((o: Order<true>) =>
+                  o.id === updatedOrder.id ? updatedOrder : o
+                ),
+              };
+            });
+          }
+        );
+
+        // Listen for art approval
+        channel.bind(
+          PusherEventName.ArtApproved,
+          (data: { itemId: string; imageId: string; orderId: string }) => {
+            if (data.itemId === itemId) {
+              // Force refetch images to get the updated state
+              onRefetchImages();
+            }
+          }
+        );
+
+        return () => {
+          pusherClient.unsubscribe(channelName);
+        };
+      }, [order, itemId, queryClient, onRefetchImages]);
 
       const handleDownload = async (imageId: string) => {
         try {
@@ -97,7 +179,7 @@ export const FileCarousel = memo(
       const handleUpdateToDesignApprovalPending = async () => {
         if (!order || isUpdatingStatus) return;
 
-        // Only prompt to update status if this is a freepik template and admin is uploading
+        // Only show modal if this is a freepik template and admin is uploading
         const hasFreepikItems = order.cart.some(
           (item) => item.art?.source === ArtSource.Freepik
         );
@@ -108,58 +190,82 @@ export const FileCarousel = memo(
           hasFreepikItems &&
           order.status === OrderStatus.Paid
         ) {
-          const shouldSetPending = confirm(
-            "¿Deseas marcar esta orden como pendiente de aprobación del diseño?"
-          );
-
-          if (shouldSetPending) {
-            setIsUpdatingStatus(true);
-            try {
-              await updateOrderStatus(
-                orderId,
-                OrderStatus.DesignApprovalPending
-              );
-              toast.success("Orden actualizada a pendiente de aprobación");
-              // Force reload the page to refresh the order status
-              window.location.reload();
-            } catch (error) {
-              console.error("Error updating order status:", error);
-              toast.error("Error al actualizar el estado de la orden");
-            } finally {
-              setIsUpdatingStatus(false);
-            }
-          }
+          setShowUpdateStatusModal(true);
         }
       };
 
-      const handleApproveArt = async (imageId: string) => {
+      const confirmUpdateToDesignApprovalPending = async () => {
+        if (!order) return;
+
+        setIsUpdatingStatus(true);
+        try {
+          await updateOrderStatus(orderId, OrderStatus.DesignApprovalPending);
+          toast.success("Orden actualizada a pendiente de aprobación");
+
+          // Update the local query cache instead of refreshing
+          queryClient.invalidateQueries({ queryKey: ["order", order.id] });
+          queryClient.invalidateQueries({ queryKey: ["orders"] });
+        } catch (error) {
+          console.error("Error updating order status:", error);
+          toast.error("Error al actualizar el estado de la orden");
+        } finally {
+          setIsUpdatingStatus(false);
+          setShowUpdateStatusModal(false);
+        }
+      };
+
+      const handleApproveArtClick = async (imageId: string) => {
         if (!order || approvingImageId) return;
 
-        setApprovingImageId(imageId);
+        setSelectedImageForApproval(imageId);
+        setShowApproveArtModal(true);
+      };
+
+      const handleApproveArt = async () => {
+        if (!order || !selectedImageForApproval) return;
+
+        setApprovingImageId(selectedImageForApproval);
         try {
           const response = await fetch(
             `/api/orders/${orderId}/items/${itemId}/approve-art`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ imageId }),
+              body: JSON.stringify({ imageId: selectedImageForApproval }),
             }
           );
 
           if (!response.ok) throw new Error("Failed to approve art");
 
           // Successful response received
-          await response.json();
+          const data = await response.json();
+
+          // Use React Query to update the cache with the updated order
+          queryClient.setQueryData<OrderQueryData>(
+            ["order", order.id],
+            (oldData) => {
+              if (!oldData) return { selectedOrder: data.updatedOrder };
+              return {
+                ...oldData,
+                selectedOrder: data.updatedOrder,
+              };
+            }
+          );
+
+          // Invalidate the orders list to trigger a refetch
+          queryClient.invalidateQueries({ queryKey: ["orders"] });
+
+          // Update the local image state
+          await onRefetchImages();
 
           toast.success("Diseño aprobado correctamente");
-
-          // Force reload the page to refresh the order status
-          window.location.reload();
         } catch (error) {
           console.error("Error approving art:", error);
           toast.error("Error al aprobar el diseño");
         } finally {
           setApprovingImageId(null);
+          setSelectedImageForApproval(null);
+          setShowApproveArtModal(false);
         }
       };
 
@@ -234,85 +340,114 @@ export const FileCarousel = memo(
       if (!images?.length) return null;
 
       return (
-        <div className="mb-4">
-          <h5 className="text-sm font-medium mb-2">{title}</h5>
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {sortedImages.map((imageId) => (
-              <div
-                key={imageId}
-                className={`relative w-20 h-20 flex-shrink-0 border rounded-lg overflow-hidden group 
-                  ${
-                    isApproved(imageId)
-                      ? "border-green-500 border-2 shadow-md"
-                      : ""
-                  }`}
-              >
-                <S3Image
-                  namespace={`order-chats/${orderId}/${itemId}`}
-                  imageId={imageId}
-                />
-                {renderFileTypeIcon(imageId)}
+        <>
+          <div className="mb-4">
+            <h5 className="text-sm font-medium mb-2">{title}</h5>
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {sortedImages.map((imageId) => (
+                <div
+                  key={imageId}
+                  className={`relative w-20 h-20 flex-shrink-0 border rounded-lg overflow-hidden group 
+                    ${
+                      isApproved(imageId)
+                        ? "border-green-500 border-2 shadow-md"
+                        : ""
+                    }`}
+                >
+                  <S3Image
+                    namespace={`order-chats/${orderId}/${itemId}`}
+                    imageId={imageId}
+                  />
+                  {renderFileTypeIcon(imageId)}
 
-                {/* Approved check mark */}
-                {isApproved(imageId) && (
-                  <div className="absolute top-1 right-1 bg-green-500 rounded-full p-0.5">
-                    <Check className="w-3 h-3 text-white" />
+                  {/* Approved check mark */}
+                  {isApproved(imageId) && (
+                    <div className="absolute top-1 right-1 bg-green-500 rounded-full p-0.5">
+                      <Check className="w-3 h-3 text-white" />
+                    </div>
+                  )}
+
+                  <div className="absolute bottom-1 right-1 flex gap-1">
+                    {/* Download button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDownload(imageId);
+                      }}
+                      className="p-1 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Download className="w-4 h-4" />
+                    </button>
+
+                    {/* Approve button */}
+                    {showApproveButton && !isApproved(imageId) && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleApproveArtClick(imageId);
+                        }}
+                        disabled={approvingImageId === imageId}
+                        className="p-1 bg-green-500 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity text-white disabled:opacity-50"
+                      >
+                        {approvingImageId === imageId ? (
+                          <Loader className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Check className="w-4 h-4" />
+                        )}
+                      </button>
+                    )}
+
+                    {/* Delete button */}
+                    {((isDesignerImages && isAdmin) ||
+                      (!isDesignerImages && !isAdmin)) && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(imageId);
+                        }}
+                        disabled={deletingImageId === imageId}
+                        className="p-1 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity text-red-500 disabled:opacity-50"
+                      >
+                        {deletingImageId === imageId ? (
+                          <Loader className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
+                      </button>
+                    )}
                   </div>
-                )}
-
-                <div className="absolute bottom-1 right-1 flex gap-1">
-                  {/* Download button */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDownload(imageId);
-                    }}
-                    className="p-1 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Download className="w-4 h-4" />
-                  </button>
-
-                  {/* Approve button */}
-                  {showApproveButton && !isApproved(imageId) && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleApproveArt(imageId);
-                      }}
-                      disabled={approvingImageId === imageId}
-                      className="p-1 bg-green-500 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity text-white disabled:opacity-50"
-                    >
-                      {approvingImageId === imageId ? (
-                        <Loader className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Check className="w-4 h-4" />
-                      )}
-                    </button>
-                  )}
-
-                  {/* Delete button */}
-                  {((isDesignerImages && isAdmin) ||
-                    (!isDesignerImages && !isAdmin)) && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(imageId);
-                      }}
-                      disabled={deletingImageId === imageId}
-                      className="p-1 bg-white rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity text-red-500 disabled:opacity-50"
-                    >
-                      {deletingImageId === imageId ? (
-                        <Loader className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="w-4 h-4" />
-                      )}
-                    </button>
-                  )}
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+
+          {/* Status Update Confirmation Modal */}
+          <ConfirmModal
+            isOpen={showUpdateStatusModal}
+            onClose={() => setShowUpdateStatusModal(false)}
+            onConfirm={confirmUpdateToDesignApprovalPending}
+            title="Actualizar estado"
+            description="¿Deseas marcar esta orden como pendiente de aprobación del diseño?"
+            confirmLabel="Sí, continuar"
+            cancelLabel="Cancelar"
+            isLoading={isUpdatingStatus}
+          />
+
+          {/* Art Approval Confirmation Modal */}
+          <ConfirmModal
+            isOpen={showApproveArtModal}
+            onClose={() => {
+              setShowApproveArtModal(false);
+              setSelectedImageForApproval(null);
+            }}
+            onConfirm={handleApproveArt}
+            title="Aprobar diseño"
+            description="Al aprobar este diseño, la orden pasará a producción. ¿Estás seguro que deseas aprobar este diseño?"
+            confirmLabel="Aprobar diseño"
+            cancelLabel="Cancelar"
+            isLoading={!!approvingImageId}
+          />
+        </>
       );
     }
   )

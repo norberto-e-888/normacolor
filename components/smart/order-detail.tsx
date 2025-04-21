@@ -1,5 +1,6 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { Download } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef } from "react";
@@ -12,9 +13,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { PusherEventName } from "@/constants/pusher";
 import { ArtSource, Order, OrderArt, OrderStatus } from "@/database";
 import { downloadArt } from "@/functions/art";
+import { pusherClient } from "@/lib/client/pusher";
 import { formatCents } from "@/utils";
+import { getPusherChannelName } from "@/utils/pusher";
 
 import { FreepikImage } from "./freepik-image";
 import { OrderChat } from "./order-chat";
@@ -79,7 +83,37 @@ export function OrderDetail({
   const searchParams = useSearchParams();
   const selectedItemId = searchParams.get("selectedItemId");
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const queryClient = useQueryClient();
   const canChangeStatus = isAdmin && order.status !== OrderStatus.Delivered;
+
+  // Subscribe to the order status channel for real-time updates
+  useEffect(() => {
+    if (!order?.id) return;
+
+    const channelName = getPusherChannelName.orderStatus(order.id);
+    const channel = pusherClient.subscribe(channelName);
+
+    // Listen for order status updates
+    channel.bind(PusherEventName.OrderUpdated, (updatedOrder: Order<true>) => {
+      // Update the order in the React Query cache
+      queryClient.setQueryData<{
+        selectedOrder?: Order<true>;
+        [key: string]: unknown;
+      }>(["order", order.id], (oldData) => {
+        if (!oldData) return { selectedOrder: updatedOrder };
+        return {
+          ...oldData,
+          selectedOrder: updatedOrder,
+        };
+      });
+    });
+
+    return () => {
+      // Unsubscribe when component unmounts
+      pusherClient.unsubscribe(channelName);
+    };
+  }, [order?.id, queryClient]);
+
   const handleDownloadArt = async (
     orderId: string,
     itemId: string,

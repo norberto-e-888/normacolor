@@ -58,6 +58,25 @@ export async function POST(request: Request) {
       if (session.user.role !== UserRole.Admin) {
         return new NextResponse("Unauthorized", { status: 401 });
       }
+    } else if (channelStr.startsWith(PusherChannelType.OrderStatus)) {
+      // Extract orderId from channel name
+      const orderId = channelStr.replace(
+        `${PusherChannelType.OrderStatus}_`,
+        ""
+      );
+
+      if (!orderId) {
+        return new NextResponse("Bad Request", { status: 400 });
+      }
+
+      // If user is not admin, verify order ownership
+      if (session.user.role !== "admin") {
+        await connectToMongo();
+        const order = await Order.findById(orderId);
+        if (!order || order.customerId.toString() !== session.user.id) {
+          return new NextResponse("Unauthorized", { status: 401 });
+        }
+      }
     } else {
       console.error("Pusher auth: Invalid channel type");
       return new NextResponse("Bad Request", { status: 400 });

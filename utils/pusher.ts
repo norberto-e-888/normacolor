@@ -5,5 +5,7 @@ export const getPusherChannelName = {
     `${PusherChannelType.OrderChat}_${orderId}-${itemId}`,
   notifications: (userId: string) =>
     `${PusherChannelType.Notifications}_${userId}`,
-  adminStats: (type: string) => `${PusherChannelType.AdminStats}_${type}`, // Add this
+  adminStats: (type: string) => `${PusherChannelType.AdminStats}_${type}`,
+  orderStatus: (orderId: string) =>
+    `${PusherChannelType.OrderStatus}_${orderId}`,
 };

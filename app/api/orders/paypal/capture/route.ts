@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { PusherEventName } from "@/constants/pusher";
 import {
   calculateLoyaltyPoints,
   determineUserTier,
@@ -11,6 +12,8 @@ import {
 } from "@/database";
 import { getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
+import { createPusherServer } from "@/lib/server/pusher";
+import { getPusherChannelName } from "@/utils/pusher";
 
 export async function POST(request: Request) {
   const session = await getServerSession();
@@ -50,6 +53,34 @@ export async function POST(request: Request) {
     await Order.findByIdAndUpdate(orderId, {
       status: OrderStatus.Paid,
     });
+
+    const updatedOrder = await Order.findById(orderId).lean();
+
+    if (updatedOrder) {
+      const formattedOrder = {
+        ...updatedOrder,
+        id: updatedOrder._id.toString(),
+        _id: undefined,
+        cart: updatedOrder.cart.map(
+          (item: {
+            _id: { toString: () => string };
+            [key: string]: unknown;
+          }) => ({
+            ...item,
+            id: item._id.toString(),
+            _id: undefined,
+          })
+        ),
+      };
+
+      const pusherServer = createPusherServer();
+      const orderStatusChannel = getPusherChannelName.orderStatus(orderId);
+      await pusherServer.trigger(
+        orderStatusChannel,
+        PusherEventName.OrderUpdated,
+        formattedOrder
+      );
+    }
 
     const updateUserAggregations = async (order: Order, userId: string) => {
       const user = await User.findById(userId);

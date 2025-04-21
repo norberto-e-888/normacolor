@@ -77,6 +77,9 @@ export function OrderChat({ orderId, itemId, order }: OrderChatProps) {
   }, [messagesData?.messages]);
 
   useEffect(() => {
+    // Only subscribe if we have a valid orderId and itemId
+    if (!orderId || !itemId) return;
+
     const channelName = getPusherChannelName.orderItemChat(orderId, itemId);
     const channel = pusherClient.subscribe(channelName);
 
@@ -98,6 +101,7 @@ export function OrderChat({ orderId, itemId, order }: OrderChatProps) {
     });
 
     return () => {
+      // Make sure to unsubscribe when the component unmounts
       pusherClient.unsubscribe(channelName);
     };
   }, [itemId, orderId, queryClient]);

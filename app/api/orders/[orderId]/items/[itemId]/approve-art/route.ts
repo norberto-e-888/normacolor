@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 
+import { PusherEventName } from "@/constants/pusher";
 import { Order, OrderStatus, UserRole } from "@/database";
 import { ExtendedSession, getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
 import { DesignerChat } from "@/lib/server/designer-chat";
+import { createPusherServer } from "@/lib/server/pusher";
+import { getPusherChannelName } from "@/utils/pusher";
 
 export async function POST(
   request: Request,
@@ -65,18 +68,43 @@ export async function POST(
 
     await order.save();
 
+    // Format the updated order for the response
+    const updatedOrder = {
+      ...order.toObject(),
+      id: order._id.toString(),
+      _id: undefined,
+      cart: order.cart.map((item) => ({
+        ...item.toObject(),
+        id: item._id.toString(),
+        _id: undefined,
+      })),
+    };
+
+    // Send Pusher notifications
+    const pusherServer = createPusherServer();
+    const orderStatusChannel = getPusherChannelName.orderStatus(params.orderId);
+
+    // Send OrderUpdated event
+    await pusherServer.trigger(
+      orderStatusChannel,
+      PusherEventName.OrderUpdated,
+      updatedOrder
+    );
+
+    // Send ArtApproved event
+    await pusherServer.trigger(
+      orderStatusChannel,
+      PusherEventName.ArtApproved,
+      {
+        orderId: params.orderId,
+        itemId: params.itemId,
+        imageId: imageId,
+      }
+    );
+
     return NextResponse.json({
       success: true,
-      updatedOrder: {
-        ...order.toObject(),
-        id: order._id.toString(),
-        _id: undefined,
-        cart: order.cart.map((item) => ({
-          ...item.toObject(),
-          id: item._id.toString(),
-          _id: undefined,
-        })),
-      },
+      updatedOrder,
     });
   } catch (error) {
     console.error("Error approving art:", error);

@@ -1,10 +1,10 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { SortAsc, SortDesc } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useIntersectionObserver } from "usehooks-ts";
 
@@ -17,8 +17,11 @@ import {
   MultiStatusFilter,
   StatusOption,
 } from "@/components/ui/multi-status-filter";
+import { PusherEventName } from "@/constants/pusher";
 import { Order, OrderStatus } from "@/database";
 import { updateOrderStatus } from "@/functions/orders/update-order-status";
+import { pusherClient } from "@/lib/client/pusher";
+import { getPusherChannelName } from "@/utils/pusher";
 
 const statusOptions: StatusOption[] = [
   { label: "Pagado", value: OrderStatus.Paid },
@@ -43,6 +46,7 @@ export default function OrdersPage() {
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const { isIntersecting } =
     useIntersectionObserver(loadMoreRef as never) ?? {};
+  const queryClient = useQueryClient();
 
   const justPaidOrderId = searchParams.get("justPaidOrderId");
   const selectedId = searchParams.get("selectedId");
@@ -83,6 +87,72 @@ export default function OrdersPage() {
     },
   });
 
+  // Listen for Pusher updates on visible orders
+  useEffect(() => {
+    if (!ordersData?.orders.length) return;
+
+    // Subscribe to each order's status channel
+    const subscriptions = ordersData.orders.map((order) => {
+      const channelName = getPusherChannelName.orderStatus(order.id);
+      const channel = pusherClient.subscribe(channelName);
+
+      channel.bind(
+        PusherEventName.OrderUpdated,
+        (updatedOrder: Order<true>) => {
+          // Update the order in the list
+          queryClient.setQueryData<{
+            orders: Order<true>[];
+            nextCursor: string | null;
+            selectedOrder: Order<true> | null;
+          }>(
+            ["orders", selectedStatuses, sortBy, sortOrder, cursor],
+            (oldData) => {
+              if (!oldData) return oldData;
+
+              return {
+                ...oldData,
+                orders: oldData.orders.map((o) =>
+                  o.id === updatedOrder.id ? updatedOrder : o
+                ),
+              };
+            }
+          );
+
+          // Update the selected order if it matches
+          if (updatedOrder.id === selectedId) {
+            queryClient.setQueryData<{
+              selectedOrder?: Order<true>;
+              [key: string]: unknown;
+            }>(["order", selectedId], (oldData) => {
+              if (!oldData) return { selectedOrder: updatedOrder };
+              return {
+                ...oldData,
+                selectedOrder: updatedOrder,
+              };
+            });
+          }
+        }
+      );
+
+      return { channelName, orderId: order.id };
+    });
+
+    // Cleanup subscriptions
+    return () => {
+      subscriptions.forEach((sub) => {
+        pusherClient.unsubscribe(sub.channelName);
+      });
+    };
+  }, [
+    ordersData?.orders,
+    queryClient,
+    selectedId,
+    selectedStatuses,
+    sortBy,
+    sortOrder,
+    cursor,
+  ]);
+
   // Separate query for selected order
   const { data: selectedOrderData } = useQuery({
     queryKey: ["order", selectedId || justPaidOrderId],
@@ -111,9 +181,47 @@ export default function OrdersPage() {
     newStatus: OrderStatus
   ) => {
     try {
+      // Optimistically update the UI
+      queryClient.setQueryData<{ selectedOrder?: Order<true> }>(
+        ["order", order.id],
+        (oldData) => {
+          if (!oldData?.selectedOrder) return oldData;
+          return {
+            ...oldData,
+            selectedOrder: {
+              ...oldData.selectedOrder,
+              status: newStatus,
+            },
+          };
+        }
+      );
+
+      // Also update in the orders list
+      queryClient.setQueryData<{
+        orders: Order<true>[];
+        nextCursor: string | null;
+        selectedOrder: Order<true> | null;
+      }>(["orders", selectedStatuses, sortBy, sortOrder, cursor], (oldData) => {
+        if (!oldData) return oldData;
+
+        return {
+          ...oldData,
+          orders: oldData.orders.map((o) =>
+            o.id === order.id ? { ...o, status: newStatus } : o
+          ),
+        };
+      });
+
+      // Make the actual API call
       await updateOrderStatus(order.id, newStatus);
       toast.success("Diseño aprobado correctamente");
     } catch (error) {
+      // Revert the optimistic update on error
+      await queryClient.invalidateQueries({ queryKey: ["order", order.id] });
+      await queryClient.invalidateQueries({
+        queryKey: ["orders", selectedStatuses, sortBy, sortOrder, cursor],
+      });
+
       console.error("Error updating order status:", error);
       toast.error("Error al actualizar el estado");
     }
