@@ -13,6 +13,7 @@ const ACTIVE_STATUSES = [
   OrderStatus.InProgress,
   OrderStatus.ReadyToPickUp,
   OrderStatus.EnRoute,
+  OrderStatus.Delivered,
 ];
 
 export const OrderGroup = z.enum(["active"]);

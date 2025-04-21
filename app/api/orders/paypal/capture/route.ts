@@ -4,11 +4,14 @@ import { PusherEventName } from "@/constants/pusher";
 import {
   calculateLoyaltyPoints,
   determineUserTier,
+  Notification,
+  NotificationType,
   Order,
   OrderProduct,
   OrderStatus,
   TIER_QUALIFICATION_PERIOD_MONTHS,
   User,
+  UserRole,
 } from "@/database";
 import { getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
@@ -75,11 +78,67 @@ export async function POST(request: Request) {
 
       const pusherServer = createPusherServer();
       const orderStatusChannel = getPusherChannelName.orderStatus(orderId);
+
+      // Send OrderUpdated event
       await pusherServer.trigger(
         orderStatusChannel,
         PusherEventName.OrderUpdated,
         formattedOrder
       );
+
+      // Create notifications for all admin users
+      try {
+        const admins = await User.find({ role: UserRole.Admin });
+
+        if (admins.length > 0) {
+          const orderTotal = formattedOrder.total / 100; // Convert cents to currency
+          const formatOrderTotal = new Intl.NumberFormat("es-MX", {
+            style: "currency",
+            currency: "MXN",
+          }).format(orderTotal);
+
+          const baseNotificationData = {
+            type: NotificationType.NewOrder,
+            title: "Nueva orden recibida",
+            message: `Nueva orden por ${formatOrderTotal} fue pagada y está lista para ser procesada`,
+            deepLink: `/admin/ordenes?selectedId=${orderId}`,
+            metadata: {
+              orderId,
+              total: formattedOrder.total,
+            },
+          };
+
+          const batchPusherEvents = [];
+
+          // Create a notification for each admin
+          for (const admin of admins) {
+            const notification = await Notification.create({
+              userId: admin._id,
+              ...baseNotificationData,
+            });
+
+            // Add notification event to batch
+            batchPusherEvents.push({
+              channel: getPusherChannelName.notifications(admin._id.toString()),
+              name: PusherEventName.NewNotification,
+              data: {
+                ...baseNotificationData,
+                userId: admin._id.toString(),
+                isRead: false,
+                id: notification._id.toString(),
+              },
+            });
+          }
+
+          // Send all notifications in one batch
+          if (batchPusherEvents.length > 0) {
+            await pusherServer.triggerBatch(batchPusherEvents);
+          }
+        }
+      } catch (error) {
+        console.error("Error sending admin notifications:", error);
+        // Don't fail the overall process if notifications fail
+      }
     }
 
     const updateUserAggregations = async (order: Order, userId: string) => {

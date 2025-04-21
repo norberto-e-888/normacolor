@@ -21,14 +21,41 @@ type NotificationGroup = {
   }[];
 };
 
+// Define proper types for the infinite query data structure
+interface NotificationPage {
+  notifications: Array<Notification & { id: string }>;
+  nextCursor?: string | null;
+}
+
+interface InfiniteNotificationsData {
+  pages: NotificationPage[];
+  pageParams: (string | null | undefined)[];
+}
+
 const getNotificationTypeLabel = (type: NotificationType) => {
   switch (type) {
     case NotificationType.DesignChatMessage:
       return "Mensajes de diseño";
     case NotificationType.OrderReady:
       return "Pedido listo";
+    case NotificationType.NewOrder:
+      return "Nuevo pedido";
+    case NotificationType.ArtApproved:
+      return "Arte aprobado";
+    case NotificationType.DesignApprovalPending:
+      return "Aprobación de diseño pendiente";
+    case NotificationType.OrderStatusPending:
+      return "Pedido pendiente";
+    case NotificationType.OrderStatusInProgress:
+      return "Pedido en proceso";
+    case NotificationType.OrderStatusCompleted:
+      return "Pedido completado";
+    case NotificationType.OrderStatusCancelled:
+      return "Pedido cancelado";
+    case NotificationType.OrderStatusDelivered:
+      return "Pedido entregado";
     default:
-      return type;
+      return "Notificación";
   }
 };
 
@@ -71,46 +98,87 @@ export function NotificationList({ onClose }: { onClose: () => void }) {
     });
 
   const { mutate: markAsRead } = useMutation({
-    mutationFn: async () => {
-      const response = await fetch("/api/notifications/read", {
-        method: "POST",
-      });
-      if (!response.ok) throw new Error("Failed to mark notifications as read");
-      return response.json();
+    mutationFn: async (notificationId?: string) => {
+      if (notificationId) {
+        // Mark single notification as read
+        const response = await fetch("/api/notifications", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: notificationId }),
+        });
+        if (!response.ok)
+          throw new Error("Failed to mark notification as read");
+        return response.json();
+      } else {
+        // Mark all as read
+        const response = await fetch("/api/notifications", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ all: true }),
+        });
+        if (!response.ok)
+          throw new Error("Failed to mark all notifications as read");
+        return response.json();
+      }
     },
-    onMutate: async () => {
+    onMutate: async (notificationId?: string) => {
       await queryClient.cancelQueries({ queryKey: ["notifications"] });
       await queryClient.cancelQueries({ queryKey: ["notifications-count"] });
 
       const previousNotifications = queryClient.getQueryData(["notifications"]);
       const previousCount = queryClient.getQueryData(["notifications-count"]);
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      queryClient.setQueryData(["notifications"], (old: any) => ({
-        ...old,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        pages: old.pages.map((page: any) => ({
-          ...page,
-          notifications: page.notifications.map(
-            (notification: Notification) => ({
-              ...notification,
-              isRead: true,
-            })
-          ),
-        })),
-      }));
+      if (notificationId) {
+        // Remove this notification from the list
+        queryClient.setQueryData<InfiniteNotificationsData>(
+          ["notifications"],
+          (old) => {
+            if (!old) return { pages: [], pageParams: [] };
+
+            return {
+              ...old,
+              pages: old.pages.map((page) => ({
+                ...page,
+                notifications: page.notifications.filter(
+                  (notification) => notification.id !== notificationId
+                ),
+              })),
+            };
+          }
+        );
+      } else {
+        // Clear all notifications
+        queryClient.setQueryData<InfiniteNotificationsData>(
+          ["notifications"],
+          (old) => {
+            if (!old) return { pages: [], pageParams: [] };
+
+            return {
+              ...old,
+              pages: old.pages.map((page) => ({
+                ...page,
+                notifications: [],
+              })),
+            };
+          }
+        );
+      }
 
       queryClient.setQueryData(["notifications-count"], { count: 0 });
 
       return { previousNotifications, previousCount };
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onError: (_, __, context: any) => {
-      queryClient.setQueryData(
-        ["notifications"],
-        context.previousNotifications
-      );
-      queryClient.setQueryData(["notifications-count"], context.previousCount);
+    onError: (_, __, context) => {
+      if (context) {
+        queryClient.setQueryData(
+          ["notifications"],
+          context.previousNotifications
+        );
+        queryClient.setQueryData(
+          ["notifications-count"],
+          context.previousCount
+        );
+      }
     },
   });
 
@@ -122,7 +190,7 @@ export function NotificationList({ onClose }: { onClose: () => void }) {
 
   const handleNotificationClick = (notification: Notification) => {
     if (!notification.isRead) {
-      markAsRead();
+      markAsRead(notification.id as string);
     }
     onClose();
     router.push(notification.deepLink);
@@ -187,8 +255,8 @@ export function NotificationList({ onClose }: { onClose: () => void }) {
   });
 
   return (
-    <ScrollArea className="h-[32rem] w-80">
-      <div className="p-4 space-y-4">
+    <ScrollArea className="h-[32rem] w-80 relative">
+      <div className="p-4 space-y-4 pb-16">
         {groups.map((group) => {
           const isOpen = openSectionRef.current === group.type;
           const notificationCount = group.dates.reduce(
@@ -266,6 +334,17 @@ export function NotificationList({ onClose }: { onClose: () => void }) {
           </div>
         )}
       </div>
+
+      {notifications.some((notification) => !notification.isRead) && (
+        <div className="fixed bottom-0 w-full p-2 bg-background border-t flex justify-center">
+          <button
+            onClick={() => markAsRead(undefined)}
+            className="w-full py-2 px-4 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+          >
+            Marcar todas como leídas
+          </button>
+        </div>
+      )}
     </ScrollArea>
   );
 }

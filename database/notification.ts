@@ -5,6 +5,14 @@ import { BaseModel, ensureRefIntegrity, getSchema, ModelName } from "@/utils";
 export enum NotificationType {
   DesignChatMessage = "design_chat_message",
   OrderReady = "order_ready",
+  NewOrder = "new_order",
+  ArtApproved = "art_approved",
+  DesignApprovalPending = "design_approval_pending",
+  OrderStatusPending = "order_status_pending",
+  OrderStatusInProgress = "order_status_in_progress",
+  OrderStatusCompleted = "order_status_completed",
+  OrderStatusCancelled = "order_status_cancelled",
+  OrderStatusDelivered = "order_status_delivered",
 }
 
 export type Notification = {

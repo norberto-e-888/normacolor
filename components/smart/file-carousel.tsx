@@ -18,7 +18,7 @@ import { toast } from "sonner";
 
 import { ConfirmModal } from "@/components/ui/confirm-modal";
 import { PusherEventName } from "@/constants/pusher";
-import { ArtSource, Order, OrderStatus } from "@/database";
+import { ArtSource, NotificationType, Order, OrderStatus } from "@/database";
 import { updateOrderStatus } from "@/functions/orders/update-order-status";
 import { pusherClient } from "@/lib/client/pusher";
 import { getPusherChannelName } from "@/utils/pusher";
@@ -199,7 +199,39 @@ export const FileCarousel = memo(
 
         setIsUpdatingStatus(true);
         try {
+          // Update order status
           await updateOrderStatus(orderId, OrderStatus.DesignApprovalPending);
+
+          // Create a notification for the client
+          try {
+            const response = await fetch(`/api/notifications`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                userId: order.customerId,
+                type: NotificationType.DesignApprovalPending,
+                title: "Diseño listo para aprobación",
+                message:
+                  "Tu orden tiene un diseño listo para revisar y aprobar. Por favor, revisa y aprueba el diseño para continuar con la producción.",
+                deepLink: `/ordenes?selectedId=${orderId}`,
+                metadata: {
+                  orderId,
+                  itemId,
+                },
+              }),
+            });
+
+            if (!response.ok) {
+              console.error(
+                "Error creating notification:",
+                await response.text()
+              );
+            }
+          } catch (error) {
+            console.error("Error creating client notification:", error);
+            // Don't fail the main flow if this fails
+          }
+
           toast.success("Orden actualizada a pendiente de aprobación");
 
           // Update the local query cache instead of refreshing

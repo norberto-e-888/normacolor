@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server";
 
 import { PusherEventName } from "@/constants/pusher";
-import { Order, OrderStatus, UserRole } from "@/database";
+import {
+  Notification,
+  NotificationType,
+  Order,
+  OrderStatus,
+  User,
+  UserRole,
+} from "@/database";
 import { ExtendedSession, getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
 import { DesignerChat } from "@/lib/server/designer-chat";
@@ -101,6 +108,60 @@ export async function POST(
         imageId: imageId,
       }
     );
+
+    // Create notifications for all admin users about the art approval
+    try {
+      // Get product information for the notification
+      const productName = orderItem.toObject().productSnapshot.name;
+
+      // Find all admin users
+      const admins = await User.find({ role: UserRole.Admin });
+
+      if (admins.length > 0) {
+        const baseNotificationData = {
+          type: NotificationType.ArtApproved,
+          title: "Diseño aprobado",
+          message: `Un cliente ha aprobado el diseño para ${productName}`,
+          deepLink: `/admin/ordenes?selectedId=${params.orderId}&selectedItemId=${params.itemId}`,
+          metadata: {
+            orderId: params.orderId,
+            itemId: params.itemId,
+            imageId: imageId,
+            productName,
+          },
+        };
+
+        const batchPusherEvents = [];
+
+        // Create a notification for each admin
+        for (const admin of admins) {
+          const notification = await Notification.create({
+            userId: admin._id,
+            ...baseNotificationData,
+          });
+
+          // Add notification event to batch
+          batchPusherEvents.push({
+            channel: getPusherChannelName.notifications(admin._id.toString()),
+            name: PusherEventName.NewNotification,
+            data: {
+              ...baseNotificationData,
+              userId: admin._id.toString(),
+              isRead: false,
+              id: notification._id.toString(),
+            },
+          });
+        }
+
+        // Send all notification events in one batch
+        if (batchPusherEvents.length > 0) {
+          await pusherServer.triggerBatch(batchPusherEvents);
+        }
+      }
+    } catch (error) {
+      console.error("Error creating admin notifications:", error);
+      // Don't fail the overall process if notifications fail
+    }
 
     return NextResponse.json({
       success: true,
