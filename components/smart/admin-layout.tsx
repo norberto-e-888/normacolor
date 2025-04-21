@@ -3,7 +3,6 @@
 import {
   ChevronUp,
   Ellipsis,
-  Gift,
   LayoutGrid,
   LogOut,
   Logs,
@@ -44,7 +43,6 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin/clientes", label: "Clientes", icon: Users },
   { href: "/admin/ordenes", label: "Órdenes", icon: ShoppingBag },
   { href: "/admin/productos", label: "Productos", icon: Package },
-  { href: "/admin/promociones", label: "Promociones", icon: Gift },
 ];
 export type AdminLayoutProps = Readonly<{
   children: React.ReactNode;
@@ -115,7 +113,6 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
               })}
               <div className="flex items-center space-x-1 px-2 py-2 rounded-sm text-base text-zinc-800 dark:text-zinc-300 bg-neutral-50 dark:bg-neutral-950">
                 <NotificationDropdown />
-                <span>Notificaciones</span>
               </div>
             </nav>
           </ScrollArea>
