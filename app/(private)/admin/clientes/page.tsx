@@ -3,8 +3,8 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { useRef, useState } from "react";
-import { useIntersectionObserver } from "usehooks-ts";
 import { useDebouncedCallback } from "use-debounce";
+import { useIntersectionObserver } from "usehooks-ts";
 
 import { ClientsResponse } from "@/app/api/clients/route";
 import { ClientDetail } from "@/components/smart/client-detail";

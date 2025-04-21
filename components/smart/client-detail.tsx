@@ -32,7 +32,8 @@ export function ClientDetail({ client }: ClientDetailProps) {
             </p>
             <p>
               <span className="text-muted-foreground">Nombre:</span>{" "}
-              {client.name || "No especificado"}
+              {`${client.firstName} ${client.lastName}`.trim() ||
+                "No especificado"}
             </p>
             <p>
               <span className="text-muted-foreground">Fecha de registro:</span>{" "}
