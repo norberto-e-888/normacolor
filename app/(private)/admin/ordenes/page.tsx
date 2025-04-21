@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { Filter, SortAsc, SortDesc } from "lucide-react";
+import { SortAsc, SortDesc } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useRef } from "react";
 import { toast } from "sonner";
@@ -14,17 +14,18 @@ import { OrderListItem } from "@/components/smart/order-list-item";
 import { Button } from "@/components/ui/button";
 import { Content } from "@/components/ui/content";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  MultiStatusFilter,
+  StatusOption,
+} from "@/components/ui/multi-status-filter";
 import { Order, OrderStatus } from "@/database";
 import { updateOrderStatus } from "@/functions/orders/update-order-status";
 
-const statusOptions = [
-  { label: "Todos", value: "" },
+const statusOptions: StatusOption[] = [
   { label: "Pagado", value: OrderStatus.Paid },
+  {
+    label: "Pendiente de aprobación",
+    value: OrderStatus.DesignApprovalPending,
+  },
   { label: "En progreso", value: OrderStatus.InProgress },
   { label: "Listo para recoger", value: OrderStatus.ReadyToPickUp },
   { label: "En ruta", value: OrderStatus.EnRoute },
@@ -44,19 +45,19 @@ export default function AdminOrdersPage() {
     useIntersectionObserver(loadMoreRef as never) ?? {};
 
   const selectedId = searchParams.get("selectedId");
-  const status = searchParams.get("status") || "";
   const sortBy = searchParams.get("sortBy") || "createdAt";
   const sortOrder = searchParams.get("sortOrder") || "desc";
   const cursor = searchParams.get("cursor");
+  const selectedStatuses = searchParams.getAll("status");
 
   // Separate query for orders list
   const { data: ordersData, isFetching: isLoadingOrders } =
     useQuery<OrdersAdminResponse>({
-      queryKey: ["admin-orders", status, sortBy, sortOrder, cursor],
+      queryKey: ["admin-orders", selectedStatuses, sortBy, sortOrder, cursor],
       queryFn: async () => {
         const params = new URLSearchParams();
         if (cursor) params.set("cursor", cursor);
-        if (status) params.set("status", status);
+        selectedStatuses.forEach((status) => params.append("status", status));
         params.set("sortBy", sortBy);
         params.set("sortOrder", sortOrder);
 
@@ -99,13 +100,15 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const handleFilterChange = (newStatus: string) => {
+  const handleFilterChange = (newStatuses: string[]) => {
     const params = new URLSearchParams(searchParams.toString());
-    if (newStatus) {
-      params.set("status", newStatus);
-    } else {
-      params.delete("status");
-    }
+    params.delete("status"); // Clear existing statuses
+
+    // Add each selected status
+    newStatuses.forEach((status) => {
+      params.append("status", status);
+    });
+
     params.delete("cursor"); // Reset cursor when changing filters
     router.replace(`/admin/ordenes?${params.toString()}`, { scroll: false });
   };
@@ -148,25 +151,11 @@ export default function AdminOrdersPage() {
       <div className="flex flex-col md:flex-row  gap-4">
         <div className="w-full md:w-1/2 lg:w-2/5 overflow-hidden flex flex-col">
           <div className="flex gap-2 mb-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-2">
-                  <Filter className="w-4 h-4" />
-                  {statusOptions.find((opt) => opt.value === status)?.label ||
-                    "Estado"}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                {statusOptions.map((option) => (
-                  <DropdownMenuItem
-                    key={option.value}
-                    onClick={() => handleFilterChange(option.value)}
-                  >
-                    {option.label}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <MultiStatusFilter
+              statusOptions={statusOptions}
+              selectedStatuses={selectedStatuses}
+              onStatusChange={handleFilterChange}
+            />
 
             {sortOptions.map((option) => (
               <Button

@@ -15,16 +15,25 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const cursor = searchParams.get("cursor");
   const selectedId = searchParams.get("selectedId");
-  const status = searchParams.get("status") as OrderStatus | null;
   const sortBy = searchParams.get("sortBy") || "createdAt";
   const sortOrder = searchParams.get("sortOrder") || "desc";
 
+  // Get all status values - supports multiple status filters
+  const statuses = searchParams.getAll("status");
+
   await connectToMongo();
 
-  const query = {
+  const query: {
+    createdAt?: { $lt: Date };
+    status?: { $in: OrderStatus[] };
+  } = {
     ...(cursor ? { createdAt: { $lt: new Date(cursor) } } : {}),
-    ...(status ? { status } : {}),
   };
+
+  // Add status filter if present
+  if (statuses.length > 0) {
+    query.status = { $in: statuses as OrderStatus[] };
+  }
 
   const sort: Record<string, 1 | -1> = {
     [sortBy]: sortOrder === "asc" ? 1 : -1,

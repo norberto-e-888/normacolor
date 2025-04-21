@@ -27,10 +27,16 @@ const statusOptions = [
   { label: "Entregado", value: OrderStatus.Delivered },
 ];
 
+const clientStatusOptions = [
+  { label: "Aprobar diseño", value: OrderStatus.InProgress },
+];
+
 const getStatusLabel = (status: OrderStatus) => {
   switch (status) {
     case OrderStatus.Paid:
       return "Pagado";
+    case OrderStatus.DesignApprovalPending:
+      return "Pendiente de aprobación";
     case OrderStatus.InProgress:
       return "En progreso";
     case OrderStatus.ReadyToPickUp:
@@ -48,6 +54,8 @@ const getStatusColor = (status: OrderStatus) => {
   switch (status) {
     case OrderStatus.Paid:
       return "bg-yellow-100 text-yellow-800";
+    case OrderStatus.DesignApprovalPending:
+      return "bg-purple-100 text-purple-800";
     case OrderStatus.InProgress:
       return "bg-blue-100 text-blue-800";
     case OrderStatus.ReadyToPickUp:
@@ -169,6 +177,27 @@ export function OrderDetail({
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+        ) : order.status === OrderStatus.DesignApprovalPending && !isAdmin ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className={`${getStatusColor(order.status)} border-none`}
+              >
+                {getStatusLabel(order.status)}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {clientStatusOptions.map((option) => (
+                <DropdownMenuItem
+                  key={option.value}
+                  onClick={() => onStatusChange?.(order, option.value)}
+                >
+                  {option.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         ) : (
           <span
             className={`px-3 py-1 rounded-full text-sm ${getStatusColor(
@@ -236,7 +265,7 @@ export function OrderDetail({
                   </div>
                 </div>
               )}
-              <OrderChat orderId={order.id} itemId={item.id} />
+              <OrderChat orderId={order.id} itemId={item.id} order={order} />
             </div>
           ))}
         </div>

@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
 import { Order, OrderStatus } from "@/database";
 import { getServerSession } from "@/functions/auth";
 import { connectToMongo } from "@/lib/server";
-import { z } from "zod";
 
 const PAGE_SIZE = 10;
 
 const ACTIVE_STATUSES = [
   OrderStatus.Paid,
+  OrderStatus.DesignApprovalPending,
   OrderStatus.InProgress,
   OrderStatus.ReadyToPickUp,
   OrderStatus.EnRoute,
@@ -32,7 +33,12 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const cursor = searchParams.get("cursor");
   const selectedId = searchParams.get("selectedId");
-  const group = await OrderGroup.safeParseAsync(searchParams.get("group"));
+  const group = searchParams.get("group");
+  const sortBy = searchParams.get("sortBy") || "createdAt";
+  const sortOrder = searchParams.get("sortOrder") || "desc";
+
+  // Handle multiple statuses
+  const statuses = searchParams.getAll("status");
 
   await connectToMongo();
 
@@ -45,12 +51,23 @@ export async function GET(request: Request) {
     ...(cursor ? { createdAt: { $lt: new Date(cursor) } } : {}),
   };
 
-  if (group.success) {
-    query.status = { $in: GROUP_STATUSES[group.data] };
+  // Apply group or statuses filter (statuses take precedence)
+  if (statuses.length > 0) {
+    query.status = { $in: statuses as OrderStatus[] };
+  } else if (
+    group &&
+    Object.values(OrderGroup.enum).includes(group as OrderGroup)
+  ) {
+    query.status = { $in: GROUP_STATUSES[group as OrderGroup] };
   }
 
+  // Create sort object
+  const sort: Record<string, 1 | -1> = {
+    [sortBy]: sortOrder === "asc" ? 1 : -1,
+  };
+
   const orders = await Order.find(query)
-    .sort({ createdAt: -1 })
+    .sort(sort)
     .limit(PAGE_SIZE + 1)
     .then((docs) =>
       docs.map((doc) => ({

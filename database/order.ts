@@ -21,6 +21,7 @@ import {
 export enum OrderStatus {
   WaitingForPayment = "waiting_for_payment",
   Paid = "paid",
+  DesignApprovalPending = "design-approval-pending",
   InProgress = "in-progress",
   ReadyToPickUp = "ready-to-pickup",
   EnRoute = "en-route",

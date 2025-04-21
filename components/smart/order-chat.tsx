@@ -9,19 +9,20 @@ import { toast } from "sonner";
 import { SessionUser } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { PusherEventName } from "@/constants/pusher";
-import { UserRole } from "@/database";
+import { Order, UserRole } from "@/database";
 import { pusherClient } from "@/lib/client/pusher";
 import { ChatMessage } from "@/lib/server/designer-chat";
 import { getPusherChannelName } from "@/utils";
 
-import { FileCarousel } from "./file-carousel";
+import { FileCarousel, FileCarouselRef } from "./file-carousel";
 
 export interface OrderChatProps {
   orderId: string;
   itemId: string;
+  order?: Order<true>;
 }
 
-export function OrderChat({ orderId, itemId }: OrderChatProps) {
+export function OrderChat({ orderId, itemId, order }: OrderChatProps) {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
   const [newMessage, setNewMessage] = useState("");
@@ -32,6 +33,7 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const shouldFocusRef = useRef(false);
+  const fileCarouselRef = useRef<FileCarouselRef>(null);
 
   const { data: messagesData, refetch: refetchMessages } = useQuery({
     queryKey: ["chat-messages", orderId, itemId],
@@ -172,6 +174,15 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
 
       await refetchImages();
       toast.success("Archivo subido exitosamente");
+
+      // If admin uploaded a file for a template order, check if we should update status
+      if (
+        isAdmin &&
+        order &&
+        fileCarouselRef.current?.handleUpdateToDesignApprovalPending
+      ) {
+        fileCarouselRef.current.handleUpdateToDesignApprovalPending();
+      }
     } catch (error) {
       console.error("Error uploading file:", error);
       toast.error("Error al subir el archivo");
@@ -197,6 +208,7 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
   return (
     <div className="mt-4 border-t pt-4">
       <FileCarousel
+        ref={fileCarouselRef}
         images={imagesData?.designerImages || []}
         title={isAdmin ? "Archivos enviados" : "Archivos del diseñador"}
         isDesignerImages={true}
@@ -204,6 +216,7 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
         itemId={itemId}
         isAdmin={isAdmin}
         onRefetchImages={refetchImages}
+        order={order}
       />
       <FileCarousel
         images={imagesData?.clientImages || []}
@@ -213,6 +226,7 @@ export function OrderChat({ orderId, itemId }: OrderChatProps) {
         itemId={itemId}
         isAdmin={isAdmin}
         onRefetchImages={refetchImages}
+        order={order}
       />
 
       <div
