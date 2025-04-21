@@ -273,19 +273,6 @@ export default function OrdersPage() {
     );
   }
 
-  if (ordersData?.orders.length === 0) {
-    return (
-      <Content>
-        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] gap-4">
-          <p className="text-lg text-muted-foreground">No tienes órdenes</p>
-          <a href="/productos" className="text-primary hover:underline">
-            Ver productos
-          </a>
-        </div>
-      </Content>
-    );
-  }
-
   return (
     <Content className="pb-0">
       <div className="flex flex-col md:flex-row h-[calc(100vh-8rem)] gap-4">
@@ -316,44 +303,59 @@ export default function OrdersPage() {
           </div>
 
           <div className="flex-1 overflow-y-auto">
-            <div className="space-y-2">
-              <AnimatePresence>
-                {ordersData?.orders.map((order) => (
-                  <motion.div
-                    key={order.id}
-                    initial={
-                      justPaidOrderId === order.id
-                        ? { scale: 0.95, opacity: 0 }
-                        : false
-                    }
-                    animate={{ scale: 1, opacity: 1 }}
-                  >
-                    <OrderListItem
-                      order={order}
-                      isSelected={selectedId === order.id}
-                      justPaid={justPaidOrderId === order.id}
-                      onClick={handleOrderClick}
-                    />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-              <div ref={loadMoreRef} className="h-4" />
-              {isIntersecting && ordersData?.nextCursor && (
-                <div className="flex justify-center p-4">
-                  <Button
-                    variant="outline"
-                    onClick={handleLoadMore}
-                    disabled={isLoadingOrders}
-                  >
-                    {isLoadingOrders ? (
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
-                    ) : (
-                      "Cargar más"
-                    )}
-                  </Button>
-                </div>
-              )}
-            </div>
+            {ordersData?.orders.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full gap-4">
+                <p className="text-lg text-muted-foreground">
+                  {selectedStatuses.length === 0
+                    ? "No tienes órdenes"
+                    : "No se encontraron órdenes, intenta cambiando los filtros"}
+                </p>
+                {selectedStatuses.length === 0 && (
+                  <a href="/productos" className="text-primary hover:underline">
+                    Ver productos
+                  </a>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <AnimatePresence>
+                  {ordersData?.orders.map((order) => (
+                    <motion.div
+                      key={order.id}
+                      initial={
+                        justPaidOrderId === order.id
+                          ? { scale: 0.95, opacity: 0 }
+                          : false
+                      }
+                      animate={{ scale: 1, opacity: 1 }}
+                    >
+                      <OrderListItem
+                        order={order}
+                        isSelected={selectedId === order.id}
+                        justPaid={justPaidOrderId === order.id}
+                        onClick={handleOrderClick}
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+                <div ref={loadMoreRef} className="h-4" />
+                {isIntersecting && ordersData?.nextCursor && (
+                  <div className="flex justify-center p-4">
+                    <Button
+                      variant="outline"
+                      onClick={handleLoadMore}
+                      disabled={isLoadingOrders}
+                    >
+                      {isLoadingOrders ? (
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+                      ) : (
+                        "Cargar más"
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

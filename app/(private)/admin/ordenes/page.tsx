@@ -322,7 +322,9 @@ export default function AdminOrdersPage() {
             {!ordersData?.orders.length && !isLoadingOrders && (
               <div className="flex flex-col items-center justify-center min-h-[calc(100vh-16rem)] gap-4">
                 <p className="text-muted-foreground">
-                  No se encontraron órdenes, intenta cambiando los filtros
+                  {selectedStatuses.length === 0
+                    ? "No hay órdenes"
+                    : "No se encontraron órdenes, intenta cambiando los filtros"}
                 </p>
               </div>
             )}

@@ -113,19 +113,20 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
                   </Link>
                 );
               })}
+              <div className="flex items-center space-x-1 px-2 py-2 rounded-sm text-base text-zinc-800 dark:text-zinc-300 bg-neutral-50 dark:bg-neutral-950">
+                <NotificationDropdown />
+                <span>Notificaciones</span>
+              </div>
             </nav>
           </ScrollArea>
           <div className="bg-neutral-50 dark:bg-neutral-950 border-t flex flex-col">
-            <div className="p-4">
-              <NotificationDropdown />
-            </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button className="flex items-center justify-between w-full rounded-none p-4 bg-neutral-50 hover:bg-neutral-50 dark:bg-neutral-950 dark:hover:bg-neutral-950">
                   <span className="flex items-center mr-2">
                     <Avatar className="h-8 w-8 mr-3">
                       <AvatarFallback className="text-zinc-100 bg-indigo-800">
-                        {(user?.name || user?.email)?.charAt(0)}
+                        {(user?.firstName || user?.email)?.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col items-start">
@@ -134,10 +135,12 @@ export function AdminLayout({ children, user }: AdminLayoutProps) {
                       </span>
                     </div>
                   </span>
-                  <Ellipsis
-                    size="24px"
-                    className="text-zinc-800 dark:text-zinc-100"
-                  />
+                  <div className="flex items-center">
+                    <Ellipsis
+                      size="24px"
+                      className="text-zinc-800 dark:text-zinc-100"
+                    />
+                  </div>
                 </Button>
               </DropdownMenuTrigger>
 

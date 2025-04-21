@@ -1,7 +1,7 @@
 "use client";
 
 import { Filter } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -31,54 +31,83 @@ export function MultiStatusFilter({
   onStatusChange,
 }: MultiStatusFilterProps) {
   const [open, setOpen] = useState(false);
+  const [localStatuses, setLocalStatuses] =
+    useState<string[]>(selectedStatuses);
+
+  // Sync local state with props when they change
+  useEffect(() => {
+    setLocalStatuses(selectedStatuses);
+  }, [selectedStatuses]);
 
   const toggleStatus = (value: string) => {
+    let newStatuses: string[];
+
     if (value === "") {
-      // If "All" is selected, clear all other selections
-      onStatusChange([]);
-      return;
+      // "Todos" option - clear selection
+      newStatuses = [];
+    } else {
+      // Toggle the selected status
+      newStatuses = localStatuses.includes(value)
+        ? localStatuses.filter((s) => s !== value)
+        : [...localStatuses, value];
     }
 
-    const newStatuses = selectedStatuses.includes(value)
-      ? selectedStatuses.filter((s) => s !== value)
-      : [...selectedStatuses, value];
+    // Update local state immediately
+    setLocalStatuses(newStatuses);
 
-    onStatusChange(newStatuses);
+    // Notify parent component with a slight delay to prevent immediate URL change
+    // This allows the dropdown to stay open while the state updates
+    setTimeout(() => {
+      onStatusChange(newStatuses);
+    }, 0);
   };
 
   // Get display text for the button
   const getDisplayText = () => {
-    if (selectedStatuses.length === 0) {
+    if (localStatuses.length === 0) {
       return "Todos";
     }
 
-    if (selectedStatuses.length === 1) {
+    if (localStatuses.length === 1) {
       const option = statusOptions.find(
-        (opt) => opt.value === selectedStatuses[0]
+        (opt) => opt.value === localStatuses[0]
       );
       return option?.label || "Filtro";
     }
 
-    return `${selectedStatuses.length} seleccionados`;
+    return `${localStatuses.length} seleccionados`;
+  };
+
+  // Custom handler to prevent closing
+  const handleCheckedChange = (value: string) => {
+    return (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleStatus(value);
+      return false; // Prevent default behavior
+    };
   };
 
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen}>
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="gap-2">
           <Filter className="w-4 h-4" />
           {getDisplayText()}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-56">
+      <DropdownMenuContent
+        align="start"
+        className="w-56"
+        onCloseAutoFocus={(e) => e.preventDefault()}
+      >
         <DropdownMenuLabel>Estado</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuCheckboxItem
-          checked={selectedStatuses.length === 0}
-          onCheckedChange={() => {
-            onStatusChange([]);
-            setOpen(false);
-          }}
+          checked={localStatuses.length === 0}
+          onSelect={(e) => e.preventDefault()}
+          onClick={handleCheckedChange("")}
+          onPointerDown={(e) => e.preventDefault()}
         >
           Todos
         </DropdownMenuCheckboxItem>
@@ -87,8 +116,10 @@ export function MultiStatusFilter({
           .map((option) => (
             <DropdownMenuCheckboxItem
               key={option.value}
-              checked={selectedStatuses.includes(option.value)}
-              onCheckedChange={() => toggleStatus(option.value)}
+              checked={localStatuses.includes(option.value)}
+              onSelect={(e) => e.preventDefault()}
+              onClick={handleCheckedChange(option.value)}
+              onPointerDown={(e) => e.preventDefault()}
             >
               {option.label}
             </DropdownMenuCheckboxItem>
